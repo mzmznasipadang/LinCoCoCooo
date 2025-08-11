@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/mzmznasipadang/BLink-Vic/blob/main/Assets/For%20Github.png" alt="BLink! Poster"/>
+  <img src="https://github.com/mzmznasipadang/BLink-Vic/blob/main/Assets/C8%20Figma%20Cover.png" alt="CocoCooo Poster"/>
 </p>
 
 # LinCoCoCoooo
