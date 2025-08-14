@@ -74,22 +74,17 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
     }
     
     func onCheckout() {
-        Task {
-            do {
-                let request: CreateBookingSpec = CreateBookingSpec(
-                    packageId: input.selectedPackageId,
-                    bookingDate: chosenDateInput ?? Date(),
-                    participants: Int(paxInputViewModel.currentTypedText) ?? 1,
-                    userId: UserDefaults.standard.value(forKey: "user-id") as? String ?? ""
-                )
-
-                let response: CreateBookingResponse = try await fetcher.createBooking(request: request)
-                delegate?.notifyFormScheduleDidNavigateToCheckout(with: response)
-            }
-            catch {
-                
-            }
-        }
+        let bookingDate = chosenDateInput ?? Date()
+        let participants = Int(paxInputViewModel.currentTypedText) ?? 1
+        let userId = UserDefaults.standard.value(forKey: "user-id") as? String ?? ""
+        
+        delegate?.notifyFormScheduleDidNavigateToCheckout(
+            package: input.package,
+            selectedPackageId: input.selectedPackageId,
+            bookingDate: bookingDate,
+            participants: participants,
+            userId: userId
+        )
     }
 }
 
@@ -97,8 +92,7 @@ extension HomeFormScheduleViewModel: HomeSearchBarViewModelDelegate {
     func notifyHomeSearchBarDidTap(isTypeAble: Bool, viewModel: HomeSearchBarViewModel) {
         if viewModel === calendarInputViewModel {
             actionDelegate?.showCalendarOption()
-        }
-        else if viewModel === paxInputViewModel {
+        } else if viewModel === paxInputViewModel {
             
         }
     }

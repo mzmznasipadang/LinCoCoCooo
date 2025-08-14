@@ -23,7 +23,7 @@ struct ActivityDetailDataModel: Equatable {
     struct ProviderDetail: Equatable {
         let name: String
         let description: String
-        let imageUrlString: String
+        let imageUrlString: String	
     }
     
     struct Package: Equatable {
