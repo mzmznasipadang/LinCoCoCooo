@@ -13,7 +13,7 @@ struct HomeSearchFilterTray: View {
     
     var body: some View {
         VStack(alignment: .center) {
-            Text("Search")
+            Text("Filter Search")
                 .multilineTextAlignment(.center)
                 .font(.jakartaSans(forTextStyle: .body, weight: .semibold))
                 .foregroundStyle(Token.additionalColorsBlack.toColor())
@@ -25,7 +25,7 @@ struct HomeSearchFilterTray: View {
                             Text("Popular Filters")
                                 .foregroundStyle(Token.additionalColorsBlack.toColor())
                                 .font(.jakartaSans(forTextStyle: .body, weight: .semibold))
-                             
+                            
                             ScrollView(.horizontal) {
                                 HStack(spacing: 12.0) {
                                     ForEach(viewModel.dataModel.filterPillDataState, id: \.id) { state in
@@ -42,15 +42,31 @@ struct HomeSearchFilterTray: View {
                         viewModel.updateApplyButtonTitle()
                     })
                     Spacer()
-                    CocoButton(
-                        action: {
-                            viewModel.filterDidApply()
-                        },
-                        text: viewModel.applyButtonTitle,
-                        style: .large,
-                        type: .primary
-                    )
-                    .stretch()
+                    HStack {
+                        CocoButton(
+                            action: {
+                                viewModel.filterDidApply()
+                            },
+                            text: viewModel.applyButtonTitle,
+                            style: .large,
+                            type: .primary
+                        )
+                        .stretch()
+                        
+                        Button(
+                            action: {
+                                viewModel.resetFilters()
+                            },
+                            label: {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding(14)
+                                    .background(Color.red)
+                                    .cornerRadius(24)
+                            }
+                        )
+                    }
                 }
             }
         }

@@ -154,7 +154,7 @@ private extension HomeViewModel {
                 minPrice: minPrice,
                 maxPrice: maxPrice,
                 range: minPrice...maxPrice,
-                step: 1
+                step: 10000
             )
         )
         
