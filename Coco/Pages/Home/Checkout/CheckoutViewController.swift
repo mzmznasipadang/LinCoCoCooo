@@ -58,7 +58,7 @@ extension CheckoutViewController: CheckoutViewModelAction {
     }
 
     func showError(message: String) {
-        let alert = UIAlertController(title: "Booking Gagal", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: "Booking Failed!", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }

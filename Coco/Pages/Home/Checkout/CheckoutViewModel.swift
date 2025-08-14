@@ -88,9 +88,17 @@ extension CheckoutViewModel: CheckoutViewModelProtocol {
                     })
                 }
             } catch {
+                var errorMessage = "Error while booking activity. Please try again later."
+                if let apiError = error as? APIError,
+                   let data = apiError.data,
+                   let decoded = try? JSONDecoder().decode(APIErrorResponse.self, from: data),
+                   let message = decoded.message {
+                    errorMessage = message
+                }
+                
                 await MainActor.run { [weak self] in
                     self?.actionDelegate?.setLoading(false)
-                    self?.actionDelegate?.showError(message: "Terjadi kesalahan saat membuat booking. Coba lagi.")
+                    self?.actionDelegate?.showError(message: errorMessage)
                 }
             }
         }
