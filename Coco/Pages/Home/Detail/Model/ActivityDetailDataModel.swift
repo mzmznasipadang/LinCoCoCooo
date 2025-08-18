@@ -31,8 +31,9 @@ struct ActivityDetailDataModel: Equatable {
         let name: String
         let description: String
         let price: String
-        
         let id: Int
+        let minParticipants: Int
+        let maxParticipants: Int
     }
     
     init(_ response: Activity) {
@@ -46,12 +47,14 @@ struct ActivityDetailDataModel: Equatable {
             title: "Details",
             content: response.description
         )
+        
+        let firstPackage = response.packages.first
         providerDetail = ActivitySectionLayout(
             title: "Trip Provider",
             content: ProviderDetail(
-                name: response.packages[0].host.name,
-                description: response.packages[0].host.bio,
-                imageUrlString: response.packages[0].host.profileImageUrl
+                name: firstPackage?.host?.name ?? "Host",
+                description: firstPackage?.host?.bio ?? "",
+                imageUrlString: firstPackage?.host?.profileImageUrl ?? ""
             )
         )
         tripFacilities = ActivitySectionLayout(
@@ -68,7 +71,9 @@ struct ActivityDetailDataModel: Equatable {
                     name: $0.name,
                     description: "Min.\($0.minParticipants) - Max.\($0.maxParticipants)",
                     price: "Rp\($0.pricePerPerson)",
-                    id: $0.id
+                    id: $0.id,
+                    minParticipants: $0.minParticipants,
+                    maxParticipants: $0.maxParticipants
                 )
             }
         )

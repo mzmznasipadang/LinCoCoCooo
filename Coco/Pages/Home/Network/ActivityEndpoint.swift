@@ -10,6 +10,7 @@ import Foundation
 enum ActivityEndpoint: EndpointProtocol {
     case all
     case topDestination
+    case packageDetail(id: Int)
 
     var path: String {
         switch self {
@@ -17,6 +18,8 @@ enum ActivityEndpoint: EndpointProtocol {
             return "rpc/search_detailed_activities"
         case .topDestination:
             return "rpc/get_top_destinations"
+        case .packageDetail(let id):
+            return "activity_packages?select=*&id=eq.\(id)"
         }
     }
 }
