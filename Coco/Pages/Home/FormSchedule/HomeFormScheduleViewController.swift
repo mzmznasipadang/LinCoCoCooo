@@ -63,6 +63,12 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
         let popup: CocoPopupViewController = CocoPopupViewController(child: calendarVC)
         present(popup, animated: true)
     }
+    
+    func showValidationError(message: String) {
+        let alert = UIAlertController(title: "Tidak Valid", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
 }
 
 extension HomeFormScheduleViewController: CocoCalendarViewControllerDelegate {

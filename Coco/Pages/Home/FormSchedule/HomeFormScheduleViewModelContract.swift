@@ -24,6 +24,7 @@ protocol HomeFormScheduleViewModelAction: AnyObject {
     )
     func configureView(data: HomeFormScheduleViewData)
     func showCalendarOption()
+    func showValidationError(message: String)
 }
 
 protocol HomeFormScheduleViewModelProtocol: AnyObject {
