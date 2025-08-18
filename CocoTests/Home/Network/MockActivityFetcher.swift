@@ -42,4 +42,23 @@ final class MockActivityFetcher: ActivityFetcherProtocol {
             completion(result.0)
         }
     }
+    
+    var invokedFetchPackageDetail = false
+    var invokedFetchPackageDetailCount = 0
+    var invokedFetchPackageDetailParameters: (packageId: Int, Void)?
+    var invokedFetchPackageDetailParametersList = [(packageId: Int, Void)]()
+    var stubbedFetchPackageDetailCompletionResult: Result<ActivityPackage, NetworkServiceError>?
+
+    func fetchPackageDetail(
+        packageId: Int,
+        completion: @escaping (Result<ActivityPackage, NetworkServiceError>) -> Void
+    ) {
+        invokedFetchPackageDetail = true
+        invokedFetchPackageDetailCount += 1
+        invokedFetchPackageDetailParameters = (packageId, ())
+        invokedFetchPackageDetailParametersList.append((packageId, ()))
+        if let result = stubbedFetchPackageDetailCompletionResult {
+            completion(result)
+        }
+    }
 }
