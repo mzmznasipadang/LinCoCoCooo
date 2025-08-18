@@ -14,7 +14,7 @@ final class MockActivityFetcher: ActivityFetcherProtocol {
     var invokedFetchActivityCount = 0
     var invokedFetchActivityParameters: (request: ActivitySearchRequest, Void)?
     var invokedFetchActivityParametersList = [(request: ActivitySearchRequest, Void)]()
-    var stubbedFetchActivityCompletionResult: (Result<ActivityModelArray, NetworkServiceError>, Void)?
+    var stubbedFetchActivityCompletionResult: Result<ActivityModelArray, NetworkServiceError>?
 
     func fetchActivity(
         request: ActivitySearchRequest,
@@ -25,13 +25,13 @@ final class MockActivityFetcher: ActivityFetcherProtocol {
         invokedFetchActivityParameters = (request, ())
         invokedFetchActivityParametersList.append((request, ()))
         if let result = stubbedFetchActivityCompletionResult {
-            completion(result.0)
+            completion(result)
         }
     }
 
     var invokedFetchTopDestination = false
     var invokedFetchTopDestinationCount = 0
-    var stubbedFetchTopDestinationCompletionResult: (Result<ActivityTopDestinationModelArray, NetworkServiceError>, Void)?
+    var stubbedFetchTopDestinationCompletionResult: Result<ActivityTopDestinationModelArray, NetworkServiceError>?
 
     func fetchTopDestination(
         completion: @escaping (Result<ActivityTopDestinationModelArray, NetworkServiceError>) -> Void
@@ -39,7 +39,7 @@ final class MockActivityFetcher: ActivityFetcherProtocol {
         invokedFetchTopDestination = true
         invokedFetchTopDestinationCount += 1
         if let result = stubbedFetchTopDestinationCompletionResult {
-            completion(result.0)
+            completion(result)
         }
     }
 }
