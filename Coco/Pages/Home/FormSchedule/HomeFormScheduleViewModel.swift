@@ -25,7 +25,7 @@ final class HomeFormScheduleViewModel {
     private lazy var calendarInputViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: nil,
         placeholderText: "Input Date Visit...",
-        currentTypedText: "",
+        currentTypedText: "", // For making sure that the minimum pax is 1 person
         trailingIcon: (
             image: CocoIcon.icFilterIcon.image,
             didTap: openCalendar
@@ -36,10 +36,11 @@ final class HomeFormScheduleViewModel {
     private lazy var paxInputViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: nil,
         placeholderText: "Input total Pax...",
-        currentTypedText: "",
+        currentTypedText: "1", // For making sure that the minimum pax is 1 person
         trailingIcon: nil,
         isTypeAble: true,
-        delegate: self
+        delegate: self,
+        keyboardType: .numberPad
     )
     private var chosenDateInput: Date? {
         didSet {
@@ -74,6 +75,13 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
     }
     
     func onCheckout() {
+        // Filtering numeric only in Pax Field
+        let currentPaxText = paxInputViewModel.currentTypedText
+            let sanitizedPaxText = currentPaxText.filter { "0123456789".contains($0) }
+        let finalPaxText = sanitizedPaxText.isEmpty ? "1" : sanitizedPaxText
+            paxInputViewModel.currentTypedText = finalPaxText
+        let participants = Int(finalPaxText) ?? 1
+        
         Task {
             do {
                 let request: CreateBookingSpec = CreateBookingSpec(
@@ -87,7 +95,7 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
                 delegate?.notifyFormScheduleDidNavigateToCheckout(with: response)
             }
             catch {
-                
+                print("Booking creation failed: \(error)")
             }
         }
     }

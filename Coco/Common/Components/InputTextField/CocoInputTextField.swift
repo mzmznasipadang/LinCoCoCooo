@@ -17,6 +17,7 @@ struct CocoInputTextField: View {
     private let leadingIcon: UIImage?
     private let trailingIcon: ImageHandler?
     private let placeholder: String?
+    var keyboardType: UIKeyboardType
     
     @FocusState private var isFocused: Bool
     private let onFocusedAction: ((Bool) -> Void)?
@@ -27,7 +28,8 @@ struct CocoInputTextField: View {
         trailingIcon: ImageHandler? = nil,
         placeholder: String?,
         shouldInterceptFocus: Bool = false,
-        onFocusedAction: ((Bool) -> Void)? = nil
+        onFocusedAction: ((Bool) -> Void)? = nil,
+        keyboardType: UIKeyboardType = .default
     ) {
         self.leadingIcon = leadingIcon
         _currentTypedText = currentTypedText
@@ -35,6 +37,7 @@ struct CocoInputTextField: View {
         self.placeholder = placeholder
         self.shouldInterceptFocus = shouldInterceptFocus
         self.onFocusedAction = onFocusedAction
+        self.keyboardType = keyboardType 
     }
     
     var body: some View {

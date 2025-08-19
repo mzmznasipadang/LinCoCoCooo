@@ -21,6 +21,7 @@ final class HomeSearchBarViewModel: ObservableObject {
     let trailingIcon: ImageHandler?
     let isTypeAble: Bool
     let placeholderText: String
+    let keyboardType: UIKeyboardType
     
     init(
         leadingIcon: UIImage?,
@@ -28,7 +29,8 @@ final class HomeSearchBarViewModel: ObservableObject {
         currentTypedText: String,
         trailingIcon: ImageHandler?,
         isTypeAble: Bool,
-        delegate: HomeSearchBarViewModelDelegate?
+        delegate: HomeSearchBarViewModelDelegate?,
+        keyboardType: UIKeyboardType = .default
     ) {
         self.leadingIcon = leadingIcon
         self.placeholderText = placeholderText
@@ -36,6 +38,7 @@ final class HomeSearchBarViewModel: ObservableObject {
         self.trailingIcon = trailingIcon
         self.isTypeAble = isTypeAble
         self.delegate = delegate
+        self.keyboardType = keyboardType
     }
     
     func onTextFieldFocusDidChange(to newFocus: Bool) {
