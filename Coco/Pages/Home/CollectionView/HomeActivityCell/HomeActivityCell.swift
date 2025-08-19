@@ -22,21 +22,32 @@ final class HomeActivityCell: UICollectionViewCell {
         imageView.loadImage(from: dataModel.imageUrl)
         areaLabel.text = dataModel.area
         nameLabel.text = dataModel.name
+        let priceText = PriceFormatting.formattedIndonesianDecimal(from: dataModel.priceText)
         
         let attributedString = NSMutableAttributedString(
-            string: dataModel.priceText,
+            string: "Rp ",
             attributes: [
-                .font : UIFont.jakartaSans(forTextStyle: .body, weight: .bold),
-                .foregroundColor : Token.additionalColorsBlack
+                .font: UIFont.jakartaSans(forTextStyle: .body, weight: .bold),
+                .foregroundColor: Token.additionalColorsBlack
             ]
+        )
+        
+        attributedString.append(
+            NSAttributedString(
+                string: priceText,
+                attributes: [
+                    .font: UIFont.jakartaSans(forTextStyle: .body, weight: .bold),
+                    .foregroundColor: Token.additionalColorsBlack
+                ]
+            )
         )
         
         attributedString.append(
             NSAttributedString(
                 string: "/Person",
                 attributes: [
-                    .font : UIFont.jakartaSans(forTextStyle: .callout, weight: .medium),
-                    .foregroundColor : Token.additionalColorsBlack
+                    .font: UIFont.jakartaSans(forTextStyle: .callout, weight: .regular),
+                    .foregroundColor: Token.additionalColorsBlack
                 ]
             )
         )
@@ -49,10 +60,11 @@ final class HomeActivityCell: UICollectionViewCell {
         imageView.image = nil
     }
     
+    private lazy var cardView: UIView = createCardView()
     private lazy var imageView: UIImageView = createImageView()
     private lazy var areaView: UIView = createAreaView()
     private lazy var areaLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .callout, weight: .medium),
+        font: .jakartaSans(forTextStyle: .callout, weight: .regular),
         textColor: Token.additionalColorsBlack,
         numberOfLines: 2
     )
@@ -70,57 +82,87 @@ final class HomeActivityCell: UICollectionViewCell {
 
 private extension HomeActivityCell {
     func setupView() {
+        // Card
+        contentView.addSubview(cardView)
+        cardView.layout {
+            $0.top(to: contentView.topAnchor)
+                .leading(to: contentView.leadingAnchor)
+                .trailing(to: contentView.trailingAnchor)
+                .bottom(to: contentView.bottomAnchor)
+        }
+        
+        // Image
+        cardView.addSubview(imageView)
+        imageView.layout {
+            $0.top(to: cardView.topAnchor)
+                .leading(to: cardView.leadingAnchor)
+                .trailing(to: cardView.trailingAnchor)
+        }
+        
         let stackView: UIStackView = UIStackView(
             arrangedSubviews: [
-                imageView,
-                areaView,
                 nameLabel,
-                priceLabel,
+                areaView,
+                priceLabel
             ]
         )
-        stackView.spacing = 4.0
+        stackView.spacing = 8.0
         stackView.axis = .vertical
         stackView.alignment = .fill
         stackView.distribution = .fill
         
-        contentView.addSubviewAndLayout(stackView)
+        cardView.addSubview(stackView)
+        stackView.layout {
+            $0.top(to: imageView.bottomAnchor, constant: 12)
+                .leading(to: cardView.leadingAnchor, constant: 12)
+                .trailing(to: cardView.trailingAnchor, constant: -12)
+                .bottom(to: cardView.bottomAnchor, constant: -12)
+        }
+    }
+    
+    func createCardView() -> UIView {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 12.0
+        view.layer.borderWidth = 1.0
+        view.layer.borderColor = Token.additionalColorsLine.cgColor
+        view.clipsToBounds = true
+        return view
     }
     
     func createImageView() -> UIImageView {
         let imageView: UIImageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
-        imageView.layout {
-            $0.height(238.0)
-        }
-        imageView.layer.cornerRadius = 12.0
+        imageView.layout { $0.height(170.0) }
         imageView.clipsToBounds = true
         return imageView
     }
     
     func createAreaView() -> UIView {
-        let imageView: UIImageView = UIImageView(image: CocoIcon.icActivityAreaIcon.image)
-        imageView.contentMode = .scaleAspectFill
-        imageView.layout {
+        let iconImageView: UIImageView = UIImageView(image: CocoIcon.icActivityAreaIcon.image)
+        iconImageView.contentMode = .scaleAspectFill
+        iconImageView.layout {
             $0.size(20)
         }
-        let contentView: UIView = UIView()
-        contentView.addSubviews([
-            imageView,
+        
+        let containerView: UIView = UIView()
+        containerView.addSubviews([
+            iconImageView,
             areaLabel
         ])
         
-        imageView.layout {
-            $0.leading(to: contentView.leadingAnchor)
-                .top(to: contentView.topAnchor)
-                .bottom(to: contentView.bottomAnchor)
+        iconImageView.layout {
+            $0.leading(to: containerView.leadingAnchor)
+                .top(to: containerView.topAnchor)
+                .bottom(to: containerView.bottomAnchor)
         }
         
         areaLabel.layout {
-            $0.leading(to: imageView.trailingAnchor, constant: 4.0)
-                .centerY(to: contentView.centerYAnchor)
-                .trailing(to: contentView.trailingAnchor, relation: .lessThanOrEqual)
+            $0.leading(to: iconImageView.trailingAnchor, constant: 4.0)
+                .centerY(to: containerView.centerYAnchor)
+                .trailing(to: containerView.trailingAnchor, relation: .lessThanOrEqual)
         }
         
-        return contentView
+        return containerView
     }
 }
