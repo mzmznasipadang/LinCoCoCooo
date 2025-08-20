@@ -39,8 +39,7 @@ extension ActivityDetailViewController: ActivityDetailViewModelAction {
         
         if data.imageUrlsString.isEmpty {
             thisView.toggleImageSliderView(isShown: false)
-        }
-        else {
+        } else {
             thisView.toggleImageSliderView(isShown: true)
             let sliderVCs: ImageSliderHostingController = ImageSliderHostingController(images: data.imageUrlsString)
             addChild(sliderVCs)
@@ -61,5 +60,17 @@ extension ActivityDetailViewController: ActivityDetailViewDelegate {
     
     func notifyPackagesDetailDidTap(with packageId: Int) {
         viewModel.onPackagesDetailDidTap(with: packageId)
+    }
+    
+    func notifyHighlightsSeeMoreDidTap() {
+        let highlightsVC = HighlightsViewController()
+        
+        if let sheet = highlightsVC.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = false
+            sheet.preferredCornerRadius = 24
+        }
+        
+        present(highlightsVC, animated: true, completion: nil)
     }
 }
