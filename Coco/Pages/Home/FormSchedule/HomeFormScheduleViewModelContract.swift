@@ -5,6 +5,7 @@
 //  Created by Jackie Leonardy on 12/07/25.
 //
 
+
 import Foundation
 
 protocol HomeFormScheduleViewModelDelegate: AnyObject {
@@ -18,6 +19,7 @@ protocol HomeFormScheduleViewModelAction: AnyObject {
     )
     func configureView(data: HomeFormScheduleViewData)
     func showCalendarOption()
+    func updateTableSections(_ sections: [BookingDetailSection]) // ADD THIS LINE
 }
 
 protocol HomeFormScheduleViewModelProtocol: AnyObject {
