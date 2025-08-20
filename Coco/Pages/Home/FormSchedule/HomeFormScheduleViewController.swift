@@ -27,7 +27,7 @@ final class HomeFormScheduleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         viewModel.onViewDidLoad()
-        title = "Form Schedule"
+        title = "Booking Detail"
     }
     
     private let viewModel: HomeFormScheduleViewModelProtocol
