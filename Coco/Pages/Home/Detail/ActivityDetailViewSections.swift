@@ -11,57 +11,73 @@ import UIKit
 // MARK: - Section Creation Methods
 extension ActivityDetailView {
     
-    func createHighlightsSection(description: UILabel) -> UIView {
-        let contentView = UIView()
-        
+    // Helper: ambil beberapa kata pertama tanpa motong kata
+    private func excerpt(from text: String, maxWords: Int = 14) -> String {
+        let words = text.split { $0.isNewline || $0.isWhitespace }
+        guard words.count > maxWords else { return text }
+        return words.prefix(maxWords).joined(separator: " ") + "…"
+    }
+
+    // Helper: bikin font italic dari font apapun
+    private func italicFont(from base: UIFont) -> UIFont {
+        let desc = base.fontDescriptor.withSymbolicTraits(.traitItalic) ?? base.fontDescriptor
+        return UIFont(descriptor: desc, size: base.pointSize)
+    }
+    
+    func createHighlightsSection(fullText: String) -> UIView {
+        let card = UIView()
+        card.backgroundColor = UIColor.from("#E8F6FD")
+        card.layer.cornerRadius = 16
+
         let titleLabel = UILabel(
             font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
             textColor: Token.additionalColorsBlack,
             numberOfLines: 1
         )
         titleLabel.text = "Highlights"
-        
-        let seeMoreButton = UIButton()
-        var config = UIButton.Configuration.bordered()
-        config.title = "See More"
-        config.baseBackgroundColor = UIColor.clear
-        config.baseForegroundColor = Token.mainColorPrimary
-        config.cornerStyle = .medium
-        config.buttonSize = .small
-        
-        let chevronConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
-        let chevronImage = UIImage(systemName: "chevron.down", withConfiguration: chevronConfig)
-        config.image = chevronImage
-        config.imagePlacement = .leading
-        config.imagePadding = 4
-        
-        seeMoreButton.configuration = config
-        seeMoreButton.layer.borderColor = Token.mainColorPrimary.cgColor
-        seeMoreButton.layer.borderWidth = 1
-        seeMoreButton.layer.cornerRadius = 16
+
+        // ↓↓↓ PREVIEW LEBIH KECIL + ITALIC
+        let previewText = "“" + excerpt(from: fullText, maxWords: 14) + "”"
+        let quoteLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .subheadline, weight: .regular), // was: title3
+            textColor: Token.additionalColorsBlack,
+            numberOfLines: 0
+        )
+        // tetap italic
+        quoteLabel.font = {
+            let base = UIFont.jakartaSans(forTextStyle: .subheadline, weight: .regular)
+            let desc = base.fontDescriptor.withSymbolicTraits(.traitItalic) ?? base.fontDescriptor
+            return UIFont(descriptor: desc, size: base.pointSize)
+        }()
+        quoteLabel.text = previewText
+
+        let seeMoreButton = UIButton(type: .system)
+        seeMoreButton.setTitle("See more", for: .normal)
+        seeMoreButton.setTitleColor(Token.mainColorPrimary, for: .normal)
+        seeMoreButton.titleLabel?.font = .jakartaSans(forTextStyle: .footnote, weight: .semibold) // sedikit lebih kecil juga oke
+        seeMoreButton.contentHorizontalAlignment = .leading
         seeMoreButton.addTarget(self, action: #selector(seeMoreButtonTapped), for: .touchUpInside)
-        
-        contentView.addSubviews([titleLabel, description, seeMoreButton])
-        
+
+        self.highlightsFullText = fullText
+
+        card.addSubviews([titleLabel, quoteLabel, seeMoreButton])
         titleLabel.layout {
-            $0.top(to: contentView.topAnchor)
-                .leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
+            $0.top(to: card.topAnchor, constant: 16)
+                .leading(to: card.leadingAnchor, constant: 16)
+                .trailing(to: card.trailingAnchor, constant: -16)
         }
-        
-        description.layout {
+        quoteLabel.layout {
             $0.top(to: titleLabel.bottomAnchor, constant: 8)
-                .leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
+                .leading(to: card.leadingAnchor, constant: 16)
+                .trailing(to: card.trailingAnchor, constant: -16)
         }
-        
         seeMoreButton.layout {
-            $0.top(to: description.bottomAnchor, constant: 12)
-                .leading(to: contentView.leadingAnchor)
-                .bottom(to: contentView.bottomAnchor)
+            $0.top(to: quoteLabel.bottomAnchor, constant: 12)
+                .leading(to: card.leadingAnchor, constant: 16)
+                .bottom(to: card.bottomAnchor, constant: -16)
         }
-        
-        return contentView
+
+        return card
     }
     
     func createTitleView() -> UIView {
@@ -148,7 +164,14 @@ extension ActivityDetailView {
         return contentView
     }
     
+    // Simpan full text supaya bisa dilempar ke delegate saat tombol ditekan
+    private struct AssociatedKeys { static var highlightsText = "hlFull" }
+    private var highlightsFullText: String? {
+        get { objc_getAssociatedObject(self, &AssociatedKeys.highlightsText) as? String }
+        set { objc_setAssociatedObject(self, &AssociatedKeys.highlightsText, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC) }
+    }
+    
     @objc func seeMoreButtonTapped() {
-        delegate?.notifyHighlightsSeeMoreDidTap()
+        delegate?.notifyHighlightsSeeMoreDidTap(fullText: highlightsFullText ?? "")
     }
 }

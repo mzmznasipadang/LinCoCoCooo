@@ -1,0 +1,118 @@
+//
+//  ActivityDetailViewModelTests.swift
+//  CocoTests
+//
+
+import Foundation
+import Testing
+@testable import Coco
+
+struct ActivityDetailViewModelTests {
+
+    // MARK: - Helpers
+    /// Ambil Activity dari activities.json (sudah kamu pakai di Home tests),
+    /// lalu mapping ke ActivityDetailDataModel via init(_ response: Activity)
+    private func makeDetailData() throws -> ActivityDetailDataModel {
+        let list: ActivityModelArray = try JSONReader.getObjectFromJSON(with: "activities")
+        #expect(!list.values.isEmpty)
+        return ActivityDetailDataModel(list.values[0])
+    }
+
+    private struct Ctx {
+        let vm: ActivityDetailViewModel
+        let action: MockAction
+        let nav: MockNav
+        let data: ActivityDetailDataModel
+
+        static func setup() throws -> Ctx {
+            let data = try ActivityDetailViewModelTests().makeDetailData()
+            let vm = ActivityDetailViewModel(data: data)
+            let action = MockAction()
+            let nav = MockNav()
+            vm.actionDelegate = action
+            vm.navigationDelegate = nav
+            return .init(vm: vm, action: action, nav: nav, data: data)
+        }
+    }
+
+    // MARK: - onViewDidLoad
+
+    @Test("onViewDidLoad → mengirim configureView(data:) sekali dengan data yang sama")
+    func onViewDidLoad_shouldConfigureView() throws {
+        let c = try Ctx.setup()
+
+        c.vm.onViewDidLoad()
+
+        #expect(c.action.configureViewCount == 1)
+        #expect(c.action.lastConfiguredData == c.data)
+    }
+
+    // MARK: - Toggle paket
+
+    @Test("onPackageDetailStateDidChange(false) → kirim hiddenPackages")
+    func togglePackages_false_shouldSendHidden() throws {
+        let c = try Ctx.setup()
+        c.vm.onViewDidLoad() // bukan wajib, tapi realistis
+
+        c.vm.onPackageDetailStateDidChange(shouldShowAll: false)
+
+        #expect(c.action.updatePackageDataCount == 1)
+        #expect(c.action.lastPackages == c.data.hiddenPackages)
+    }
+
+    @Test("onPackageDetailStateDidChange(true) → kirim seluruh availablePackages")
+    func togglePackages_true_shouldSendAll() throws {
+        let c = try Ctx.setup()
+        c.vm.onViewDidLoad()
+
+        c.vm.onPackageDetailStateDidChange(shouldShowAll: true)
+
+        #expect(c.action.updatePackageDataCount == 1)
+        #expect(c.action.lastPackages == c.data.availablePackages.content)
+    }
+
+    // MARK: - Navigasi paket detail
+
+    @Test("onPackagesDetailDidTap → meneruskan id & paket ke navigation delegate")
+    func tapPackage_shouldForwardToNavigation() throws {
+        let c = try Ctx.setup()
+
+        c.vm.onPackagesDetailDidTap(with: 99)
+
+        #expect(c.nav.didSelectCount == 1)
+        #expect(c.nav.lastSelectedId == 99)
+        #expect(c.nav.lastPackage == c.data)
+    }
+}
+
+// MARK: - Mocks
+
+private final class MockAction: ActivityDetailViewModelAction {
+    private(set) var configureViewCount = 0
+    private(set) var lastConfiguredData: ActivityDetailDataModel?
+
+    func configureView(data: ActivityDetailDataModel) {
+        configureViewCount += 1
+        lastConfiguredData = data
+    }
+
+    private(set) var updatePackageDataCount = 0
+    private(set) var lastPackages: [ActivityDetailDataModel.Package] = []
+
+    func updatePackageData(data: [ActivityDetailDataModel.Package]) {
+        updatePackageDataCount += 1
+        lastPackages = data
+    }
+}
+
+private final class MockNav: ActivityDetailNavigationDelegate {
+    private(set) var didSelectCount = 0
+    private(set) var lastPackage: ActivityDetailDataModel?
+    private(set) var lastSelectedId: Int?
+
+    func notifyActivityDetailPackageDidSelect(package: ActivityDetailDataModel, selectedPackageId: Int) {
+        didSelectCount += 1
+        lastPackage = package
+        lastSelectedId = selectedPackageId
+    }
+}

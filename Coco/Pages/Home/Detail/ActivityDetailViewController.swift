@@ -78,8 +78,8 @@ extension ActivityDetailViewController: ActivityDetailViewDelegate {
         viewModel.onPackagesDetailDidTap(with: packageId)
     }
     
-    func notifyHighlightsSeeMoreDidTap() {
-        let highlightsVC = HighlightsViewController()
+    func notifyHighlightsSeeMoreDidTap(fullText: String) {
+        let highlightsVC = HighlightsViewController(content: fullText)
         
         if let sheet = highlightsVC.sheetPresentationController {
             sheet.detents = [.medium(), .large()]

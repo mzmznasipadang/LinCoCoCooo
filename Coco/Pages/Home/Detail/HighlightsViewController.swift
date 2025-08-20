@@ -7,7 +7,15 @@
 
 import UIKit
 
-class HighlightsViewController: UIViewController {
+final class HighlightsViewController: UIViewController {
+    
+    private let fullContent: String
+
+    init(content: String) {
+        self.fullContent = content
+        super.init(nibName: nil, bundle: nil)
+    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     // MARK: - UI Components
     private let titleLabel: UILabel = {
@@ -70,36 +78,33 @@ class HighlightsViewController: UIViewController {
 
     // MARK: - Content Configuration
     private func configureContent() {
-        let fullMessage = """
-        Activities:
-        • Snorkeling in crystal clear waters
-        • Underwater photography sessions
-        • Marine life observation
-        • Coral reef exploration
-        
-        Facilities:
-        • Professional snorkeling equipment
-        • Life jackets and safety gear
-        • Underwater cameras available
-        • Experienced dive guides
-        • First aid equipment on board
-        
-        Terms and Conditions:
-        • Minimum age requirement: 8 years old
-        • Swimming ability required
-        • Weather dependent activity
-        • Cancellation policy: 24 hours notice
-        • Health restrictions may apply
-        """
-        
-        // Atur styling untuk bullets
+        // Parse isi TnC jadi paragraf terurut
+        let numberedText = parseNumberedParagraphs(from: fullContent)
+
         let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.headIndent = 15
-        
+        paragraphStyle.lineSpacing = 2
+        paragraphStyle.paragraphSpacing = 8
+
         let attributes: [NSAttributedString.Key: Any] = [
-            .paragraphStyle: paragraphStyle
+            .paragraphStyle: paragraphStyle,
+            .font: UIFont.jakartaSans(forTextStyle: .body, weight: .regular),
+            .foregroundColor: Token.additionalColorsBlack
         ]
-        
-        contentTextView.attributedText = NSAttributedString(string: fullMessage, attributes: attributes)
+        contentTextView.attributedText = NSAttributedString(
+            string: numberedText,
+            attributes: attributes
+        )
+    }
+    
+    /// Split berdasarkan double new line, lalu kasih penomoran
+    private func parseNumberedParagraphs(from text: String) -> String {
+        let paragraphs = text
+            .components(separatedBy: "\n\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        return paragraphs.enumerated().map { index, para in
+            return "\(index + 1). \(para)"
+        }.joined(separator: "\n\n")
     }
 }

@@ -11,7 +11,7 @@ import UIKit
 protocol ActivityDetailViewDelegate: AnyObject {
     func notifyPackagesButtonDidTap(shouldShowAll: Bool)
     func notifyPackagesDetailDidTap(with packageId: Int)
-    func notifyHighlightsSeeMoreDidTap()
+    func notifyHighlightsSeeMoreDidTap(fullText: String)
 }
 
 final class ActivityDetailView: UIView {
@@ -59,11 +59,8 @@ final class ActivityDetailView: UIView {
             textColor: Token.grayscale70,
             numberOfLines: 2
         )
-        highlightsDescription.text =
-            "Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"
-        let highlightsView = createHighlightsSection(
-            description: highlightsDescription
-        )
+        let fullHighlights = data.tnc
+        let highlightsView = createHighlightsSection(fullText: fullHighlights)
 
         sectionTitles.append("Highlights")
         let hlAnchor = makeAnchor()
