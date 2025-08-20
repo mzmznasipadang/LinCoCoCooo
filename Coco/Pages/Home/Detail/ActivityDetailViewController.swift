@@ -9,6 +9,8 @@ import Foundation
 import UIKit
 
 final class ActivityDetailViewController: UIViewController {
+    private var tripTitle: String?
+    
     init(viewModel: ActivityDetailViewModelProtocol) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -36,17 +38,31 @@ final class ActivityDetailViewController: UIViewController {
 extension ActivityDetailViewController: ActivityDetailViewModelAction {
     func configureView(data: ActivityDetailDataModel) {
         thisView.configureView(data)
+        tripTitle = data.title
         
+        self.title = nil
+
         if data.imageUrlsString.isEmpty {
             thisView.toggleImageSliderView(isShown: false)
         } else {
             thisView.toggleImageSliderView(isShown: true)
-            let sliderVCs: ImageSliderHostingController = ImageSliderHostingController(images: data.imageUrlsString)
+            let sliderVCs = ImageSliderHostingController(images: data.imageUrlsString)
             addChild(sliderVCs)
             thisView.addImageSliderView(with: sliderVCs.view)
             sliderVCs.didMove(toParent: self)
         }
+
+        thisView.onStickyTabVisibilityChanged = { [weak self] visible in
+            guard let self = self else { return }
+            self.navigationItem.title = visible ? self.tripTitle : nil
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.navigationItem.title = nil
+        }
     }
+
     
     func updatePackageData(data: [ActivityDetailDataModel.Package]) {
         thisView.updatePackageData(data)
