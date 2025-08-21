@@ -66,7 +66,7 @@ final class HomeFormScheduleView: UIView {
             $0.leading(to: leadingAnchor)
             $0.trailing(to: trailingAnchor)
             $0.bottom(to: bottomAnchor)
-            $0.height(100) // Will be updated when adding input view
+            $0.height(0)
         }
     }
     
@@ -76,6 +76,16 @@ final class HomeFormScheduleView: UIView {
         view.layout {
             $0.edges(to: bottomContainerView)
         }
+    }
+
+    // Collapse the internal bottom container height to allow external pinned bars
+    func hideBottomContainer() {
+        // Find and update the height constraint if present
+        if let heightConstraint = bottomContainerView.constraints.first(where: { $0.firstAttribute == .height }) {
+            heightConstraint.constant = 0
+        }
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 }
 

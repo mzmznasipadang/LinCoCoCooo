@@ -5,8 +5,8 @@
 //  Created by Jackie Leonardy on 12/07/25.
 //
 
-
 import Foundation
+import SwiftUI
 import UIKit
 
 final class HomeFormScheduleViewController: UIViewController {
@@ -33,7 +33,6 @@ final class HomeFormScheduleViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // Keep the footer sized with the table width
         thisView.tableView.resizeAutoSizingFooterIfNeeded()
     }
     
@@ -41,7 +40,7 @@ final class HomeFormScheduleViewController: UIViewController {
     private let viewModel: HomeFormScheduleViewModelProtocol
     private let thisView: HomeFormScheduleView = HomeFormScheduleView()
     private var sections: [BookingDetailSection] = []
-    private var paxVM: HomeSearchBarViewModel?
+    private var footerView: FormInputFooterView?
     
     // MARK: - Setup
     private func setupTableView() {
@@ -53,6 +52,8 @@ final class HomeFormScheduleViewController: UIViewController {
         thisView.tableView.register(ItineraryCell.self, forCellReuseIdentifier: "ItineraryCell")
         thisView.tableView.register(FacilityCell.self, forCellReuseIdentifier: "FacilityCell")
         thisView.tableView.register(TermsCell.self, forCellReuseIdentifier: "TermsCell")
+        thisView.tableView.register(FormInputCell.self, forCellReuseIdentifier: "FormInputCell")
+        thisView.tableView.register(TravelerDetailsCell.self, forCellReuseIdentifier: "TravelerDetailsCell")
         thisView.tableView.register(SectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "SectionHeaderView")
     }
     
@@ -65,6 +66,33 @@ final class HomeFormScheduleViewController: UIViewController {
         // Animate the collapse/expand
         thisView.tableView.reloadSections(IndexSet(integer: index), with: .automatic)
     }
+    
+    private func showTimeSelector() {
+        showCalendarOption()
+    }
+    
+    private func showPaxSelector() {
+        let alert = UIAlertController(title: "Select Participants", message: nil, preferredStyle: .actionSheet)
+        
+        for i in 1...10 {
+            alert.addAction(UIAlertAction(title: "\(i)", style: .default) { [weak self] _ in
+                self?.footerView?.paxLabel?.text = "\(i)"
+            })
+        }
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = view
+            popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+        }
+        
+        present(alert, animated: true)
+    }
+    
+    @objc private func onCheckoutTapped() {
+        viewModel.onCheckout()
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -76,8 +104,8 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionData = sections[section]
         
-        // For package info section, always show 1 row
-        if sectionData.type == .packageInfo {
+        // For package info, form inputs, and traveler details sections, always show 1 row
+        if sectionData.type == .packageInfo || sectionData.type == .formInputs || sectionData.type == .travelerDetails {
             return 1
         }
         
@@ -140,6 +168,36 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
                 cell.configure(with: terms)
             }
             return cell
+            
+        case .formInputs:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: "FormInputCell",
+                for: indexPath
+            ) as? FormInputCell else {
+                return UITableViewCell()
+            }
+            
+            // Configure with current form data
+            cell.configure(selectedTime: "7.30", participantCount: "1")
+            cell.onSelectTime = { [weak self] in
+                self?.showTimeSelector()
+            }
+            cell.onSelectPax = { [weak self] in
+                self?.showPaxSelector()
+            }
+            return cell
+            
+        case .travelerDetails:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: "TravelerDetailsCell",
+                for: indexPath
+            ) as? TravelerDetailsCell else {
+                return UITableViewCell()
+            }
+            
+            // Configure with current traveler data
+            cell.configure(name: "", phone: "", email: "")
+            return cell
         }
     }
 }
@@ -149,11 +207,34 @@ extension HomeFormScheduleViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let sectionData = sections[section]
         
-        // No header for package info section
-        if sectionData.type == .packageInfo {
+        // No header for package info and form inputs sections
+        if sectionData.type == .packageInfo || sectionData.type == .formInputs {
             return nil
         }
         
+        // Custom header for traveler details (non-collapsible)
+        if sectionData.type == .travelerDetails {
+            let headerView = UIView()
+            headerView.backgroundColor = Token.grayscale10
+            
+            let titleLabel = UILabel()
+            titleLabel.text = "Traveler details"
+            titleLabel.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
+            titleLabel.textColor = Token.grayscale90
+            
+            headerView.addSubview(titleLabel)
+            titleLabel.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 27),
+                titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -27),
+                titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 24),
+                titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
+            ])
+            
+            return headerView
+        }
+        
+        // Collapsible headers for other sections
         guard let headerView = tableView.dequeueReusableHeaderFooterView(
             withIdentifier: "SectionHeaderView"
         ) as? SectionHeaderView else {
@@ -170,11 +251,19 @@ extension HomeFormScheduleViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         let sectionData = sections[section]
-        return sectionData.type == .packageInfo ? 0 : 56
+        
+        switch sectionData.type {
+        case .packageInfo, .formInputs:
+            return 0
+        case .travelerDetails:
+            return 60
+        default:
+            return 56
+        }
     }
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return CGFloat.leastNormalMagnitude // Remove footer spacing
+        return CGFloat.leastNormalMagnitude
     }
 }
 
@@ -184,48 +273,52 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
         calendarViewModel: HomeSearchBarViewModel,
         paxInputViewModel: HomeSearchBarViewModel
     ) {
-        // Keep references so we can pass data back to the view model on submit
-        self.paxVM = paxInputViewModel
-        // 1) Build UIKit footer stack (scrolls with cells)
-        let footer = FormInputFooterView()
-        footer.onSelectTime = { [weak self] in
-            self?.presentTimePicker(footer: footer)
-        }
-        // Keep pax in sync with view model's text
-        footer.paxField.textField.addTarget(self, action: #selector(paxEditingChanged(_:)), for: .editingChanged)
-        thisView.tableView.setAutoSizingFooter(footer)
-
-        // 2) Build pinned bottom Checkout button (does not scroll)
+        // Remove all the footer setup code and just set up the checkout button
+        let container = UIView()
+        container.backgroundColor = Token.additionalColorsWhite
+        container.layer.shadowColor = UIColor.black.cgColor
+        container.layer.shadowOpacity = 0.1
+        container.layer.shadowOffset = CGSize(width: 0, height: -2)
+        container.layer.shadowRadius = 8
+        view.addSubview(container)
+        container.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            container.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
         let checkoutButton = UIButton(type: .system)
         checkoutButton.setTitle("Checkout", for: .normal)
         checkoutButton.titleLabel?.font = .jakartaSans(forTextStyle: .body, weight: .semibold)
         checkoutButton.backgroundColor = Token.mainColorPrimary
-        checkoutButton.setTitleColor(Token.additionalColorsWhite, for: .normal)
+        checkoutButton.setTitleColor(.white, for: .normal)
         checkoutButton.layer.cornerRadius = 12
-        checkoutButton.addTarget(self, action: #selector(didTapCheckout), for: .touchUpInside)
-
-        let buttonContainer = UIView()
-        buttonContainer.backgroundColor = Token.additionalColorsWhite
-        buttonContainer.addSubview(checkoutButton)
+        checkoutButton.addTarget(self, action: #selector(onCheckoutTapped), for: .touchUpInside)
+        container.addSubview(checkoutButton)
         checkoutButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            checkoutButton.leadingAnchor.constraint(equalTo: buttonContainer.leadingAnchor, constant: 27),
-            checkoutButton.trailingAnchor.constraint(equalTo: buttonContainer.trailingAnchor, constant: -27),
-            checkoutButton.topAnchor.constraint(equalTo: buttonContainer.topAnchor, constant: 12),
-            checkoutButton.bottomAnchor.constraint(equalTo: buttonContainer.safeAreaLayoutGuide.bottomAnchor, constant: -12),
+            checkoutButton.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 27),
+            checkoutButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -27),
+            checkoutButton.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
+            checkoutButton.bottomAnchor.constraint(equalTo: container.safeAreaLayoutGuide.bottomAnchor, constant: -12),
             checkoutButton.heightAnchor.constraint(equalToConstant: 52)
         ])
-        thisView.addBottomInputView(from: buttonContainer)
+        
+        // Adjust content insets for the pinned button
+        let pinnedHeight = 12 + 52 + 12 + view.safeAreaInsets.bottom
+        thisView.tableView.contentInset.bottom = pinnedHeight
+        thisView.tableView.scrollIndicatorInsets.bottom = pinnedHeight
     }
     
     func configureView(data: HomeFormScheduleViewData) {
         // This method is no longer needed with the new table view approach
-        // The data is now displayed through table sections
     }
     
     func updateTableSections(_ sections: [BookingDetailSection]) {
         self.sections = sections
         thisView.tableView.reloadData()
+        thisView.tableView.resizeAutoSizingFooterIfNeeded()
     }
     
     func showCalendarOption() {
@@ -244,35 +337,29 @@ extension HomeFormScheduleViewController: CocoCalendarViewControllerDelegate {
     }
 }
 
-// MARK: - Private actions
-private extension HomeFormScheduleViewController {
-    @objc func didTapCheckout() {
-        // Push pax value into the view model before submit
-        if let footer = thisView.tableView.tableFooterView as? FormInputFooterView {
-            paxVM?.currentTypedText = footer.paxField.textField.text ?? "1"
-        }
-        viewModel.onCheckout()
+// MARK: - UITableView Extension
+extension UITableView {
+    func setAutoSizingFooterView(_ footer: UIView) {
+        footer.translatesAutoresizingMaskIntoConstraints = false
+        tableFooterView = footer
+        NSLayoutConstraint.activate([
+            footer.widthAnchor.constraint(equalTo: widthAnchor)
+        ])
     }
     
-    @objc func paxEditingChanged(_ sender: UITextField) {
-        // Keep only digits; view model will also sanitize on submit
-        let filtered = (sender.text ?? "").filter { "0123456789".contains($0) }
-        if filtered != sender.text { sender.text = filtered }
-        // Update the view model's observable text so business logic can read it
-        // We cannot access the internal view model from here, so we rely on action to read when submitting.
-        // If needed, we can expose a setter via action protocol in a follow-up.
-    }
-    
-    func presentTimePicker(footer: FormInputFooterView) {
-        let times = ["7.30", "8.00", "8.30", "9.00", "9.30", "10.00", "10.30", "11.00"]
-        let sheet = UIAlertController(title: "Select Time", message: nil, preferredStyle: .actionSheet)
-        times.forEach { time in
-            sheet.addAction(UIAlertAction(title: time, style: .default) { _ in
-                footer.timeButton.setTitle(time, for: .normal)
-            })
+    func resizeAutoSizingFooterIfNeeded() {
+        guard let footer = tableFooterView else { return }
+        
+        let size = footer.systemLayoutSizeFitting(
+            CGSize(width: frame.width, height: UIView.layoutFittingCompressedSize.height),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        )
+        
+        if footer.frame.size.height != size.height {
+            footer.frame.size.height = size.height
+            tableFooterView = footer
         }
-        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(sheet, animated: true)
     }
 }
 

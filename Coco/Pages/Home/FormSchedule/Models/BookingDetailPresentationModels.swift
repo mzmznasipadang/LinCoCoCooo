@@ -14,6 +14,8 @@ enum BookingDetailSectionType {
     case itinerary
     case facilities
     case termsAndConditions
+    case formInputs
+    case travelerDetails
 }
 
 // MARK: - Section Model for TableView
@@ -22,7 +24,7 @@ struct BookingDetailSection {
     let title: String?
     let isExpandable: Bool
     var isExpanded: Bool
-    let items: [Any] // Can hold different types per section
+    let items: [Any]
 }
 
 // MARK: - Package Info Card Model (Top section)
@@ -31,7 +33,7 @@ struct PackageInfoDisplayData {
     let packageName: String
     let paxRange: String
     let pricePerPax: String
-    let originalPrice: String? // For strikethrough price if discounted
+    let originalPrice: String?
     let hasDiscount: Bool
 }
 
@@ -49,7 +51,7 @@ struct ItineraryDisplayItem {
 
 // MARK: - Facility Model
 struct FacilityDisplayItem : Equatable {
-    let iconName: String // SF Symbol name or asset name
+    let iconName: String
     let name: String
     let isIncluded: Bool
     let description: String?
