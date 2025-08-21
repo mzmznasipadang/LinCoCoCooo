@@ -24,13 +24,25 @@ final class HomeActivityCell: UICollectionViewCell {
         nameLabel.text = dataModel.name
         let priceText = PriceFormatting.formattedIndonesianDecimal(from: dataModel.priceText)
         
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6.0
+        
         let attributedString = NSMutableAttributedString(
+            string: "Starts from\n",
+            attributes: [
+                .font: UIFont.jakartaSans(forTextStyle: .callout, weight: .regular),
+                .foregroundColor: Token.grayscale70,
+                .paragraphStyle: paragraphStyle
+            ]
+        )
+        
+        attributedString.append(NSMutableAttributedString(
             string: "Rp ",
             attributes: [
                 .font: UIFont.jakartaSans(forTextStyle: .body, weight: .bold),
                 .foregroundColor: Token.additionalColorsBlack
             ]
-        )
+        ))
         
         attributedString.append(
             NSAttributedString(
@@ -44,10 +56,10 @@ final class HomeActivityCell: UICollectionViewCell {
         
         attributedString.append(
             NSAttributedString(
-                string: "/Person",
+                string: "/person",
                 attributes: [
                     .font: UIFont.jakartaSans(forTextStyle: .callout, weight: .regular),
-                    .foregroundColor: Token.additionalColorsBlack
+                    .foregroundColor: Token.grayscale70
                 ]
             )
         )
@@ -65,8 +77,8 @@ final class HomeActivityCell: UICollectionViewCell {
     private lazy var areaView: UIView = createAreaView()
     private lazy var areaLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .callout, weight: .regular),
-        textColor: Token.additionalColorsBlack,
-        numberOfLines: 2
+        textColor: Token.grayscale70,
+        numberOfLines: 1
     )
     private lazy var nameLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .title3, weight: .bold),
@@ -107,6 +119,7 @@ private extension HomeActivityCell {
             ]
         )
         stackView.spacing = 8.0
+        stackView.setCustomSpacing(28.0, after: areaView)
         stackView.axis = .vertical
         stackView.alignment = .fill
         stackView.distribution = .fill
@@ -124,9 +137,12 @@ private extension HomeActivityCell {
         let view = UIView()
         view.backgroundColor = .white
         view.layer.cornerRadius = 12.0
-        view.layer.borderWidth = 1.0
-        view.layer.borderColor = Token.additionalColorsLine.cgColor
-        view.clipsToBounds = true
+        view.layer.borderWidth = 0
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOffset = CGSize(width: 0, height: 2)
+        view.layer.shadowOpacity = 0.1
+        view.layer.shadowRadius = 4.0
+        view.clipsToBounds = false
         return view
     }
     
@@ -135,20 +151,45 @@ private extension HomeActivityCell {
         imageView.contentMode = .scaleAspectFill
         imageView.layout { $0.height(170.0) }
         imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 12.0
+        imageView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         return imageView
     }
     
     func createAreaView() -> UIView {
+        // -------- Icon
         let iconImageView: UIImageView = UIImageView(image: CocoIcon.icActivityAreaIcon.image)
         iconImageView.contentMode = .scaleAspectFill
         iconImageView.layout {
-            $0.size(20)
+            $0.size(15)
         }
         
+        let bulletDividerLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .callout, weight: .regular),
+            textColor: Token.additionalColorsLine
+        )
+        bulletDividerLabel.text = "•"
+        
+        let rateIcon: UIImageView = UIImageView(image: CocoIcon.icStarred.image)
+        rateIcon.contentMode = .scaleAspectFill
+        rateIcon.layout {
+            $0.size(15)
+        }
+        
+        let staticReviewLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .callout, weight: .regular),
+            textColor: Token.grayscale80
+        )
+        staticReviewLabel.text = "4.5"
+        
+        // -------- Container & Layout
         let containerView: UIView = UIView()
         containerView.addSubviews([
             iconImageView,
-            areaLabel
+            areaLabel,
+            bulletDividerLabel,
+            rateIcon,
+            staticReviewLabel
         ])
         
         iconImageView.layout {
@@ -159,6 +200,22 @@ private extension HomeActivityCell {
         
         areaLabel.layout {
             $0.leading(to: iconImageView.trailingAnchor, constant: 4.0)
+                .centerY(to: containerView.centerYAnchor)
+                .trailing(to: containerView.trailingAnchor, relation: .lessThanOrEqual)
+        }
+        
+        bulletDividerLabel.layout {
+            $0.leading(to: areaLabel.trailingAnchor, constant: 8.0)
+                .centerY(to: containerView.centerYAnchor)
+        }
+        
+        rateIcon.layout {
+            $0.leading(to: bulletDividerLabel.trailingAnchor, constant: 8.0)
+                .centerY(to: containerView.centerYAnchor)
+        }
+        
+        staticReviewLabel.layout {
+            $0.leading(to: rateIcon.trailingAnchor, constant: 4.0)
                 .centerY(to: containerView.centerYAnchor)
                 .trailing(to: containerView.trailingAnchor, relation: .lessThanOrEqual)
         }
