@@ -102,7 +102,7 @@ private extension HomeViewController {
     func presentTray(view: some View) {
         let trayVC: UIHostingController = UIHostingController(rootView: view)
         if let sheet: UISheetPresentationController = trayVC.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
+            sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
             sheet.prefersScrollingExpandsWhenScrolledToEdge = false
             sheet.prefersEdgeAttachedInCompactHeight = true
