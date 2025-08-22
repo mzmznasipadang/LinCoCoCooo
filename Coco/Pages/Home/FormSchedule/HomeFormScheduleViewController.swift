@@ -9,7 +9,18 @@ import Foundation
 import SwiftUI
 import UIKit
 
+// MARK: - HomeFormScheduleViewController
+
+/// View Controller for the booking form schedule screen
+/// Displays package information, trip details, itinerary, form inputs, and traveler details
+/// Uses a table view with different cell types for each section
+/// Implements participant validation and date selection functionality
 final class HomeFormScheduleViewController: UIViewController {
+    
+    // MARK: - Initialization
+    
+    /// Initializes the view controller with a ViewModel
+    /// - Parameter viewModel: The ViewModel that handles business logic
     init(viewModel: HomeFormScheduleViewModelProtocol) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -19,6 +30,8 @@ final class HomeFormScheduleViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    // MARK: - Lifecycle
     
     override func loadView() {
         view = thisView
@@ -37,12 +50,22 @@ final class HomeFormScheduleViewController: UIViewController {
     }
     
     // MARK: - Properties
+    
+    /// The ViewModel that handles business logic and data management
     private let viewModel: HomeFormScheduleViewModelProtocol
+    
+    /// The main view containing the table view
     private let thisView: HomeFormScheduleView = HomeFormScheduleView()
+    
+    /// Array of sections to display in the table view
     private var sections: [BookingDetailSection] = []
+    
+    /// Footer view for form inputs (legacy property, no longer used)
     private var footerView: FormInputFooterView?
     
     // MARK: - Setup
+    
+    /// Configures the table view with delegates, cell registration, and layout settings
     private func setupTableView() {
         thisView.tableView.delegate = self
         thisView.tableView.dataSource = self
@@ -59,7 +82,10 @@ final class HomeFormScheduleViewController: UIViewController {
         thisView.tableView.register(SectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "SectionHeaderView")
     }
     
-    // MARK: - Helpers
+    // MARK: - Helper Methods
+    
+    /// Toggles the expanded/collapsed state of a collapsible section
+    /// - Parameter index: The section index to toggle
     private func toggleSection(at index: Int) {
         guard sections[index].isExpandable else { return }
         
@@ -69,17 +95,26 @@ final class HomeFormScheduleViewController: UIViewController {
         thisView.tableView.reloadSections(IndexSet(integer: index), with: .automatic)
     }
     
+    /// Shows the time/date selector (delegates to calendar selection)
     private func showTimeSelector() {
         showCalendarOption()
     }
     
+    /// Shows the participant count selector with validation constraints
+    /// Displays an action sheet with valid participant counts based on package constraints
     private func showPaxSelector() {
-        let alert = UIAlertController(title: "Select Participants", message: nil, preferredStyle: .actionSheet)
+        // Get min/max participants from selected package
+        guard let selectedPackage = getSelectedPackage() else {
+            print("Could not find selected package for validation")
+            return
+        }
         
-        for i in 1...10 {
+        let alert = UIAlertController(title: "Select Participants", message: "Min: \(selectedPackage.minParticipants) - Max: \(selectedPackage.maxParticipants)", preferredStyle: .actionSheet)
+        
+        for i in selectedPackage.minParticipants...selectedPackage.maxParticipants {
             alert.addAction(UIAlertAction(title: "\(i)", style: .default) { [weak self] _ in
                 // Update pax count in form
-                // You can update the form data here
+                self?.updateParticipantCount(i)
             })
         }
         
@@ -93,6 +128,19 @@ final class HomeFormScheduleViewController: UIViewController {
         present(alert, animated: true)
     }
     
+    /// Gets the currently selected package from the ViewModel
+    /// - Returns: The selected package or nil if not found
+    private func getSelectedPackage() -> ActivityDetailDataModel.Package? {
+        return viewModel.input.package.availablePackages.content.first { $0.id == viewModel.input.selectedPackageId }
+    }
+    
+    /// Updates the participant count through the ViewModel
+    /// - Parameter count: The new participant count
+    private func updateParticipantCount(_ count: Int) {
+        viewModel.updateParticipantCount(count)
+    }
+    
+    /// Handles checkout button tap by calling the ViewModel
     @objc private func onCheckoutTapped() {
         viewModel.onCheckout()
     }
@@ -107,13 +155,12 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionData = sections[section]
         
-        // For package info, trip provider, form inputs, and traveler details sections, always show 1 row
-        if sectionData.type == .packageInfo || sectionData.type == .tripProvider || 
-           sectionData.type == .formInputs || sectionData.type == .travelerDetails {
+        // For package info, form inputs, and traveler details sections, always show 1 row
+        if sectionData.type == .packageInfo || sectionData.type == .formInputs || sectionData.type == .travelerDetails {
             return 1
         }
         
-        // For collapsible sections, return 0 if collapsed, otherwise return 1 (using SectionContainerCell)
+        // For collapsible sections (tripProvider and itinerary), return 0 if collapsed, otherwise return 1
         return sectionData.isExpanded ? 1 : 0
     }
     
@@ -164,8 +211,12 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
             
-            // Configure with current form data
-            cell.configure(selectedTime: "7.30", participantCount: "1")
+            // Configure with current form data from ViewModel
+            if let formData = sectionData.items.first as? FormInputData {
+                cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount)
+            } else {
+                cell.configure(selectedTime: "7.30", participantCount: "1")
+            }
             cell.onSelectTime = { [weak self] in
                 self?.showTimeSelector()
             }

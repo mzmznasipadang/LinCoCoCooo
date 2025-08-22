@@ -8,34 +8,67 @@
 import Foundation
 
 // MARK: - Data Models for Form Sections
+
+/// Data model for form input section containing date and participant information
 struct FormInputData {
+    /// Selected date/time string (formatted date or "Select Date" placeholder)
     var selectedTime: String = "7.30"
+    /// Number of participants as string
     var participantCount: String = "1"
 }
 
+/// Data model for traveler details section
 struct TravelerData {
+    /// Traveler's full name
     var name: String = ""
+    /// Traveler's phone number
     var phone: String = ""
+    /// Traveler's email address
     var email: String = ""
 }
 
-// MARK: - Section Type Extension
+// MARK: - ViewModel Input
 
+/// Input data required to initialize the HomeFormScheduleViewModel
 struct HomeFormScheduleViewModelInput {
+    /// Activity detail data model containing package information
     let package: ActivityDetailDataModel
+    /// ID of the selected package for booking
     let selectedPackageId: Int
 }
 
+// MARK: - HomeFormScheduleViewModel
+
+/// ViewModel for the booking form schedule screen
+/// Manages date selection, participant validation, form data, and booking creation
+/// Implements MVVM pattern with delegate-based communication
 final class HomeFormScheduleViewModel {
+    // MARK: - Delegates
+    
+    /// Delegate for handling navigation and external actions
     weak var delegate: (any HomeFormScheduleViewModelDelegate)?
+    
+    /// Delegate for UI updates and interactions
     weak var actionDelegate: (any HomeFormScheduleViewModelAction)?
     
+    // MARK: - Initialization
+    
+    /// Initializes the ViewModel with package data and network fetcher
+    /// - Parameters:
+    ///   - input: Package and selection data
+    ///   - fetcher: Network service for booking creation (injectable for testing)
     init(input: HomeFormScheduleViewModelInput, fetcher: CreateBookingFetcherProtocol = CreateBookingFetcher()) {
         self.input = input
         self.fetcher = fetcher
     }
     
-    private let input: HomeFormScheduleViewModelInput
+    // MARK: - Properties
+    
+    /// Input data containing package details and selected package ID
+    let input: HomeFormScheduleViewModelInput
+    
+    /// ViewModel for the calendar/date input field
+    /// Configured as non-typeable with calendar icon trigger
     private lazy var calendarInputViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: nil,
         placeholderText: "Input Date Visit...",
@@ -47,6 +80,9 @@ final class HomeFormScheduleViewModel {
         isTypeAble: false,
         delegate: self
     )
+    
+    /// ViewModel for the participant count input field
+    /// Configured with number pad keyboard and default value of 1
     private lazy var paxInputViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: nil,
         placeholderText: "Input total Pax...",
@@ -56,6 +92,9 @@ final class HomeFormScheduleViewModel {
         delegate: self,
         keyboardType: .numberPad
     )
+    
+    /// Currently selected date for the booking
+    /// When set, automatically formats and updates the calendar input field
     private var chosenDateInput: Date? {
         didSet {
             guard let chosenDateInput else { return }
@@ -64,15 +103,23 @@ final class HomeFormScheduleViewModel {
             calendarInputViewModel.currentTypedText = dateFormatter.string(from: chosenDateInput)
         }
     }
+    
+    /// Network service for creating bookings
     private let fetcher: CreateBookingFetcherProtocol
     
     // MARK: - Private Methods
+    
+    /// Triggers the calendar selection popup through the action delegate
     private func openCalendar() {
         actionDelegate?.showCalendarOption()
     }
 }
 
+// MARK: - HomeFormScheduleViewModelProtocol
+
 extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
+    /// Sets up the initial view state when the view loads
+    /// Configures input views and builds the initial table sections
     func onViewDidLoad() {
         // Setup bottom input views
         actionDelegate?.setupView(
@@ -85,10 +132,19 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         actionDelegate?.updateTableSections(sections)
     }
     
+    /// Handles date selection from the calendar
+    /// Updates the internal date state and refreshes the UI immediately
+    /// - Parameter date: The selected date
     func onCalendarDidChoose(date: Date) {
         chosenDateInput = date
+        // Rebuild sections to reflect the updated date
+        let sections = buildSections()
+        actionDelegate?.updateTableSections(sections)
     }
     
+    /// Handles checkout button tap
+    /// Validates participant count against package constraints and creates booking
+    /// Shows validation errors if constraints are not met
     func onCheckout() {
         // Filtering numeric only in Pax Field
         let currentPaxText = paxInputViewModel.currentTypedText
@@ -96,6 +152,18 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         let finalPaxText = sanitizedPaxText.isEmpty ? "1" : sanitizedPaxText
         paxInputViewModel.currentTypedText = finalPaxText
         let participants = Int(finalPaxText) ?? 1
+        
+        // Validate against min/max participants
+        guard let selectedPackage = input.package.availablePackages.content.first(where: { $0.id == input.selectedPackageId }) else {
+            print("Selected package not found")
+            return
+        }
+        
+        guard participants >= selectedPackage.minParticipants && participants <= selectedPackage.maxParticipants else {
+            print("Participant count (\(participants)) is outside valid range: \(selectedPackage.minParticipants)-\(selectedPackage.maxParticipants)")
+            // TODO: Show validation error to user
+            return
+        }
         
         Task {
             do {
@@ -113,10 +181,24 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
             }
         }
     }
+    
+    /// Updates the participant count and refreshes the UI
+    /// Called when user selects a participant count from the picker
+    /// - Parameter count: The selected participant count
+    func updateParticipantCount(_ count: Int) {
+        paxInputViewModel.currentTypedText = "\(count)"
+        // Rebuild sections to reflect the updated participant count
+        let sections = buildSections()
+        actionDelegate?.updateTableSections(sections)
+    }
 }
 
 // MARK: - Private Methods
+
 private extension HomeFormScheduleViewModel {
+    /// Builds the complete array of table view sections for the booking form
+    /// Combines package information, trip provider, itinerary, form inputs, and traveler details
+    /// - Returns: Array of BookingDetailSection containing all the data to display
     func buildSections() -> [BookingDetailSection] {
         // Get sections from transformer with package info, trip provider, and itinerary
         var sections = BookingDetailDataTransformer.transform(
@@ -126,7 +208,7 @@ private extension HomeFormScheduleViewModel {
         
         // Add form input section
         let formData = FormInputData(
-            selectedTime: chosenDateInput != nil ? calendarInputViewModel.currentTypedText : "7.30",
+            selectedTime: chosenDateInput != nil ? calendarInputViewModel.currentTypedText : "Select Date",
             participantCount: paxInputViewModel.currentTypedText
         )
         let formSection = BookingDetailSection(
@@ -154,7 +236,13 @@ private extension HomeFormScheduleViewModel {
 }
 
 // MARK: - HomeSearchBarViewModelDelegate
+
 extension HomeFormScheduleViewModel: HomeSearchBarViewModelDelegate {
+    /// Handles tap events from the search bar input fields
+    /// Currently only handles calendar input taps to show date selection
+    /// - Parameters:
+    ///   - isTypeAble: Whether the field allows typing
+    ///   - viewModel: The specific search bar view model that was tapped
     func notifyHomeSearchBarDidTap(isTypeAble: Bool, viewModel: HomeSearchBarViewModel) {
         if viewModel === calendarInputViewModel {
             actionDelegate?.showCalendarOption()

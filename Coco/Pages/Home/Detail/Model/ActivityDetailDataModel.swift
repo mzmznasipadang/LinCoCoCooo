@@ -32,6 +32,8 @@ struct ActivityDetailDataModel: Equatable {
         let name: String
         let description: String
         let price: String
+        let minParticipants: Int
+        let maxParticipants: Int
         
         let id: Int
     }
@@ -70,6 +72,8 @@ struct ActivityDetailDataModel: Equatable {
                     name: $0.name,
                     description: "Min.\($0.minParticipants) - Max.\($0.maxParticipants)",
                     price: "Rp\($0.pricePerPerson)",
+                    minParticipants: $0.minParticipants,
+                    maxParticipants: $0.maxParticipants,
                     id: $0.id
                 )
             }

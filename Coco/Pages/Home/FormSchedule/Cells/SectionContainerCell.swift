@@ -80,22 +80,22 @@ final class SectionContainerCell: UITableViewCell {
         view.addSubviews([providerImageView, providerNameLabel, providerDescriptionLabel])
         
         providerImageView.layout {
-            $0.leading(to: view.leadingAnchor, constant: 16)
-            $0.top(to: view.topAnchor, constant: 16)
+            $0.leading(to: view.leadingAnchor)
+            $0.top(to: view.topAnchor)
             $0.size(48)
         }
         
         providerNameLabel.layout {
             $0.leading(to: providerImageView.trailingAnchor, constant: 12)
-            $0.top(to: view.topAnchor, constant: 16)
-            $0.trailing(to: view.trailingAnchor, constant: -16)
+            $0.top(to: view.topAnchor)
+            $0.trailing(to: view.trailingAnchor)
         }
         
         providerDescriptionLabel.layout {
             $0.leading(to: providerImageView.trailingAnchor, constant: 12)
             $0.top(to: providerNameLabel.bottomAnchor, constant: 8)
-            $0.trailing(to: view.trailingAnchor, constant: -16)
-            $0.bottom(to: view.bottomAnchor, constant: -16)
+            $0.trailing(to: view.trailingAnchor)
+            $0.bottom(to: view.bottomAnchor)
         }
         
         return view
@@ -139,10 +139,10 @@ final class SectionContainerCell: UITableViewCell {
         }
         
         stackView.layout {
-            $0.top(to: containerView.topAnchor)
-            $0.leading(to: containerView.leadingAnchor)
-            $0.trailing(to: containerView.trailingAnchor)
-            $0.bottom(to: containerView.bottomAnchor)
+            $0.top(to: containerView.topAnchor, constant: 16)
+            $0.leading(to: containerView.leadingAnchor, constant: 16)
+            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.bottom(to: containerView.bottomAnchor, constant: -16)
         }
     }
     
@@ -188,7 +188,7 @@ final class SectionContainerCell: UITableViewCell {
         
         // Layout
         dotView.layout {
-            $0.leading(to: view.leadingAnchor, constant: 32)
+            $0.leading(to: view.leadingAnchor, constant: 16)
             $0.top(to: view.topAnchor, constant: 20)
             $0.size(12)
         }
