@@ -1,13 +1,13 @@
 name: PR Checks
 
-  on:
+on:
     push:
       branches:
         - main
     pull_request:
       types: [opened, synchronize, reopened]
 
-  jobs:
+jobs:
     lint:
       name: Run SwiftLint
       runs-on: macos-14
