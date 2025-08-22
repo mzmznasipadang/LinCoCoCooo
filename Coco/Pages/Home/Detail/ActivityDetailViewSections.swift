@@ -11,14 +11,12 @@ import UIKit
 // MARK: - Section Creation Methods
 extension ActivityDetailView {
     
-    // Helper: ambil beberapa kata pertama tanpa motong kata
     private func excerpt(from text: String, maxWords: Int = 14) -> String {
         let words = text.split { $0.isNewline || $0.isWhitespace }
         guard words.count > maxWords else { return text }
         return words.prefix(maxWords).joined(separator: " ") + "…"
     }
 
-    // Helper: bikin font italic dari font apapun
     private func italicFont(from base: UIFont) -> UIFont {
         let desc = base.fontDescriptor.withSymbolicTraits(.traitItalic) ?? base.fontDescriptor
         return UIFont(descriptor: desc, size: base.pointSize)
@@ -36,14 +34,12 @@ extension ActivityDetailView {
         )
         titleLabel.text = "Highlights"
 
-        // ↓↓↓ PREVIEW LEBIH KECIL + ITALIC
         let previewText = "“" + excerpt(from: fullText, maxWords: 14) + "”"
         let quoteLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .subheadline, weight: .regular), // was: title3
+            font: .jakartaSans(forTextStyle: .subheadline, weight: .regular),
             textColor: Token.additionalColorsBlack,
             numberOfLines: 0
         )
-        // tetap italic
         quoteLabel.font = {
             let base = UIFont.jakartaSans(forTextStyle: .subheadline, weight: .regular)
             let desc = base.fontDescriptor.withSymbolicTraits(.traitItalic) ?? base.fontDescriptor
@@ -54,7 +50,7 @@ extension ActivityDetailView {
         let seeMoreButton = UIButton(type: .system)
         seeMoreButton.setTitle("See more", for: .normal)
         seeMoreButton.setTitleColor(Token.mainColorPrimary, for: .normal)
-        seeMoreButton.titleLabel?.font = .jakartaSans(forTextStyle: .footnote, weight: .semibold) // sedikit lebih kecil juga oke
+        seeMoreButton.titleLabel?.font = .jakartaSans(forTextStyle: .footnote, weight: .semibold)
         seeMoreButton.contentHorizontalAlignment = .leading
         seeMoreButton.addTarget(self, action: #selector(seeMoreButtonTapped), for: .touchUpInside)
 
@@ -81,7 +77,7 @@ extension ActivityDetailView {
     }
     
     func createTitleView() -> UIView {
-        let chipLabel = createChipLabel(text: "Family Friendly", backgroundColor: UIColor.from("#C6F55C"))
+        let chipLabel = createChipLabel(text: "Family Friendly", backgroundColor: Token.mainColorLemon)
         
         let pinPointImage = UIImageView(image: CocoIcon.icPinPointBlue.image)
         pinPointImage.layout {

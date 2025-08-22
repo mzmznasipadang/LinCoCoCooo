@@ -10,9 +10,13 @@ import UIKit
 final class HighlightsViewController: UIViewController {
     
     private let fullContent: String
+    private let facilities: [String]
+    private let tnc: String
 
-    init(content: String) {
+    init(content: String, tripFacilities: [String], tnc: String) {
         self.fullContent = content
+        self.facilities = tripFacilities
+        self.tnc = tnc
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -78,22 +82,53 @@ final class HighlightsViewController: UIViewController {
 
     // MARK: - Content Configuration
     private func configureContent() {
-        // Parse isi TnC jadi paragraf terurut
-        let numberedText = parseNumberedParagraphs(from: fullContent)
-
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineSpacing = 2
-        paragraphStyle.paragraphSpacing = 8
-
-        let attributes: [NSAttributedString.Key: Any] = [
-            .paragraphStyle: paragraphStyle,
-            .font: UIFont.jakartaSans(forTextStyle: .body, weight: .regular),
-            .foregroundColor: Token.additionalColorsBlack
+        let fullAttributedString = NSMutableAttributedString()
+        
+        // Style untuk judul (Facilities, Terms and Conditions)
+        let titleAttributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 20, weight: .bold),
+            .foregroundColor: UIColor.gray
         ]
-        contentTextView.attributedText = NSAttributedString(
-            string: numberedText,
-            attributes: attributes
-        )
+        
+        // Bagian Facilities
+        if !facilities.isEmpty {
+            let facilitiesTitle = NSAttributedString(string: "Facilities\n", attributes: titleAttributes)
+            fullAttributedString.append(facilitiesTitle)
+            
+            let listParagraphStyle = NSMutableParagraphStyle()
+            listParagraphStyle.lineSpacing = 4
+            listParagraphStyle.paragraphSpacing = 8
+            
+            let listBodyAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 16),
+                .foregroundColor: Token.additionalColorsBlack,
+                .paragraphStyle: listParagraphStyle
+            ]
+            
+            let facilitiesText = facilities.map { "• \($0)" }.joined(separator: "\n")
+            fullAttributedString.append(NSAttributedString(string: facilitiesText + "\n", attributes: listBodyAttributes))
+        }
+        
+        // Bagian Terms and Conditions
+        if !tnc.isEmpty {
+            let tncTitle = NSAttributedString(string: "\nTerms and Conditions\n", attributes: titleAttributes)
+            fullAttributedString.append(tncTitle)
+            
+            let numberedTncText = parseNumberedParagraphs(from: tnc)
+            
+            let tncParagraphStyle = NSMutableParagraphStyle()
+            tncParagraphStyle.lineSpacing = 4
+            
+            let tncBodyAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 16),
+                .foregroundColor: Token.additionalColorsBlack,
+                .paragraphStyle: tncParagraphStyle
+            ]
+            
+            fullAttributedString.append(NSAttributedString(string: numberedTncText, attributes: tncBodyAttributes))
+        }
+
+        contentTextView.attributedText = fullAttributedString
     }
     
     private func parseNumberedParagraphs(from text: String) -> String {

@@ -21,6 +21,5 @@ protocol ActivityDetailViewModelProtocol: AnyObject {
     var navigationDelegate: ActivityDetailNavigationDelegate? { get set }
     
     func onViewDidLoad()
-//    func onPackageDetailStateDidChange(shouldShowAll: Bool)
     func onPackagesDetailDidTap(with packageId: Int)
 }

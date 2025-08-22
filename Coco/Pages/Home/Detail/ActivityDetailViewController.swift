@@ -33,10 +33,13 @@ final class ActivityDetailViewController: UIViewController {
     
     private let viewModel: ActivityDetailViewModelProtocol
     private let thisView: ActivityDetailView = ActivityDetailView()
+    private var activityData: ActivityDetailDataModel?
+        
 }
 
 extension ActivityDetailViewController: ActivityDetailViewModelAction {
     func configureView(data: ActivityDetailDataModel) {
+        self.activityData = data
         thisView.configureView(data)
         tripTitle = data.title
         
@@ -75,7 +78,9 @@ extension ActivityDetailViewController: ActivityDetailViewDelegate {
     }
     
     func notifyHighlightsSeeMoreDidTap(fullText: String) {
-        let highlightsVC = HighlightsViewController(content: fullText)
+        guard let data = activityData else { return }
+        
+        let highlightsVC = HighlightsViewController(content: fullText, tripFacilities: data.tripFacilities.content, tnc: data.tnc)
         
         if let sheet = highlightsVC.sheetPresentationController {
             sheet.detents = [.medium(), .large()]

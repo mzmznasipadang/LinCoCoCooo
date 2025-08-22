@@ -59,7 +59,7 @@ struct ActivityDetailDataModel: Equatable {
             )
         )
         tripFacilities = ActivitySectionLayout(
-            title: "This Trip Includes",
+            title: "Facilities",
             content: response.accessories.map { $0.name }
         )
         tnc = response.cancelable

@@ -9,7 +9,6 @@ import Foundation
 import UIKit
 
 protocol ActivityDetailViewDelegate: AnyObject {
-//    func notifyPackagesButtonDidTap(shouldShowAll: Bool)
     func notifyPackagesDetailDidTap(with packageId: Int)
     func notifyHighlightsSeeMoreDidTap(fullText: String)
 }
@@ -133,17 +132,17 @@ final class ActivityDetailView: UIView {
         contentStackView.addArrangedSubview(createDivider())
 
         // 5) Facilities Section
-        if !data.tripFacilities.content.isEmpty {
-            let facilitiesView = createSectionView(
-                title: data.tripFacilities.title,
-                view: createBenefitListView(titles: data.tripFacilities.content)
-            )
-            sectionTitles.append("Facilities")
-            let facAnchor = makeAnchor()
-            contentStackView.addArrangedSubview(facAnchor)
-            sectionAnchors.append(facAnchor)
-            contentStackView.addArrangedSubview(facilitiesView)
-        }
+//        if !data.tripFacilities.content.isEmpty {
+//            let facilitiesView = createSectionView(
+//                title: data.tripFacilities.title,
+//                view: createBenefitListView(titles: data.tripFacilities.content)
+//            )
+//            sectionTitles.append("Facilities")
+//            let facAnchor = makeAnchor()
+//            contentStackView.addArrangedSubview(facAnchor)
+//            sectionAnchors.append(facAnchor)
+//            contentStackView.addArrangedSubview(facilitiesView)
+//        }
 
         scrollView.setContentOffset(.zero, animated: false)
 
