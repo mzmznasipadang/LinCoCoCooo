@@ -27,6 +27,9 @@ final class HomeActivityCell: UICollectionViewCell {
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineSpacing = 6.0
         
+        let adtData = AdditionalDataService.shared.getActivity(byId: dataModel.id)
+        badgeLabel.text = adtData?.label
+        
         let attributedString = NSMutableAttributedString(
             string: "Starts from\n",
             attributes: [
@@ -75,6 +78,8 @@ final class HomeActivityCell: UICollectionViewCell {
     private lazy var cardView: UIView = createCardView()
     private lazy var imageView: UIImageView = createImageView()
     private lazy var areaView: UIView = createAreaView()
+    private lazy var badgeView: UIView = createBadgeView()
+    
     private lazy var areaLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .callout, weight: .regular),
         textColor: Token.grayscale70,
@@ -89,6 +94,11 @@ final class HomeActivityCell: UICollectionViewCell {
         font: .jakartaSans(forTextStyle: .body, weight: .bold),
         textColor: Token.additionalColorsBlack,
         numberOfLines: 2
+    )
+    private lazy var badgeLabel: UILabel = UILabel(
+        font: .jakartaSans(forTextStyle: .subheadline, weight: .medium),
+        textColor: Token.additionalColorsBlack,
+        numberOfLines: 1
     )
 }
 
@@ -109,6 +119,13 @@ private extension HomeActivityCell {
             $0.top(to: cardView.topAnchor)
                 .leading(to: cardView.leadingAnchor)
                 .trailing(to: cardView.trailingAnchor)
+        }
+        
+        // Badge
+        cardView.addSubview(badgeView)
+        badgeView.layout {
+            $0.top(to: imageView.topAnchor, constant: 12)
+                .leading(to: imageView.leadingAnchor, constant: 12)
         }
         
         let stackView: UIStackView = UIStackView(
@@ -222,4 +239,31 @@ private extension HomeActivityCell {
         
         return containerView
     }
+    
+    func createBadgeView() -> UIView {
+        let view = UIView()
+        view.backgroundColor = Token.mainColorLemon
+        view.layer.cornerRadius = 8.0
+        view.clipsToBounds = true
+        
+        view.addSubview(badgeLabel)
+        badgeLabel.layout {
+            $0.top(to: view.topAnchor, constant: 4)
+                .leading(to: view.leadingAnchor, constant: 10)
+                .trailing(to: view.trailingAnchor, constant: -10)
+                .bottom(to: view.bottomAnchor, constant: -4)
+        }
+        
+        return view
+    }
+    
+    func configureWithActivityId(_ activityId: Int) {
+        guard let activity = AdditionalDataService.shared.getActivity(byId: activityId) else {
+            return
+        }
+        
+        let dataModel = HomeActivityCellDataModel.from(activity: activity)
+        configureCell(dataModel)
+    }
+    
 }
