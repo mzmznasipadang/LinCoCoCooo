@@ -130,6 +130,10 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         // Build and set table sections
         let sections = buildSections()
         actionDelegate?.updateTableSections(sections)
+        
+        // Update price details
+        let priceData = buildPriceDetailsData()
+        actionDelegate?.updatePriceDetails(priceData)
     }
     
     /// Handles date selection from the calendar
@@ -140,6 +144,10 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         // Rebuild sections to reflect the updated date
         let sections = buildSections()
         actionDelegate?.updateTableSections(sections)
+        
+        // Update price details
+        let priceData = buildPriceDetailsData()
+        actionDelegate?.updatePriceDetails(priceData)
     }
     
     /// Handles checkout button tap
@@ -190,6 +198,10 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         // Rebuild sections to reflect the updated participant count
         let sections = buildSections()
         actionDelegate?.updateTableSections(sections)
+        
+        // Update price details
+        let priceData = buildPriceDetailsData()
+        actionDelegate?.updatePriceDetails(priceData)
     }
 }
 
@@ -232,6 +244,53 @@ private extension HomeFormScheduleViewModel {
         sections.append(travelerSection)
         
         return sections
+    }
+    
+    /// Builds price details data for the bottom sticky section
+    /// - Returns: PriceDetailsData containing current booking information
+    func buildPriceDetailsData() -> PriceDetailsData {
+        // Get selected package for price calculation
+        guard let selectedPackage = input.package.availablePackages.content.first(where: { $0.id == input.selectedPackageId }) else {
+            return PriceDetailsData(
+                selectedDate: "Select Date",
+                participantCount: 1,
+                travelerName: "",
+                totalPrice: "Rp0"
+            )
+        }
+        
+        // Format selected date
+        let dateString: String
+        if let chosenDateInput = chosenDateInput {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "E, dd MMM yyyy" // "Wed, 21 May 2024"
+            dateString = formatter.string(from: chosenDateInput)
+        } else {
+            dateString = "Select Date"
+        }
+        
+        // Get participant count
+        let participantCount = Int(paxInputViewModel.currentTypedText) ?? 1
+        
+        // Calculate total price
+        let pricePerPerson = selectedPackage.pricePerPerson
+        let totalPrice = pricePerPerson * Double(participantCount)
+        
+        // Format price
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.groupingSeparator = ","
+        let formattedPrice = "Rp\(numberFormatter.string(from: NSNumber(value: totalPrice)) ?? "0")"
+        
+        // Get traveler name (would come from traveler details section when implemented)
+        let travelerName = "Linda Christiana" // Placeholder - in real implementation, get from form
+        
+        return PriceDetailsData(
+            selectedDate: dateString,
+            participantCount: participantCount,
+            travelerName: travelerName,
+            totalPrice: formattedPrice
+        )
     }
 }
 

@@ -37,6 +37,13 @@ The module follows the **MVVM (Model-View-ViewModel)** pattern with delegate-bas
 - Immediate feedback on user interactions
 - Proper keyboard handling
 
+### ✅ Smart Checkout Experience  
+- Collapsible price details sticky footer
+- Shows total price when collapsed
+- Expands to show full booking summary when fields are complete
+- Smooth animations and intuitive interactions
+- "Book Now" button only enabled when form is complete
+
 ## File Structure
 
 ```
@@ -53,7 +60,8 @@ FormSchedule/
 │   ├── SectionContainerCell.swift         # Trip provider & itinerary
 │   └── TravelerDetailsCell.swift          # Contact information
 └── Views/
-    └── HomeFormScheduleView.swift         # Main container view
+    ├── HomeFormScheduleView.swift         # Main container view
+    └── PriceDetailsView.swift             # Collapsible price details component
 ```
 
 ## Data Flow
@@ -62,7 +70,8 @@ FormSchedule/
 2. **View Loading**: ViewModel builds sections → ViewController displays
 3. **Date Selection**: User taps → Calendar popup → ViewModel updates → UI refreshes
 4. **Participant Selection**: User taps → Validation-based picker → ViewModel updates → UI refreshes
-5. **Checkout**: ViewModel validates → API call → Navigation to checkout
+5. **Price Updates**: Any form change → ViewModel calculates price → Price details view updates
+6. **Checkout**: User taps "Book Now" → ViewModel validates → API call → Navigation to checkout
 
 ## Key Components
 
@@ -84,6 +93,13 @@ FormSchedule/
 - Package constraint enforcement
 - User-friendly error messaging
 
+### PriceDetailsView
+- Collapsible sticky footer component
+- Smart expand/collapse based on form completion
+- Real-time price calculation and display
+- Smooth animations and visual feedback
+- Integrated "Book Now" action
+
 ## Usage
 
 ```swift
@@ -103,6 +119,9 @@ let viewController = HomeFormScheduleViewController(viewModel: viewModel)
 - ✅ Added immediate feedback for all user interactions
 - ✅ Improved accessibility with proper tap handling
 - ✅ Enhanced error handling and validation
+- ✅ **NEW**: Implemented collapsible price details sticky footer
+- ✅ **NEW**: Smart expand/collapse based on form completion
+- ✅ **NEW**: Real-time price calculation and updates
 - ✅ Comprehensive code documentation
 
 ## Testing

@@ -63,6 +63,9 @@ final class HomeFormScheduleViewController: UIViewController {
     /// Footer view for form inputs (legacy property, no longer used)
     private var footerView: FormInputFooterView?
     
+    /// Price details view for the bottom sticky section
+    private var priceDetailsView: PriceDetailsView?
+    
     // MARK: - Setup
     
     /// Configures the table view with delegates, cell registration, and layout settings
@@ -143,6 +146,17 @@ final class HomeFormScheduleViewController: UIViewController {
     /// Handles checkout button tap by calling the ViewModel
     @objc private func onCheckoutTapped() {
         viewModel.onCheckout()
+    }
+    
+    /// Updates table view content insets for the price details view
+    private func updateTableViewInsets() {
+        // Calculate the height of the price details view
+        let baseHeight: CGFloat = 12 + 44 + 16 + 52 + 12 // padding + header + spacing + button + padding
+        let safeAreaBottom = view.safeAreaInsets.bottom
+        let totalHeight = baseHeight + safeAreaBottom
+        
+        thisView.tableView.contentInset.bottom = totalHeight
+        thisView.tableView.scrollIndicatorInsets.bottom = totalHeight
     }
 }
 
@@ -311,42 +325,24 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
         calendarViewModel: HomeSearchBarViewModel,
         paxInputViewModel: HomeSearchBarViewModel
     ) {
-        // Set up the checkout button
-        let container = UIView()
-        container.backgroundColor = Token.additionalColorsWhite
-        container.layer.shadowColor = UIColor.black.cgColor
-        container.layer.shadowOpacity = 0.1
-        container.layer.shadowOffset = CGSize(width: 0, height: -2)
-        container.layer.shadowRadius = 8
-        view.addSubview(container)
-        container.translatesAutoresizingMaskIntoConstraints = false
+        // Set up the price details view
+        let priceDetailsView = PriceDetailsView()
+        priceDetailsView.onBookNow = { [weak self] in
+            self?.viewModel.onCheckout()
+        }
+        
+        view.addSubview(priceDetailsView)
+        priceDetailsView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            container.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            priceDetailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            priceDetailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            priceDetailsView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
-        let checkoutButton = UIButton(type: .system)
-        checkoutButton.setTitle("Checkout", for: .normal)
-        checkoutButton.titleLabel?.font = .jakartaSans(forTextStyle: .body, weight: .semibold)
-        checkoutButton.backgroundColor = Token.mainColorPrimary
-        checkoutButton.setTitleColor(.white, for: .normal)
-        checkoutButton.layer.cornerRadius = 12
-        checkoutButton.addTarget(self, action: #selector(onCheckoutTapped), for: .touchUpInside)
-        container.addSubview(checkoutButton)
-        checkoutButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            checkoutButton.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 27),
-            checkoutButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -27),
-            checkoutButton.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
-            checkoutButton.bottomAnchor.constraint(equalTo: container.safeAreaLayoutGuide.bottomAnchor, constant: -12),
-            checkoutButton.heightAnchor.constraint(equalToConstant: 52)
-        ])
+        self.priceDetailsView = priceDetailsView
         
-        // Adjust content insets for the pinned button
-        let pinnedHeight = 12 + 52 + 12 + view.safeAreaInsets.bottom
-        thisView.tableView.contentInset.bottom = pinnedHeight
-        thisView.tableView.scrollIndicatorInsets.bottom = pinnedHeight
+        // Adjust content insets for the pinned price details view
+        updateTableViewInsets()
     }
     
     func configureView(data: HomeFormScheduleViewData) {
@@ -357,6 +353,10 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
         self.sections = sections
         thisView.tableView.reloadData()
         thisView.tableView.resizeAutoSizingFooterIfNeeded()
+    }
+    
+    func updatePriceDetails(_ data: PriceDetailsData) {
+        priceDetailsView?.configure(with: data)
     }
     
     func showCalendarOption() {

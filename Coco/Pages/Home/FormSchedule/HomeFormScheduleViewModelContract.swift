@@ -39,6 +39,10 @@ protocol HomeFormScheduleViewModelAction: AnyObject {
     /// Updates the table view with new sections data
     /// - Parameter sections: Array of booking detail sections to display
     func updateTableSections(_ sections: [BookingDetailSection])
+    
+    /// Updates the price details view with booking summary
+    /// - Parameter data: Price details data containing booking information
+    func updatePriceDetails(_ data: PriceDetailsData)
 }
 
 // MARK: - HomeFormScheduleViewModelProtocol
