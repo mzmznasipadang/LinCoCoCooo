@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 protocol ActivityDetailViewDelegate: AnyObject {
-    func notifyPackagesButtonDidTap(shouldShowAll: Bool)
+//    func notifyPackagesButtonDidTap(shouldShowAll: Bool)
     func notifyPackagesDetailDidTap(with packageId: Int)
     func notifyHighlightsSeeMoreDidTap(fullText: String)
 }
@@ -68,41 +68,71 @@ final class ActivityDetailView: UIView {
         sectionAnchors.append(hlAnchor)
         contentStackView.addArrangedSubview(highlightsView)
         contentStackView.addArrangedSubview(createDivider())
+        
+        // 3) Package Section
+        if !data.availablePackages.content.isEmpty {
+            sectionTitles.append("Packages")
+            let pkgAnchor = makeAnchor()
+            contentStackView.addArrangedSubview(pkgAnchor)
+            sectionAnchors.append(pkgAnchor)
 
-        // 3) Detail Information Section
+            packageContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+            let sortedHosts = data.availablePackages.content.keys.sorted()
+
+            for hostName in sortedHosts {
+                guard let packagesForHost = data.availablePackages.content[hostName] else { continue }
+
+                let hostLabel = UILabel(
+                    font: .jakartaSans(forTextStyle: .body, weight: .semibold),
+                    textColor: Token.additionalColorsBlack
+                )
+                hostLabel.text = hostName
+                packageContainer.addArrangedSubview(hostLabel)
+
+                for packageData in packagesForHost {
+                    packageContainer.addArrangedSubview(
+                        createPackageView(data: packageData)
+                    )
+                }
+
+                if let lastViewInGroup = packageContainer.arrangedSubviews.last {
+                    packageContainer.setCustomSpacing(24, after: lastViewInGroup)
+                }
+            }
+
+            contentStackView.addArrangedSubview(packageSection)
+
+            packageLabel.text = data.availablePackages.title
+            packageLabel.isHidden = false
+
+        } else {
+            packageLabel.isHidden = true
+        }
+        
+        contentStackView.addArrangedSubview(createDivider())
+
+        // 4) Description Section
         let detailDescription = UILabel(
-            font: .jakartaSans(forTextStyle: .headline, weight: .regular),
-            textColor: Token.grayscale70,
+            font: .jakartaSans(forTextStyle: .body, weight: .regular),
+            textColor: Token.additionalColorsBlack,
             numberOfLines: 0
         )
-        detailDescription.text = data.detailInfomation.content
+        detailDescription.text = data.descriptionInfomation.content
         let detailView = createSectionView(
-            title: data.detailInfomation.title,
+            title: data.descriptionInfomation.title,
             view: detailDescription
         )
 
-        sectionTitles.append("Detail")
+        sectionTitles.append("Description")
         let detailAnchor = makeAnchor()
         contentStackView.addArrangedSubview(detailAnchor)
         sectionAnchors.append(detailAnchor)
         contentStackView.addArrangedSubview(detailView)
 
-        // 4) Trip Provider Section
-        let providerView = createSectionView(
-            title: data.providerDetail.title,
-            view: createProviderDetail(
-                imageUrl: data.providerDetail.content.imageUrlString,
-                name: data.providerDetail.content.name,
-                description: data.providerDetail.content.description
-            )
-        )
-        sectionTitles.append("Provider")
-        let providerAnchor = makeAnchor()
-        contentStackView.addArrangedSubview(providerAnchor)
-        sectionAnchors.append(providerAnchor)
-        contentStackView.addArrangedSubview(providerView)
+        contentStackView.addArrangedSubview(createDivider())
 
-        // 5) Facilities Section (opsional)
+        // 5) Facilities Section
         if !data.tripFacilities.content.isEmpty {
             let facilitiesView = createSectionView(
                 title: data.tripFacilities.title,
@@ -113,56 +143,6 @@ final class ActivityDetailView: UIView {
             contentStackView.addArrangedSubview(facAnchor)
             sectionAnchors.append(facAnchor)
             contentStackView.addArrangedSubview(facilitiesView)
-        }
-
-        // 6) TnC Section (opsional)
-        if !data.tnc.isEmpty {
-            let tncLabel = UILabel(
-                font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
-                textColor: Token.additionalColorsBlack,
-                numberOfLines: 0
-            )
-            tncLabel.text = data.tnc
-            let tncView = createSectionView(
-                title: "Terms and Conditon",
-                view: tncLabel
-            )
-
-            sectionTitles.append("TnC")
-            let tncAnchor = makeAnchor()
-            contentStackView.addArrangedSubview(tncAnchor)
-            sectionAnchors.append(tncAnchor)
-            contentStackView.addArrangedSubview(tncView)
-        }
-
-        // 7) Package Section (opsional)
-        if !data.availablePackages.content.isEmpty {
-            sectionTitles.append("Packages")
-            let pkgAnchor = makeAnchor()
-            contentStackView.addArrangedSubview(pkgAnchor)
-            sectionAnchors.append(pkgAnchor)
-
-            contentStackView.addArrangedSubview(packageSection)
-
-            if data.availablePackages.content.count == data.hiddenPackages.count
-            {
-                packageButton.isHidden = true
-                data.availablePackages.content.forEach { d in
-                    packageContainer.addArrangedSubview(
-                        createPackageView(data: d)
-                    )
-                }
-            } else {
-                data.hiddenPackages.forEach { d in
-                    packageContainer.addArrangedSubview(
-                        createPackageView(data: d)
-                    )
-                }
-            }
-            packageLabel.text = data.availablePackages.title
-            packageLabel.isHidden = false
-        } else {
-            packageLabel.isHidden = true
         }
 
         scrollView.setContentOffset(.zero, animated: false)
@@ -177,7 +157,7 @@ final class ActivityDetailView: UIView {
             tabs.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
             tabs.leadingAnchor.constraint(equalTo: leadingAnchor),
             tabs.trailingAnchor.constraint(equalTo: trailingAnchor),
-            tabs.heightAnchor.constraint(equalToConstant: 48),
+            tabs.heightAnchor.constraint(equalToConstant: 48)
         ])
         self.stickyTabBar?.removeFromSuperview()
         self.stickyTabBar = tabs
@@ -244,13 +224,11 @@ final class ActivityDetailView: UIView {
         textColor: Token.additionalColorsBlack,
         numberOfLines: 2
     )
-    lazy var packageButton = createPackageTextButton()
 
     lazy var packageContainer = createStackView(spacing: 18.0)
     private lazy var contentStackView = createStackView(spacing: 12)
     private lazy var headerStackView = createStackView(spacing: 0)
 
-    lazy var isPackageButtonStateHidden = true
 }
 
 // MARK: - Setup

@@ -63,17 +63,13 @@ extension ActivityDetailViewController: ActivityDetailViewModelAction {
         }
     }
 
-    
     func updatePackageData(data: [ActivityDetailDataModel.Package]) {
         thisView.updatePackageData(data)
     }
 }
 
 extension ActivityDetailViewController: ActivityDetailViewDelegate {
-    func notifyPackagesButtonDidTap(shouldShowAll: Bool) {
-        viewModel.onPackageDetailStateDidChange(shouldShowAll: shouldShowAll)
-    }
-    
+
     func notifyPackagesDetailDidTap(with packageId: Int) {
         viewModel.onPackagesDetailDidTap(with: packageId)
     }

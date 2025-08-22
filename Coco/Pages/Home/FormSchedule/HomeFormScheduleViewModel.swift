@@ -81,16 +81,20 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
             paxInputViewModel: paxInputViewModel
         )
         
+        let allPackages = input.package.availablePackages.content.values.flatMap { $0 }
+            
+        let selectedPackage = allPackages.first { $0.id == input.selectedPackageId }
+        
         let data: HomeFormScheduleViewData = HomeFormScheduleViewData(
-            imageString: input.package.imageUrlsString.first ?? "",
+            imageString: selectedPackage?.imageUrlString ?? input.package.imageUrlsString.first ?? "",
             activityName: input.package.title,
-            packageName: input.package.availablePackages.content.first { $0.id == input.selectedPackageId }?.name ?? "",
+            packageName: selectedPackage?.name ?? "",
             location: input.package.location
         )
         
         actionDelegate?.configureView(data: data)
         
-        if let selected = input.package.availablePackages.content.first(where: { $0.id == input.selectedPackageId }) {
+        if let selected = selectedPackage {
             self.minPax = selected.minParticipants
             self.maxPax = selected.maxParticipants
             self.refreshPaxPlaceholder()

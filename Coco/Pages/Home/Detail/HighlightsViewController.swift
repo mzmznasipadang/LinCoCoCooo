@@ -96,7 +96,6 @@ final class HighlightsViewController: UIViewController {
         )
     }
     
-    /// Split berdasarkan double new line, lalu kasih penomoran
     private func parseNumberedParagraphs(from text: String) -> String {
         let paragraphs = text
             .components(separatedBy: "\n\n")
