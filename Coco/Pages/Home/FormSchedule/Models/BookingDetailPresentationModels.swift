@@ -11,9 +11,8 @@ import UIKit
 // MARK: - Section Types
 enum BookingDetailSectionType {
     case packageInfo
+    case tripProvider
     case itinerary
-    case facilities
-    case termsAndConditions
     case formInputs
     case travelerDetails
 }
@@ -35,6 +34,8 @@ struct PackageInfoDisplayData {
     let pricePerPax: String
     let originalPrice: String?
     let hasDiscount: Bool
+    let description: String
+    let duration: String
 }
 
 // MARK: - Itinerary Timeline Model
@@ -49,21 +50,13 @@ struct ItineraryDisplayItem {
     let isLastItem: Bool
 }
 
-// MARK: - Facility Model
-struct FacilityDisplayItem : Equatable {
-    let iconName: String
+// MARK: - Trip Provider Model
+struct TripProviderDisplayItem {
     let name: String
-    let isIncluded: Bool
-    let description: String?
+    let description: String
+    let imageUrl: String
 }
 
-// MARK: - Terms & Conditions Model
-struct TermsDisplayItem : Equatable {
-    let title: String
-    let content: String
-    let bulletPoints: [String]? // If terms have bullet points
-    let isImportant: Bool // To highlight important terms
-}
 
 // MARK: - Helper Models for Timeline UI
 struct TimelineConfiguration {

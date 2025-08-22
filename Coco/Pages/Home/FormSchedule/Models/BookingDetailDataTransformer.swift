@@ -31,7 +31,20 @@ final class BookingDetailDataTransformer {
             )
         }
         
-        // 2. Itinerary Section (Collapsible)
+        // 2. Trip Provider Section (Collapsible)
+        if let tripProvider = createTripProvider(from: activityDetail) {
+            sections.append(
+                BookingDetailSection(
+                    type: .tripProvider,
+                    title: "Trip Provider",
+                    isExpandable: true,
+                    isExpanded: false,
+                    items: [tripProvider]
+                )
+            )
+        }
+        
+        // 3. Itinerary Section (Collapsible)
         let itineraryItems = createItineraryItems(from: activityDetail)
         if !itineraryItems.isEmpty {
             sections.append(
@@ -41,34 +54,6 @@ final class BookingDetailDataTransformer {
                     isExpandable: true,
                     isExpanded: false,
                     items: itineraryItems
-                )
-            )
-        }
-        
-        // 3. Facilities Section (Collapsible)
-        let facilityItems = createFacilityItems(from: activityDetail)
-        if !facilityItems.isEmpty {
-            sections.append(
-                BookingDetailSection(
-                    type: .facilities,
-                    title: "Facilities",
-                    isExpandable: true,
-                    isExpanded: false,
-                    items: facilityItems
-                )
-            )
-        }
-        
-        // 4. Terms & Conditions Section (Collapsible)
-        let termsItems = createTermsItems(from: activityDetail)
-        if !termsItems.isEmpty {
-            sections.append(
-                BookingDetailSection(
-                    type: .termsAndConditions,
-                    title: "Terms and Conditions",
-                    isExpandable: true,
-                    isExpanded: false,
-                    items: termsItems
                 )
             )
         }
@@ -91,13 +76,29 @@ final class BookingDetailDataTransformer {
         // Description format: "Min.X - Max.Y"
         let paxRange = extractPaxRange(from: selectedPackage.description)
         
+        // Format duration from activity detail
+        let durationText = formatDuration(from: activity)
+        
         return PackageInfoDisplayData(
-            imageUrl: selectedPackage.imageUrlString, // Note: different property name
+            imageUrl: selectedPackage.imageUrlString,
             packageName: selectedPackage.name,
             paxRange: paxRange,
             pricePerPax: "\(selectedPackage.price)/pax",
-            originalPrice: nil, // Not available in current model
-            hasDiscount: false
+            originalPrice: nil,
+            hasDiscount: false,
+            description: activity.detailInfomation.content,
+            duration: durationText
+        )
+    }
+    
+    // MARK: - Trip Provider Transform
+    private static func createTripProvider(from activity: ActivityDetailDataModel) -> TripProviderDisplayItem? {
+        let provider = activity.providerDetail.content
+        
+        return TripProviderDisplayItem(
+            name: provider.name,
+            description: provider.description,
+            imageUrl: provider.imageUrlString
         )
     }
     
@@ -153,71 +154,38 @@ final class BookingDetailDataTransformer {
         ]
     }
     
-    // MARK: - Facilities Transform
-    private static func createFacilityItems(from activity: ActivityDetailDataModel) -> [FacilityDisplayItem] {
-        // Map from tripFacilities
-        let facilities = activity.tripFacilities.content
-        
-        // Map facility names to icons (you might want to create a mapping dictionary)
-        return facilities.map { facilityName in
-            FacilityDisplayItem(
-                iconName: mapFacilityToIcon(facilityName),
-                name: facilityName,
-                isIncluded: true, // All facilities from tripFacilities are included
-                description: nil
-            )
-        }
-    }
-    
-    // MARK: - Terms & Conditions Transform
-    private static func createTermsItems(from activity: ActivityDetailDataModel) -> [TermsDisplayItem] {
-        // The tnc field appears to be a string about cancellation
-        // You might want to parse this or structure it differently
-        
-        var items: [TermsDisplayItem] = []
-        
-        // Add cancellation policy from tnc
-        if !activity.tnc.isEmpty {
-            items.append(
-                TermsDisplayItem(
-                    title: "Cancellation Policy",
-                    content: activity.tnc,
-                    bulletPoints: nil,
-                    isImportant: true
-                )
-            )
-        }
-        
-        // Add other standard terms if needed
-        items.append(
-            TermsDisplayItem(
-                title: "Booking Requirements",
-                content: "Please ensure all participants meet the requirements.",
-                bulletPoints: [
-                    "Valid ID required",
-                    "Arrive 15 minutes before scheduled time",
-                    "Follow safety instructions"
-                ],
-                isImportant: false
-            )
-        )
-        
-        // Add provider information as a term
-        if let provider = activity.providerDetail.content as? ActivityDetailDataModel.ProviderDetail {
-            items.append(
-                TermsDisplayItem(
-                    title: "About \(provider.name)",
-                    content: provider.description,
-                    bulletPoints: nil,
-                    isImportant: false
-                )
-            )
-        }
-        
-        return items
-    }
     
     // MARK: - Helper Methods
+    
+    private static func formatDuration(from activity: ActivityDetailDataModel) -> String {
+        let totalMinutes = activity.durationMinutes
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        
+        // Create a start time (default 09:00 for now, could be made dynamic)
+        let startHour = 9
+        let startMinute = 0
+        
+        // Calculate end time
+        let endHour = startHour + hours + (startMinute + minutes) / 60
+        let endMinute = (startMinute + minutes) % 60
+        
+        // Format start and end times
+        let startTime = String(format: "%02d:%02d", startHour, startMinute)
+        let endTime = String(format: "%02d:%02d", endHour, endMinute)
+        
+        // Format duration text
+        let durationText: String
+        if hours == 0 {
+            durationText = "\(minutes) Minutes"
+        } else if minutes == 0 {
+            durationText = "\(hours) Hour\(hours > 1 ? "s" : "")"
+        } else {
+            durationText = "\(hours) Hour\(hours > 1 ? "s" : "") \(minutes) Minutes"
+        }
+        
+        return "\(startTime)-\(endTime) (\(durationText))"
+    }
     
     private static func extractPaxRange(from description: String) -> String {
         // Parse "Min.X - Max.Y" format
@@ -233,36 +201,5 @@ final class BookingDetailDataTransformer {
         
         // Fallback to original description if parsing fails
         return description
-    }
-    
-    private static func mapFacilityToIcon(_ facilityName: String) -> String {
-        // Create a mapping of facility names to SF Symbol icons
-        let lowercased = facilityName.lowercased()
-        
-        // Add more mappings based on your actual facility names
-        if lowercased.contains("transport") || lowercased.contains("transfer") || lowercased.contains("pickup") {
-            return "bus.fill"
-        } else if lowercased.contains("meal") || lowercased.contains("lunch") || lowercased.contains("breakfast") || lowercased.contains("food") {
-            return "fork.knife"
-        } else if lowercased.contains("guide") || lowercased.contains("instructor") {
-            return "person.2.fill"
-        } else if lowercased.contains("insurance") || lowercased.contains("safety") {
-            return "shield.checkered"
-        } else if lowercased.contains("photo") || lowercased.contains("camera") {
-            return "camera.fill"
-        } else if lowercased.contains("ticket") || lowercased.contains("entrance") {
-            return "ticket.fill"
-        } else if lowercased.contains("equipment") || lowercased.contains("gear") {
-            return "backpack.fill"
-        } else if lowercased.contains("water") || lowercased.contains("drink") || lowercased.contains("beverage") {
-            return "drop.fill"
-        } else if lowercased.contains("wifi") || lowercased.contains("internet") {
-            return "wifi"
-        } else if lowercased.contains("parking") {
-            return "car.fill"
-        } else {
-            // Default icon for unknown facilities
-            return "checkmark.circle.fill"
-        }
     }
 }

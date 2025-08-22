@@ -47,11 +47,13 @@ final class HomeFormScheduleViewController: UIViewController {
         thisView.tableView.delegate = self
         thisView.tableView.dataSource = self
         
+        // Enable automatic height calculation
+        thisView.tableView.rowHeight = UITableView.automaticDimension
+        thisView.tableView.estimatedRowHeight = 100
+        
         // Register cells
         thisView.tableView.register(PackageInfoCell.self, forCellReuseIdentifier: "PackageInfoCell")
-        thisView.tableView.register(ItineraryCell.self, forCellReuseIdentifier: "ItineraryCell")
-        thisView.tableView.register(FacilityCell.self, forCellReuseIdentifier: "FacilityCell")
-        thisView.tableView.register(TermsCell.self, forCellReuseIdentifier: "TermsCell")
+        thisView.tableView.register(SectionContainerCell.self, forCellReuseIdentifier: "SectionContainerCell")
         thisView.tableView.register(FormInputCell.self, forCellReuseIdentifier: "FormInputCell")
         thisView.tableView.register(TravelerDetailsCell.self, forCellReuseIdentifier: "TravelerDetailsCell")
         thisView.tableView.register(SectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "SectionHeaderView")
@@ -76,7 +78,8 @@ final class HomeFormScheduleViewController: UIViewController {
         
         for i in 1...10 {
             alert.addAction(UIAlertAction(title: "\(i)", style: .default) { [weak self] _ in
-                self?.footerView?.paxLabel?.text = "\(i)"
+                // Update pax count in form
+                // You can update the form data here
             })
         }
         
@@ -104,13 +107,14 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionData = sections[section]
         
-        // For package info, form inputs, and traveler details sections, always show 1 row
-        if sectionData.type == .packageInfo || sectionData.type == .formInputs || sectionData.type == .travelerDetails {
+        // For package info, trip provider, form inputs, and traveler details sections, always show 1 row
+        if sectionData.type == .packageInfo || sectionData.type == .tripProvider || 
+           sectionData.type == .formInputs || sectionData.type == .travelerDetails {
             return 1
         }
         
-        // For collapsible sections, return 0 if collapsed, otherwise return items count
-        return sectionData.isExpanded ? sectionData.items.count : 0
+        // For collapsible sections, return 0 if collapsed, otherwise return 1 (using SectionContainerCell)
+        return sectionData.isExpanded ? 1 : 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -130,43 +134,26 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             }
             return cell
             
+        case .tripProvider:
+            guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: "SectionContainerCell",
+                for: indexPath
+            ) as? SectionContainerCell else {
+                return UITableViewCell()
+            }
+            
+            cell.configure(with: sectionData.items, sectionType: .tripProvider)
+            return cell
+            
         case .itinerary:
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "ItineraryCell",
+                withIdentifier: "SectionContainerCell",
                 for: indexPath
-            ) as? ItineraryCell else {
+            ) as? SectionContainerCell else {
                 return UITableViewCell()
             }
             
-            if let itineraryItem = sectionData.items[indexPath.row] as? ItineraryDisplayItem {
-                cell.configure(with: itineraryItem)
-            }
-            return cell
-            
-        case .facilities:
-            guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "FacilityCell",
-                for: indexPath
-            ) as? FacilityCell else {
-                return UITableViewCell()
-            }
-            
-            if let facility = sectionData.items[indexPath.row] as? FacilityDisplayItem {
-                cell.configure(with: facility)
-            }
-            return cell
-            
-        case .termsAndConditions:
-            guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "TermsCell",
-                for: indexPath
-            ) as? TermsCell else {
-                return UITableViewCell()
-            }
-            
-            if let terms = sectionData.items[indexPath.row] as? TermsDisplayItem {
-                cell.configure(with: terms)
-            }
+            cell.configure(with: sectionData.items, sectionType: .itinerary)
             return cell
             
         case .formInputs:
@@ -234,7 +221,7 @@ extension HomeFormScheduleViewController: UITableViewDelegate {
             return headerView
         }
         
-        // Collapsible headers for other sections
+        // Collapsible headers for trip provider and itinerary sections
         guard let headerView = tableView.dequeueReusableHeaderFooterView(
             withIdentifier: "SectionHeaderView"
         ) as? SectionHeaderView else {
@@ -273,7 +260,7 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
         calendarViewModel: HomeSearchBarViewModel,
         paxInputViewModel: HomeSearchBarViewModel
     ) {
-        // Remove all the footer setup code and just set up the checkout button
+        // Set up the checkout button
         let container = UIView()
         container.backgroundColor = Token.additionalColorsWhite
         container.layer.shadowColor = UIColor.black.cgColor

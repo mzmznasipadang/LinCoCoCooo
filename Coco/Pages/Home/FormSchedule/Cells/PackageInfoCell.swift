@@ -26,6 +26,8 @@ final class PackageInfoCell: UITableViewCell {
         packageNameLabel.text = data.packageName
         paxLabel.text = data.paxRange
         priceLabel.text = "\(data.pricePerPax)"
+        descriptionLabel.text = data.description
+        durationLabel.text = data.duration
         
         // Handle discount price visibility and text
         if let originalPrice = data.originalPrice, data.hasDiscount {
@@ -98,6 +100,26 @@ final class PackageInfoCell: UITableViewCell {
         return label
     }()
     
+    private lazy var descriptionLabel: UILabel = UILabel(
+        font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
+        textColor: Token.grayscale70,
+        numberOfLines: 0
+    )
+    
+    private lazy var durationIconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "clock")
+        imageView.tintColor = Token.grayscale50
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
+    private lazy var durationLabel: UILabel = UILabel(
+        font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
+        textColor: Token.grayscale70,
+        numberOfLines: 1
+    )
+    
     // MARK: - Setup
     
     private func setupView() {
@@ -112,7 +134,10 @@ final class PackageInfoCell: UITableViewCell {
             paxIconImageView,
             paxLabel,
             priceLabel,
-            originalPriceLabel
+            originalPriceLabel,
+            descriptionLabel,
+            durationIconImageView,
+            durationLabel
         ])
         
         // Layout
@@ -152,13 +177,31 @@ final class PackageInfoCell: UITableViewCell {
         priceLabel.layout {
             $0.leading(to: packageImageView.trailingAnchor, constant: 16)
             $0.top(to: paxIconImageView.bottomAnchor, constant: 16)
-            $0.bottom(to: containerView.bottomAnchor, constant: -16)
         }
         
         originalPriceLabel.layout {
             $0.leading(to: priceLabel.trailingAnchor, constant: 8)
             $0.centerY(to: priceLabel.centerYAnchor)
             $0.trailing(to: containerView.trailingAnchor, constant: -16)
+        }
+        
+        descriptionLabel.layout {
+            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
+            $0.top(to: priceLabel.bottomAnchor, constant: 8)
+            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+        }
+        
+        durationIconImageView.layout {
+            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
+            $0.top(to: descriptionLabel.bottomAnchor, constant: 8)
+            $0.size(16)
+        }
+        
+        durationLabel.layout {
+            $0.leading(to: durationIconImageView.trailingAnchor, constant: 8)
+            $0.centerY(to: durationIconImageView.centerYAnchor)
+            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.bottom(to: containerView.bottomAnchor, constant: -16)
         }
     }
 }

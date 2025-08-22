@@ -2,7 +2,7 @@
 //  TravelerDetailsCell.swift
 //  Coco
 //
-//  Created by Victor Chandra on 21/08/25.
+//  Created by Claude on 22/08/25.
 //
 
 import Foundation
@@ -154,4 +154,3 @@ final class TravelerDetailsCell: UITableViewCell {
         }
     }
 }
-

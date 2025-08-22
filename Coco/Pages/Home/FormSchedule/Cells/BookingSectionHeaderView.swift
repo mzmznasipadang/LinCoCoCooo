@@ -23,7 +23,6 @@ final class SectionHeaderView: UITableViewHeaderFooterView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
     func configure(title: String, isExpanded: Bool) {
         titleLabel.text = title
         rotateChevron(isExpanded: isExpanded, animated: false) // Set initial state without animation

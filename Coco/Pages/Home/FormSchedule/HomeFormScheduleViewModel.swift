@@ -118,7 +118,7 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
 // MARK: - Private Methods
 private extension HomeFormScheduleViewModel {
     func buildSections() -> [BookingDetailSection] {
-        // Get existing sections from transformer
+        // Get sections from transformer with package info, trip provider, and itinerary
         var sections = BookingDetailDataTransformer.transform(
             activityDetail: input.package,
             selectedPackageId: input.selectedPackageId

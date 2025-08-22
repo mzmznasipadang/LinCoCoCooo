@@ -25,7 +25,7 @@ struct HomeFormScheduleInputView: View {
             VStack(alignment: .leading, spacing: 24.0) {
                 // MARK: - Select Time Section
                 VStack(alignment: .leading, spacing: 8.0) {
-                    Text("Select Time")
+                    Text("Select Date")
                         .font(.jakartaSans(forTextStyle: .footnote, weight: .medium))
                         .foregroundStyle(Token.grayscale70.toColor())
                     
@@ -218,7 +218,7 @@ struct TimePickerSheet: View {
 //                    .foregroundStyle(Token.grayscale70.toColor())
 //                HomeSearchBarView(viewModel: paxInputViewModel)
 //            }
-//            
+//
 //            Spacer()
 //
 //            CocoButton(

@@ -26,10 +26,8 @@ final class SectionContainerCell: UITableViewCell {
         switch sectionType {
         case .itinerary:
             configureItinerary(items: items)
-        case .facilities:
-            configureFacilities(items: items)
-        case .termsAndConditions:
-            configureTerms(items: items)
+        case .tripProvider:
+            configureTripProvider(items: items)
         default:
             break
         }
@@ -48,35 +46,61 @@ final class SectionContainerCell: UITableViewCell {
         }
     }
     
-    private func configureFacilities(items: [Any]) {
-        guard let facilityItems = items as? [FacilityDisplayItem] else { return }
+    private func configureTripProvider(items: [Any]) {
+        guard let providerData = items.first as? TripProviderDisplayItem else { return }
         
-        for item in facilityItems {
-            let itemView = createFacilityItemView(item: item)
-            stackView.addArrangedSubview(itemView)
-            
-            // Add separator except for last item
-            if item != facilityItems.last {
-                let separator = createSeparator()
-                stackView.addArrangedSubview(separator)
-            }
-        }
+        let providerView = createTripProviderView(provider: providerData)
+        stackView.addArrangedSubview(providerView)
     }
     
-    private func configureTerms(items: [Any]) {
-        guard let termsItems = items as? [TermsDisplayItem] else { return }
+    private func createTripProviderView(provider: TripProviderDisplayItem) -> UIView {
+        let view = UIView()
         
-        for item in termsItems {
-            let itemView = createTermsItemView(item: item)
-            stackView.addArrangedSubview(itemView)
-            
-            // Add separator except for last item
-            if item != termsItems.last {
-                let separator = createSeparator()
-                stackView.addArrangedSubview(separator)
-            }
+        let providerImageView = UIImageView()
+        providerImageView.contentMode = .scaleAspectFill
+        providerImageView.clipsToBounds = true
+        providerImageView.layer.cornerRadius = 24
+        providerImageView.backgroundColor = Token.grayscale20
+        providerImageView.loadImage(from: URL(string: provider.imageUrl))
+        
+        let providerNameLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .headline, weight: .semibold),
+            textColor: Token.grayscale90,
+            numberOfLines: 1
+        )
+        providerNameLabel.text = provider.name
+        
+        let providerDescriptionLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
+            textColor: Token.grayscale70,
+            numberOfLines: 0
+        )
+        providerDescriptionLabel.text = provider.description
+        
+        view.addSubviews([providerImageView, providerNameLabel, providerDescriptionLabel])
+        
+        providerImageView.layout {
+            $0.leading(to: view.leadingAnchor, constant: 16)
+            $0.top(to: view.topAnchor, constant: 16)
+            $0.size(48)
         }
+        
+        providerNameLabel.layout {
+            $0.leading(to: providerImageView.trailingAnchor, constant: 12)
+            $0.top(to: view.topAnchor, constant: 16)
+            $0.trailing(to: view.trailingAnchor, constant: -16)
+        }
+        
+        providerDescriptionLabel.layout {
+            $0.leading(to: providerImageView.trailingAnchor, constant: 12)
+            $0.top(to: providerNameLabel.bottomAnchor, constant: 8)
+            $0.trailing(to: view.trailingAnchor, constant: -16)
+            $0.bottom(to: view.bottomAnchor, constant: -16)
+        }
+        
+        return view
     }
+    
     
     // UI Components
     private lazy var containerView: UIView = {
@@ -115,7 +139,10 @@ final class SectionContainerCell: UITableViewCell {
         }
         
         stackView.layout {
-            $0.edges(to: containerView)
+            $0.top(to: containerView.topAnchor)
+            $0.leading(to: containerView.leadingAnchor)
+            $0.trailing(to: containerView.trailingAnchor)
+            $0.bottom(to: containerView.bottomAnchor)
         }
     }
     
@@ -207,88 +234,6 @@ final class SectionContainerCell: UITableViewCell {
         return view
     }
     
-    private func createFacilityItemView(item: FacilityDisplayItem) -> UIView {
-        let view = UIView()
-        
-        let iconImageView = UIImageView()
-        iconImageView.image = UIImage(systemName: item.iconName)
-        iconImageView.tintColor = item.isIncluded ? Token.alertsSuccess : Token.grayscale40
-        iconImageView.contentMode = .scaleAspectFit
-        
-        let nameLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .callout, weight: .medium),
-            textColor: item.isIncluded ? Token.grayscale90 : Token.grayscale50,
-            numberOfLines: 0
-        )
-        nameLabel.text = item.name
-        
-        let statusLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .caption2, weight: .medium),
-            textColor: item.isIncluded ? Token.alertsSuccess : Token.grayscale50,
-            numberOfLines: 1
-        )
-        statusLabel.text = item.isIncluded ? "Included" : "Not Included"
-        
-        view.addSubviews([iconImageView, nameLabel, statusLabel])
-        
-        iconImageView.layout {
-            $0.leading(to: view.leadingAnchor, constant: 16)
-            $0.centerY(to: view.centerYAnchor)
-            $0.size(24)
-        }
-        
-        nameLabel.layout {
-            $0.leading(to: iconImageView.trailingAnchor, constant: 12)
-            $0.centerY(to: view.centerYAnchor)
-            $0.trailing(to: statusLabel.leadingAnchor, constant: -8)
-        }
-        
-        statusLabel.layout {
-            $0.trailing(to: view.trailingAnchor, constant: -16)
-            $0.centerY(to: view.centerYAnchor)
-        }
-        
-        view.layout {
-            $0.height(44)
-        }
-        
-        return view
-    }
-    
-    private func createTermsItemView(item: TermsDisplayItem) -> UIView {
-        let view = UIView()
-        
-        let titleLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .callout, weight: .semibold),
-            textColor: item.isImportant ? Token.alertsSuccess : Token.grayscale90,
-            numberOfLines: 0
-        )
-        titleLabel.text = item.title
-        
-        let contentLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
-            textColor: Token.grayscale70,
-            numberOfLines: 0
-        )
-        contentLabel.text = item.content
-        
-        view.addSubviews([titleLabel, contentLabel])
-        
-        titleLabel.layout {
-            $0.top(to: view.topAnchor, constant: 12)
-            $0.leading(to: view.leadingAnchor, constant: 16)
-            $0.trailing(to: view.trailingAnchor, constant: -16)
-        }
-        
-        contentLabel.layout {
-            $0.top(to: titleLabel.bottomAnchor, constant: 8)
-            $0.leading(to: view.leadingAnchor, constant: 16)
-            $0.trailing(to: view.trailingAnchor, constant: -16)
-            $0.bottom(to: view.bottomAnchor, constant: -12)
-        }
-        
-        return view
-    }
     
     private func createSeparator() -> UIView {
         let separator = UIView()

@@ -11,6 +11,7 @@ struct ActivityDetailDataModel: Equatable {
     let title: String
     let location: String
     let imageUrlsString: [String]
+    let durationMinutes: Int
     
     let detailInfomation: ActivitySectionLayout<String>
     let providerDetail: ActivitySectionLayout<ProviderDetail>
@@ -38,6 +39,7 @@ struct ActivityDetailDataModel: Equatable {
     init(_ response: Activity) {
         title = response.title
         location = response.destination.name
+        durationMinutes = response.durationMinutes
         imageUrlsString = response.images
             .filter { $0.imageType != .banner }
             .map { $0.imageUrl }
