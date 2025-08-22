@@ -17,15 +17,6 @@ struct FormInputData {
     var participantCount: String = "1"
 }
 
-/// Data model for traveler details section
-struct TravelerData {
-    /// Traveler's full name
-    var name: String = ""
-    /// Traveler's phone number
-    var phone: String = ""
-    /// Traveler's email address
-    var email: String = ""
-}
 
 // MARK: - ViewModel Input
 
@@ -103,6 +94,9 @@ final class HomeFormScheduleViewModel {
             calendarInputViewModel.currentTypedText = dateFormatter.string(from: chosenDateInput)
         }
     }
+    
+    /// Current traveler data from the form
+    private var currentTravelerData = TravelerData(name: "", phone: "", email: "")
     
     /// Network service for creating bookings
     private let fetcher: CreateBookingFetcherProtocol
@@ -203,6 +197,17 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         let priceData = buildPriceDetailsData()
         actionDelegate?.updatePriceDetails(priceData)
     }
+    
+    /// Handles traveler data changes from the form
+    /// Updates internal state and refreshes price details
+    /// - Parameter data: Updated traveler information
+    func onTravelerDataChanged(_ data: TravelerData) {
+        currentTravelerData = data
+        
+        // Update price details to reflect traveler name
+        let priceData = buildPriceDetailsData()
+        actionDelegate?.updatePriceDetails(priceData)
+    }
 }
 
 // MARK: - Private Methods
@@ -233,7 +238,7 @@ private extension HomeFormScheduleViewModel {
         sections.append(formSection)
         
         // Add traveler details section
-        let travelerData = TravelerData()
+        let travelerData = TravelerData(name: "", phone: "", email: "")
         let travelerSection = BookingDetailSection(
             type: .travelerDetails,
             title: "Traveler details",
@@ -282,8 +287,8 @@ private extension HomeFormScheduleViewModel {
         numberFormatter.groupingSeparator = ","
         let formattedPrice = "Rp\(numberFormatter.string(from: NSNumber(value: totalPrice)) ?? "0")"
         
-        // Get traveler name (would come from traveler details section when implemented)
-        let travelerName = "Linda Christiana" // Placeholder - in real implementation, get from form
+        // Get traveler name from current form data
+        let travelerName = currentTravelerData.name
         
         return PriceDetailsData(
             selectedDate: dateString,

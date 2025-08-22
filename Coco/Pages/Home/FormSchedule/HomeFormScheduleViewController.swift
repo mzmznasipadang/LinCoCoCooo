@@ -40,6 +40,7 @@ final class HomeFormScheduleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTableView()
+        setupKeyboardHandling()
         viewModel.onViewDidLoad()
         title = "Booking Detail"
     }
@@ -158,6 +159,109 @@ final class HomeFormScheduleViewController: UIViewController {
         thisView.tableView.contentInset.bottom = totalHeight
         thisView.tableView.scrollIndicatorInsets.bottom = totalHeight
     }
+    
+    // MARK: - Keyboard Handling
+    
+    /// Sets up keyboard notifications for handling keyboard show/hide events
+    private func setupKeyboardHandling() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+    
+    /// Handles keyboard will show notification
+    /// Adjusts table view content insets to avoid keyboard covering input fields
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let animationDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else {
+            return
+        }
+        
+        // Convert keyboard frame to view coordinates
+        let keyboardHeight = keyboardFrame.height
+        
+        // Calculate new bottom inset (keyboard height + price details view height)
+        let priceDetailsHeight = priceDetailsView?.frame.height ?? 0
+        let newBottomInset = keyboardHeight + priceDetailsHeight
+        
+        // Animate the content inset change
+        UIView.animate(withDuration: animationDuration) {
+            self.thisView.tableView.contentInset.bottom = newBottomInset
+            self.thisView.tableView.scrollIndicatorInsets.bottom = newBottomInset
+            
+            // Scroll to keep the active text field visible if needed
+            if let firstResponder = self.findFirstResponder(in: self.thisView.tableView) {
+                self.scrollToKeepVisible(textField: firstResponder)
+            }
+        }
+    }
+    
+    /// Handles keyboard will hide notification  
+    /// Restores original table view content insets and scroll position
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        guard let animationDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else {
+            return
+        }
+        
+        // Restore original bottom inset and scroll to natural position
+        UIView.animate(withDuration: animationDuration) {
+            self.updateTableViewInsets()
+            
+            // Scroll to a natural position (slightly above the price details)
+            let contentHeight = self.thisView.tableView.contentSize.height
+            let tableHeight = self.thisView.tableView.frame.height
+            let priceDetailsHeight = self.priceDetailsView?.frame.height ?? 0
+            
+            // Calculate ideal scroll position to show content above price details
+            if contentHeight > tableHeight - priceDetailsHeight {
+                let targetOffsetY = max(0, contentHeight - (tableHeight - priceDetailsHeight - 20))
+                let targetOffset = CGPoint(x: 0, y: targetOffsetY)
+                self.thisView.tableView.setContentOffset(targetOffset, animated: false)
+            } else {
+                // If content fits, scroll to top
+                self.thisView.tableView.setContentOffset(.zero, animated: false)
+            }
+        }
+    }
+    
+    /// Finds the first responder text field in the table view
+    private func findFirstResponder(in view: UIView) -> UITextField? {
+        for subview in view.subviews {
+            if let textField = subview as? UITextField, textField.isFirstResponder {
+                return textField
+            }
+            if let found = findFirstResponder(in: subview) {
+                return found
+            }
+        }
+        return nil
+    }
+    
+    /// Scrolls the table view to keep the active text field visible
+    private func scrollToKeepVisible(textField: UITextField) {
+        // Convert text field frame to table view coordinates
+        guard let cell = textField.superview?.superview as? UITableViewCell,
+              let indexPath = thisView.tableView.indexPath(for: cell) else {
+            return
+        }
+        
+        // Scroll to the cell containing the active text field
+        thisView.tableView.scrollToRow(at: indexPath, at: .middle, animated: true)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -246,6 +350,9 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             ) as? TravelerDetailsCell else {
                 return UITableViewCell()
             }
+            
+            // Set delegate to handle traveler data changes
+            cell.delegate = self
             
             // Configure with current traveler data
             cell.configure(name: "", phone: "", email: "")
@@ -372,6 +479,13 @@ extension HomeFormScheduleViewController: CocoCalendarViewControllerDelegate {
     func notifyCalendarDidChooseDate(date: Date?, calendar: CocoCalendarViewController) {
         guard let date = date else { return }
         viewModel.onCalendarDidChoose(date: date)
+    }
+}
+
+// MARK: - TravelerDetailsCellDelegate
+extension HomeFormScheduleViewController: TravelerDetailsCellDelegate {
+    func travelerDetailsDidChange(_ data: TravelerData) {
+        viewModel.onTravelerDataChanged(data)
     }
 }
 

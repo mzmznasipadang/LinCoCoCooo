@@ -75,4 +75,9 @@ protocol HomeFormScheduleViewModelProtocol: AnyObject {
     /// Updates the participant field and rebuilds table sections
     /// - Parameter count: The selected participant count
     func updateParticipantCount(_ count: Int)
+    
+    /// Called when traveler details form data changes
+    /// Updates internal state and refreshes price details
+    /// - Parameter data: Updated traveler information
+    func onTravelerDataChanged(_ data: TravelerData)
 }

@@ -28,6 +28,11 @@ struct PriceDetailsData {
     var isComplete: Bool {
         return !selectedDate.contains("Select") && !travelerName.isEmpty
     }
+    
+    /// Whether the form has basic info (date selected, even if name is empty)
+    var hasBasicInfo: Bool {
+        return !selectedDate.contains("Select")
+    }
 }
 
 // MARK: - PriceDetailsView
@@ -214,13 +219,6 @@ final class PriceDetailsView: UIView {
     /// Height constraint for the details container (used for animations)
     private var detailsHeightConstraint: NSLayoutConstraint!
     
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        // Store reference to height constraint for animation
-        detailsHeightConstraint = detailsContainer.heightAnchor.constraint(equalToConstant: 0)
-        detailsHeightConstraint.isActive = true
-    }
-    
     // MARK: - Configuration
     
     /// Updates the view with new booking data
@@ -233,18 +231,25 @@ final class PriceDetailsView: UIView {
         // Clear existing details
         detailsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        // Add detail rows
-        if data.isComplete {
+        // Add detail rows only if we have basic info
+        if data.hasBasicInfo {
             addDetailRow(title: "Dates", value: data.selectedDate)
             addDetailRow(title: "Pax", value: "\(data.participantCount)")
-            addDetailRow(title: "Name", value: data.travelerName)
+            if !data.travelerName.isEmpty {
+                addDetailRow(title: "Name", value: data.travelerName)
+            }
+            addDetailRow(title: "Pay during trip", value: data.totalPrice, isTotal: true)
         }
         
-        addDetailRow(title: "Pay during trip", value: data.totalPrice, isTotal: true)
+        // Make sure we start collapsed if not expanded
+        if !isExpanded {
+            detailsHeightConstraint.constant = 0
+            detailsContainer.isHidden = true
+        }
         
-        // Update button state
-        bookNowButton.isEnabled = data.isComplete
-        bookNowButton.alpha = data.isComplete ? 1.0 : 0.6
+        // Update button state - enable if date is selected (basic requirement)
+        bookNowButton.isEnabled = data.hasBasicInfo
+        bookNowButton.alpha = data.hasBasicInfo ? 1.0 : 0.6
     }
     
     private func addDetailRow(title: String, value: String, isTotal: Bool = false) {
@@ -283,21 +288,36 @@ final class PriceDetailsView: UIView {
     // MARK: - Actions
     
     @objc private func headerTapped() {
-        guard bookingData?.isComplete == true else { return }
+        guard bookingData?.hasBasicInfo == true else { return }
         
         isExpanded.toggle()
+        
+        // Calculate target height
+        let targetHeight: CGFloat = isExpanded ? calculateExpandedHeight() : 0
         
         UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations: {
             // Rotate chevron
             self.chevronImageView.transform = self.isExpanded ? 
                 CGAffineTransform(rotationAngle: .pi) : .identity
             
-            // Show/hide details
-            self.detailsContainer.alpha = self.isExpanded ? 1.0 : 0.0
+            // Update height constraint
+            self.detailsHeightConstraint.constant = targetHeight
+            
+            // Show/hide details container
+            self.detailsContainer.isHidden = !self.isExpanded
             
             // Update layout
-            self.superview?.layoutIfNeeded()
+            self.layoutIfNeeded()
         })
+    }
+    
+    /// Calculates the height needed for expanded content
+    private func calculateExpandedHeight() -> CGFloat {
+        guard let data = bookingData else { return 0 }
+        
+        // Each detail row is 24pt + 12pt spacing, plus some padding
+        let rowCount = data.hasBasicInfo ? 4 : 1 // dates, pax, name, total price
+        return CGFloat(rowCount * 24 + (rowCount - 1) * 12) // rows + spacing
     }
     
     @objc private func bookNowTapped() {
