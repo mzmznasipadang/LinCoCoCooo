@@ -41,7 +41,7 @@ jobs:
           xcodebuild test \
             -project Coco.xcodeproj \
             -scheme Coco \
-            -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=17.4' \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=latest' \
             -derivedDataPath Build/DerivedData \
             ONLY_ACTIVE_ARCH=YES \
             CODE_SIGN_IDENTITY="" \
