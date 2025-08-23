@@ -67,8 +67,8 @@ struct HomeViewModelTest {
             filterPillDataState: [],
             priceRangeModel: HomeSearchFilterPriceRangeModel(
                 minPrice: 499000.0,
-                maxPrice: 200000,
-                range: 0...0
+                maxPrice: 500000,
+                range: 0...500000
             )
         )
         

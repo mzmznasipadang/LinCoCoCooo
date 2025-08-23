@@ -102,4 +102,52 @@ extension ActivityDetailView {
         
         return containerView
     }
+    
+    // MARK: - Promo Section
+    func createPromoSection() -> UIView {
+        let titleLabel = UILabel()
+        titleLabel.text = "Promo"
+        titleLabel.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
+        titleLabel.textColor = Token.additionalColorsBlack
+        
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        
+        let imageStackView = UIStackView()
+        imageStackView.axis = .horizontal
+        imageStackView.spacing = 16
+        
+        let promoImageNames = ["Banner1", "Banner2", "Banner3", "Banner4"]
+        
+        for imageName in promoImageNames {
+            let imageView = UIImageView()
+            imageView.image = UIImage(named: imageName)
+            imageView.contentMode = .scaleAspectFill
+            imageView.clipsToBounds = true
+            
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                imageView.widthAnchor.constraint(equalToConstant: 280),
+                imageView.heightAnchor.constraint(equalToConstant: 160)
+            ])
+            
+            imageStackView.addArrangedSubview(imageView)
+        }
+        
+        scrollView.addSubview(imageStackView)
+        imageStackView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            imageStackView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            imageStackView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            imageStackView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            imageStackView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            imageStackView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
+        ])
+
+        let mainStackView = createStackView(spacing: 16)
+        mainStackView.addArrangedSubview(titleLabel)
+        mainStackView.addArrangedSubview(scrollView)
+        
+        return mainStackView
+    }
 }
