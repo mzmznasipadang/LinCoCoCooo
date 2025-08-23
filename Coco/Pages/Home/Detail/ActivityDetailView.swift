@@ -149,6 +149,18 @@ final class ActivityDetailView: UIView {
         sectionAnchors.append(promoAnchor)
         let promoView = createPromoSection()
         contentStackView.addArrangedSubview(promoView)
+        
+        contentStackView.addArrangedSubview(createDivider())
+        
+        // 6) Review Section
+        let reviewSection = createReviewSection()
+            
+        sectionTitles.append("Review")
+        let reviewAnchor = makeAnchor()
+        contentStackView.addArrangedSubview(reviewAnchor)
+        sectionAnchors.append(reviewAnchor)
+        
+        contentStackView.addArrangedSubview(reviewSection)
 
         scrollView.setContentOffset(.zero, animated: false)
 
