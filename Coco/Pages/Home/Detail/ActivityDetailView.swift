@@ -11,6 +11,7 @@ import UIKit
 protocol ActivityDetailViewDelegate: AnyObject {
     func notifyPackagesDetailDidTap(with packageId: Int)
     func notifyHighlightsSeeMoreDidTap(fullText: String)
+    func notifyPackageDetailsDidTap(with packageId: Int)
 }
 
 final class ActivityDetailView: UIView {
@@ -30,6 +31,8 @@ final class ActivityDetailView: UIView {
     var setNavigationTitle: ((String) -> Void)?
     var onStickyTabVisibilityChanged: ((Bool) -> Void)?
     private var lastStickyVisible: Bool = false
+    private lazy var stickyBottomBar = createStickyBottomBar()
+    private var bottomBarPriceLabel: UILabel?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -38,6 +41,14 @@ final class ActivityDetailView: UIView {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+    
+        let barHeight = stickyBottomBar.isHidden ? 0 : stickyBottomBar.frame.height
+        scrollView.contentInset.bottom = barHeight
+        scrollView.verticalScrollIndicatorInsets.bottom = barHeight
     }
 
     func configureView(_ data: ActivityDetailDataModel) {
@@ -131,19 +142,6 @@ final class ActivityDetailView: UIView {
 
         contentStackView.addArrangedSubview(createDivider())
 
-        // 5) Facilities Section
-//        if !data.tripFacilities.content.isEmpty {
-//            let facilitiesView = createSectionView(
-//                title: data.tripFacilities.title,
-//                view: createBenefitListView(titles: data.tripFacilities.content)
-//            )
-//            sectionTitles.append("Facilities")
-//            let facAnchor = makeAnchor()
-//            contentStackView.addArrangedSubview(facAnchor)
-//            sectionAnchors.append(facAnchor)
-//            contentStackView.addArrangedSubview(facilitiesView)
-//        }
-
         scrollView.setContentOffset(.zero, animated: false)
 
         let tabs = CustomTabBar(titles: sectionTitles)
@@ -166,6 +164,26 @@ final class ActivityDetailView: UIView {
         layoutIfNeeded()
         scrollViewDidScroll(scrollView)
         setNavigationTitle?(data.title)
+        
+        if let priceText = data.lowestPriceFormatted {
+            // Buat attributed string untuk harga
+            let boldAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.jakartaSans(forTextStyle: .title3, weight: .bold),
+                .foregroundColor: Token.additionalColorsBlack
+            ]
+            let regularAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.jakartaSans(forTextStyle: .footnote, weight: .regular),
+                .foregroundColor: Token.grayscale70
+            ]
+
+            let attributedPrice = NSMutableAttributedString(string: priceText, attributes: boldAttributes)
+            attributedPrice.append(NSAttributedString(string: "/pax", attributes: regularAttributes))
+
+            bottomBarPriceLabel?.attributedText = attributedPrice
+            stickyBottomBar.isHidden = false
+        } else {
+            stickyBottomBar.isHidden = true
+        }
     }
 
     func addImageSliderView(with view: UIView) {
@@ -268,7 +286,7 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
         )
         contentStackView.layer.cornerRadius = 24.0
         contentStackView.layer.maskedCorners = [
-            .layerMinXMinYCorner, .layerMaxXMinYCorner,
+            .layerMinXMinYCorner, .layerMaxXMinYCorner
         ]
         contentStackView.backgroundColor = Token.additionalColorsWhite
 
@@ -279,6 +297,70 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
         tabSpacerHeight?.isActive = true
         contentStackView.addArrangedSubview(tabSpacer)
 
+        addSubview(stickyBottomBar)
+        stickyBottomBar.layout {
+            $0.leading(to: leadingAnchor)
+            $0.trailing(to: trailingAnchor)
+            $0.bottom(to: bottomAnchor)
+        }
+
+    }
+    
+    private func createStickyBottomBar() -> UIView {
+        let container = UIView()
+        container.backgroundColor = .systemBackground
+        container.layer.shadowColor = UIColor.black.cgColor
+        container.layer.shadowOpacity = 0.1
+        container.layer.shadowOffset = .init(width: 0, height: -2)
+        container.layer.shadowRadius = 4
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let startFromLabel = UILabel()
+        startFromLabel.text = "Start from"
+        startFromLabel.font = .jakartaSans(forTextStyle: .caption1, weight: .regular)
+        startFromLabel.textColor = .secondaryLabel
+
+        let priceLabel = UILabel()
+        self.bottomBarPriceLabel = priceLabel
+
+        let seePackagesButton = UIButton(type: .system)
+        seePackagesButton.setTitle("See Packages", for: .normal)
+        seePackagesButton.titleLabel?.font = .jakartaSans(forTextStyle: .subheadline, weight: .bold)
+        seePackagesButton.backgroundColor = Token.mainColorPrimary
+        seePackagesButton.setTitleColor(.white, for: .normal)
+        seePackagesButton.layer.cornerRadius = 14
+        seePackagesButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 24, bottom: 12, right: 24)
+        seePackagesButton.addTarget(self, action: #selector(seePackagesButtonTapped), for: .touchUpInside)
+
+        let priceStack = createStackView(spacing: 2, axis: .vertical)
+        priceStack.alignment = .leading
+        priceStack.addArrangedSubview(startFromLabel)
+        priceStack.addArrangedSubview(priceLabel)
+
+        container.addSubviews([priceStack, seePackagesButton])
+
+        priceStack.layout {
+            $0.leading(to: container.leadingAnchor, constant: 16)
+            $0.centerY(to: container.centerYAnchor)
+            $0.top(to: container.topAnchor, constant: 12)
+            $0.bottom(to: container.safeAreaLayoutGuide.bottomAnchor, constant: 4)
+        }
+
+        seePackagesButton.layout {
+            $0.trailing(to: container.trailingAnchor, constant: -16)
+            $0.centerY(to: container.centerYAnchor)
+            $0.top(to: container.topAnchor, constant: 12)
+            $0.bottom(to: container.safeAreaLayoutGuide.bottomAnchor, constant: 4)
+        }
+
+        container.isHidden = true
+        return container
+    }
+
+    @objc private func seePackagesButtonTapped() {
+        guard let packageSectionIndex = sectionTitles.firstIndex(of: "Packages") else { return }
+        tabBarView?.setSelected(index: packageSectionIndex, animated: true, notify: false)
+        scrollToSection(packageSectionIndex, animated: true)
     }
 
     private func makeAnchor() -> UIView {

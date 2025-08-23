@@ -154,8 +154,8 @@ struct HomeViewModelTest {
         ])
         
         // Details
-        #expect(selectedData?.detailInfomation.title == "Details")
-        #expect(selectedData?.detailInfomation.content == "Explore the stunning underwater world of Nusa Penida with our professional guides. Perfect for beginners and experienced snorkelers alike.")
+        #expect(selectedData?.descriptionInfomation.title == "Description")
+        #expect(selectedData?.descriptionInfomation.content == "Explore the stunning underwater world of Nusa Penida with our professional guides. Perfect for beginners and experienced snorkelers alike.")
         
         // Provider
         #expect(selectedData?.providerDetail.title == "Trip Provider")
@@ -164,7 +164,7 @@ struct HomeViewModelTest {
         #expect(selectedData?.providerDetail.content.description == "Professional diving instructor with 5 years of experience")
         
         // Facilities
-        #expect(selectedData?.tripFacilities.title == "This Trip Includes")
+        #expect(selectedData?.tripFacilities.title == "Facilities")
         #expect(selectedData?.tripFacilities.content == ["Snorkeling Equipment", "Life Jacket", "Waterproof Camera"])
         
         // Packages

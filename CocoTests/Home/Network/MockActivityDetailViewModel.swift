@@ -16,11 +16,6 @@ final class MockActivityDetailViewModel: ActivityDetailViewModelProtocol {
     private(set) var didCallOnViewDidLoad = 0
     func onViewDidLoad() { didCallOnViewDidLoad += 1 }
 
-    private(set) var didCallOnPackageDetailStateDidChange: [(Bool)] = []
-    func onPackageDetailStateDidChange(shouldShowAll: Bool) {
-        didCallOnPackageDetailStateDidChange.append(shouldShowAll)
-    }
-
     private(set) var didCallOnPackagesDetailDidTap: [Int] = []
     func onPackagesDetailDidTap(with packageId: Int) {
         didCallOnPackagesDetailDidTap.append(packageId)

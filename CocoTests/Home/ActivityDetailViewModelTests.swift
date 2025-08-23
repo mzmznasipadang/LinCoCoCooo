@@ -50,36 +50,6 @@ struct ActivityDetailViewModelTests {
         #expect(c.action.lastConfiguredData == c.data)
     }
 
-    // MARK: - Toggle paket
-
-    @Test("onPackageDetailStateDidChange(false) - kirim hiddenPackages")
-    func togglePackages_false_shouldSendHidden() throws {
-        // --- GIVEN ---
-        let c = try Ctx.setup()
-        
-        // --- WHEN ---
-        c.vm.onViewDidLoad()
-        c.vm.onPackageDetailStateDidChange(shouldShowAll: false)
-        
-        // --- THEN ---
-        #expect(c.action.updatePackageDataCount == 1)
-        #expect(c.action.lastPackages == c.data.hiddenPackages)
-    }
-
-    @Test("onPackageDetailStateDidChange(true) - kirim seluruh availablePackages")
-    func togglePackages_true_shouldSendAll() throws {
-        // --- GIVEN ---
-        let c = try Ctx.setup()
-        
-        // --- WHEN ---
-        c.vm.onViewDidLoad()
-        c.vm.onPackageDetailStateDidChange(shouldShowAll: true)
-
-        // --- THEN ---
-        #expect(c.action.updatePackageDataCount == 1)
-        #expect(c.action.lastPackages == c.data.availablePackages.content)
-    }
-
     // MARK: - Navigasi paket detail
 
     @Test("onPackagesDetailDidTap - meneruskan id & paket ke navigation delegate")

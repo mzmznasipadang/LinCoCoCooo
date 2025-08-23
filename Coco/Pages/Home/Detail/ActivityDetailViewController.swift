@@ -90,4 +90,16 @@ extension ActivityDetailViewController: ActivityDetailViewDelegate {
         
         present(highlightsVC, animated: true, completion: nil)
     }
+    
+    func notifyPackageDetailsDidTap(with packageId: Int) {
+        let itineraryVC = ItineraryViewController()
+        
+        if let sheet = itineraryVC.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = false
+            sheet.preferredCornerRadius = 24
+        }
+        
+        present(itineraryVC, animated: true)
+    }
 }

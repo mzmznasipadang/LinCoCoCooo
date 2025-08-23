@@ -17,6 +17,8 @@ struct ActivityDetailDataModel: Equatable {
     let tripFacilities: ActivitySectionLayout<[String]>
     let tnc: String
     
+    let lowestPriceFormatted: String?
+    
     let availablePackages: ActivitySectionLayout<[String: [Package]]>
     let hiddenPackages: [Package]
     
@@ -85,6 +87,16 @@ struct ActivityDetailDataModel: Equatable {
         )
         
         hiddenPackages = Array(allPackages.prefix(2))
+        
+        let lowestPriceValue = response.packages.min(by: { $0.pricePerPerson < $1.pricePerPerson })?.pricePerPerson
+
+        if let price = lowestPriceValue {
+            // Format angka menjadi format Rupiah
+            let formattedPrice = PriceFormatting.formattedIndonesianDecimal(from: "\(price)")
+            self.lowestPriceFormatted = "IDR \(formattedPrice)"
+        } else {
+            self.lowestPriceFormatted = nil
+        }
     }
 }
 

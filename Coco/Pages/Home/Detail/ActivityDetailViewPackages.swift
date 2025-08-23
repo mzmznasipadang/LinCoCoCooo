@@ -154,7 +154,10 @@ extension ActivityDetailView {
         priceLabel.attributedText = attributedPrice
         
         let detailsButton = UIButton.textButton(title: "Details", color: Token.mainColorPrimary)
-        // action untuk details
+        let detailsAction = UIAction { [weak self] _ in
+            self?.delegate?.notifyPackageDetailsDidTap(with: data.id)
+        }
+        detailsButton.addAction(detailsAction, for: .touchUpInside)
         
         let bookButton = UIButton(type: .system)
         bookButton.setTitle("Book", for: .normal)

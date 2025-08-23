@@ -24,7 +24,7 @@ final class HighlightsViewController: UIViewController {
     // MARK: - UI Components
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Highlights"
+//        label.text = "Highlights"
         label.textAlignment = .center
         return label
     }()
