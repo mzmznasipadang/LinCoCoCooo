@@ -9,6 +9,11 @@ import Foundation
 import SwiftUI
 import UIKit
 
+struct ActivitySection {
+    let title: String
+    let activities: [HomeActivityCellDataModel]
+}
+
 final class HomeViewController: UIViewController {
     init(viewModel: HomeViewModelProtocol) {
         self.viewModel = viewModel
@@ -20,25 +25,59 @@ final class HomeViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        viewModel.onViewDidLoad()
-    }
-    
     override func loadView() {
         view = thisView
     }
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupCollectionView()
+        viewModel.onViewDidLoad()
+    }
+    
     private let thisView: HomeView = HomeView()
     private let viewModel: HomeViewModelProtocol
+    private var activitySections: [ActivitySection] = []
+    private let sectionOrder = ["Family", "Couples", "Group", "Solo"]
+}
+
+private extension HomeViewController {
+    func setupCollectionView() {
+        thisView.collectionView.delegate = self
+        thisView.collectionView.dataSource = self
+    }
+    
+    func presentTray(view: some View) {
+        let trayVC: UIHostingController = UIHostingController(rootView: view)
+        if let sheet: UISheetPresentationController = trayVC.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.prefersEdgeAttachedInCompactHeight = true
+            sheet.preferredCornerRadius = 32.0
+        }
+        present(trayVC, animated: true)
+    }
 }
 
 extension HomeViewController: HomeViewModelAction {
-    func constructCollectionView(viewModel: some HomeCollectionViewModelProtocol) {
-        let collectionViewController: HomeCollectionViewController = HomeCollectionViewController(viewModel: viewModel)
-        addChild(collectionViewController)
-        thisView.addSearchResultView(from: collectionViewController.view)
-        collectionViewController.didMove(toParent: self)
+    func displayActivities(data: [HomeActivityCellDataModel]) {
+        let groupedActivities = Dictionary(grouping: data) { activity -> String in
+            let adtData = AdditionalDataService.shared.getActivity(byId: activity.id)
+            return adtData?.label ?? "Other"
+        }
+        
+        activitySections.removeAll()
+        
+        for sectionTitle in sectionOrder {
+            if let activities = groupedActivities[sectionTitle] {
+                activitySections.append(ActivitySection(title: "Perfect for \(sectionTitle)", activities: activities))
+            }
+        }
+        
+        DispatchQueue.main.async {
+            self.thisView.collectionView.reloadData()
+        }
     }
     
     func constructLoadingState(state: HomeLoadingState) {
@@ -65,15 +104,9 @@ extension HomeViewController: HomeViewModelAction {
     }
     
     func activityDidSelect(data: ActivityDetailDataModel) {
-        guard let navigationController else { return }
-        let coordinator: HomeCoordinator = HomeCoordinator(
-            input: .init(
-                navigationController: navigationController,
-                flow: .activityDetail(data: data)
-            )
-        )
-        coordinator.parentCoordinator = AppCoordinator.shared
-        coordinator.start()
+        let detailViewModel = ActivityDetailViewModel(data: data)
+        let detailViewController = ActivityDetailViewController(viewModel: detailViewModel)
+        navigationController?.pushViewController(detailViewController, animated: true)
     }
     
     func openSearchTray(
@@ -98,16 +131,41 @@ extension HomeViewController: HomeViewModelAction {
     }
 }
 
-private extension HomeViewController {
-    func presentTray(view: some View) {
-        let trayVC: UIHostingController = UIHostingController(rootView: view)
-        if let sheet: UISheetPresentationController = trayVC.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-            sheet.prefersEdgeAttachedInCompactHeight = true
-            sheet.preferredCornerRadius = 32.0
+// Grouped Trip
+extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return activitySections.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return activitySections[section].activities.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HomeActivityCell", for: indexPath) as? HomeActivityCell else {
+            return UICollectionViewCell()
         }
-        present(trayVC, animated: true)
+        let activity = activitySections[indexPath.section].activities[indexPath.item]
+        cell.configureCell(activity)
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionHeader,
+              let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: "SectionHeader",
+                for: indexPath) as? SectionHeaderView else {
+            return UICollectionReusableView()
+        }
+        
+        let section = activitySections[indexPath.section]
+        header.configure(with: section.title)
+        return header
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedActivity = activitySections[indexPath.section].activities[indexPath.item]
+        viewModel.onActivityDidSelect(with: selectedActivity.id)
     }
 }
