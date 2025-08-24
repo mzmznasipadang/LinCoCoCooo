@@ -128,15 +128,19 @@ private extension HomeActivityCell {
                 .leading(to: imageView.leadingAnchor, constant: 12)
         }
         
+        let spacerView = UIView()
+        spacerView.setContentHuggingPriority(.defaultLow, for: .vertical)
+        spacerView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        
         let stackView: UIStackView = UIStackView(
             arrangedSubviews: [
                 nameLabel,
                 areaView,
+                spacerView,
                 priceLabel
             ]
         )
         stackView.spacing = 8.0
-        stackView.setCustomSpacing(28.0, after: areaView)
         stackView.axis = .vertical
         stackView.alignment = .fill
         stackView.distribution = .fill
@@ -147,6 +151,7 @@ private extension HomeActivityCell {
                 .leading(to: cardView.leadingAnchor, constant: 12)
                 .trailing(to: cardView.trailingAnchor, constant: -12)
                 .bottom(to: cardView.bottomAnchor, constant: -12)
+                .height(130) // Set a fixed height for the content area
         }
     }
     
@@ -218,7 +223,6 @@ private extension HomeActivityCell {
         areaLabel.layout {
             $0.leading(to: iconImageView.trailingAnchor, constant: 4.0)
                 .centerY(to: containerView.centerYAnchor)
-                .trailing(to: containerView.trailingAnchor, relation: .lessThanOrEqual)
         }
         
         bulletDividerLabel.layout {
