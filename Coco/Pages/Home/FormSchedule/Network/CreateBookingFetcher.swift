@@ -17,13 +17,21 @@ final class CreateBookingFetcher: CreateBookingFetcherProtocol {
     }
     
     func createBooking(request: CreateBookingSpec) async throws -> CreateBookingResponse {
-        try await networkService.request(
-            urlString: CreateBookingEndpoint.create.urlString,
-            method: .post,
-            parameters: [:],
-            headers: [:],
-            body: request
-        )
+        do {
+            return try await networkService.request(
+                urlString: CreateBookingEndpoint.create.urlString,
+                method: .post,
+                parameters: [:],
+                headers: [:],
+                body: request
+            )
+        } catch let NetworkServiceError.requestFailedWithMessage(error, data) {
+            throw APIError(data: data, response: nil, underlying: error)
+        } catch let NetworkServiceError.statusCode(status) {
+            throw APIError(data: nil, response: nil, underlying: NetworkServiceError.statusCode(status))
+        } catch {
+            throw error
+        }
     }
     
     private let networkService: NetworkServiceProtocol

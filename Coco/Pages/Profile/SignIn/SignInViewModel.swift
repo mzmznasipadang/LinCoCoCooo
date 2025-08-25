@@ -44,7 +44,7 @@ extension SignInViewModel: SignInViewModelProtocol {
     func onSignInDidTap() {
         fetcher.signIn(
             spec: SignInSpec(
-                email: emailInputVM.currentTypedText,
+                email: emailInputVM.currentTypedText.lowercased(),
                 password: passwordInputVM.currentTypedText
             )
         ) { [weak self] result in

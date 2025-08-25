@@ -23,13 +23,13 @@ struct ImageSliderView: View {
                             image
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: geo.size.width, height: 341)
+                                .frame(width: geo.size.width, height: 250)
                                 .clipped()
                         } placeholder: {
-                            Color.gray.frame(height: 341)
+                            Color.gray.frame(height: 250)
                         }
                     }
-                    .frame(height: 341)
+                    .frame(height: 250)
                     .tag(index)
                 }
             }
@@ -56,7 +56,7 @@ struct ImageSliderView: View {
             .padding(.bottom, 12)
             .padding(.horizontal, 16)
         }
-        .frame(height: 341)
+        .frame(height: 250)
     }
 }
 

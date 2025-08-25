@@ -9,111 +9,220 @@ import Foundation
 import UIKit
 
 protocol ActivityDetailViewDelegate: AnyObject {
-    func notifyPackagesButtonDidTap(shouldShowAll: Bool)
     func notifyPackagesDetailDidTap(with packageId: Int)
+    func notifyHighlightsSeeMoreDidTap(fullText: String)
+    func notifyPackageDetailsDidTap(with packageId: Int)
 }
 
 final class ActivityDetailView: UIView {
     weak var delegate: ActivityDetailViewDelegate?
-    
+
+    // MARK: - NEW: Scroll & Tabs
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
+    private var tabBarView: CustomTabBar?
+    private var sectionTitles: [String] = []
+    private var sectionAnchors: [UIView] = []
+    private var isProgrammaticScroll = false
+    private var stickyTabBar: CustomTabBar?
+    private let tabSpacer = UIView()
+    private var imageSliderHeight: NSLayoutConstraint?
+    private var tabSpacerHeight: NSLayoutConstraint?
+    var setNavigationTitle: ((String) -> Void)?
+    var onStickyTabVisibilityChanged: ((Bool) -> Void)?
+    private var lastStickyVisible: Bool = false
+    private lazy var stickyBottomBar = createStickyBottomBar()
+    private var bottomBarPriceLabel: UILabel?
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+    
+        let barHeight = stickyBottomBar.isHidden ? 0 : stickyBottomBar.frame.height
+        scrollView.contentInset.bottom = barHeight
+        scrollView.verticalScrollIndicatorInsets.bottom = barHeight
+    }
+
     func configureView(_ data: ActivityDetailDataModel) {
+        sectionTitles.removeAll()
+        sectionAnchors.removeAll()
+        tabBarView?.removeFromSuperview()
+        // --- Title content ---
         titleLabel.text = data.title
         locationLabel.text = data.location
         
-        // Detail section
-        let detailDescription: UILabel = UILabel(
-            font: .jakartaSans(forTextStyle: .headline, weight: .regular),
+        // 1) Title Section
+        contentStackView.addArrangedSubview(createTitleView())
+        contentStackView.addArrangedSubview(createDivider())
+
+        // 2) Highlights Section
+        let highlightsDescription = UILabel(
+            font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
             textColor: Token.grayscale70,
+            numberOfLines: 2
+        )
+        let fullHighlights = data.tnc
+        let highlightsView = createHighlightsSection(fullText: fullHighlights)
+
+        sectionTitles.append("Highlights")
+        let hlAnchor = makeAnchor()
+        contentStackView.addArrangedSubview(hlAnchor)
+        sectionAnchors.append(hlAnchor)
+        contentStackView.addArrangedSubview(highlightsView)
+        contentStackView.addArrangedSubview(createDivider())
+        
+        // 3) Package Section
+        if !data.availablePackages.content.isEmpty {
+            sectionTitles.append("Packages")
+            let pkgAnchor = makeAnchor()
+            contentStackView.addArrangedSubview(pkgAnchor)
+            sectionAnchors.append(pkgAnchor)
+
+            packageContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+            let sortedHosts = data.availablePackages.content.keys.sorted()
+
+            for hostName in sortedHosts {
+                guard let packagesForHost = data.availablePackages.content[hostName] else { continue }
+
+                let hostLabel = UILabel(
+                    font: .jakartaSans(forTextStyle: .body, weight: .semibold),
+                    textColor: Token.additionalColorsBlack
+                )
+                hostLabel.text = hostName
+                packageContainer.addArrangedSubview(hostLabel)
+
+                for packageData in packagesForHost {
+                    packageContainer.addArrangedSubview(
+                        createPackageView(data: packageData)
+                    )
+                }
+
+                if let lastViewInGroup = packageContainer.arrangedSubviews.last {
+                    packageContainer.setCustomSpacing(24, after: lastViewInGroup)
+                }
+            }
+
+            contentStackView.addArrangedSubview(packageSection)
+
+            packageLabel.text = data.availablePackages.title
+            packageLabel.isHidden = false
+
+        } else {
+            packageLabel.isHidden = true
+        }
+        
+        contentStackView.addArrangedSubview(createDivider())
+
+        // 4) Description Section
+        let detailDescription = UILabel(
+            font: .jakartaSans(forTextStyle: .body, weight: .regular),
+            textColor: Token.additionalColorsBlack,
             numberOfLines: 0
         )
-        detailDescription.text = data.detailInfomation.content
-        contentStackView.addArrangedSubview(
-            createSectionView(
-                title: data.detailInfomation.title,
-                view: detailDescription
-            )
+        detailDescription.text = data.descriptionInfomation.content
+        let detailView = createSectionView(
+            title: data.descriptionInfomation.title,
+            view: detailDescription
         )
+
+        sectionTitles.append("Description")
+        let detailAnchor = makeAnchor()
+        contentStackView.addArrangedSubview(detailAnchor)
+        sectionAnchors.append(detailAnchor)
+        contentStackView.addArrangedSubview(detailView)
+
+        contentStackView.addArrangedSubview(createDivider())
         
-        // Trip Provider
-        contentStackView.addArrangedSubview(
-            createSectionView(
-                title: data.providerDetail.title,
-                view: createProviderDetail(
-                    imageUrl: data.providerDetail.content.imageUrlString,
-                    name: data.providerDetail.content.name,
-                    description: data.providerDetail.content.description
-                )
-            )
-        )
+        // 5) Promo Section
+        sectionTitles.append("Promo")
+        let promoAnchor = makeAnchor()
+        contentStackView.addArrangedSubview(promoAnchor)
+        sectionAnchors.append(promoAnchor)
+        let promoView = createPromoSection()
+        contentStackView.addArrangedSubview(promoView)
         
-        // Facilities
-        if !data.tripFacilities.content.isEmpty {
-            contentStackView.addArrangedSubview(
-                createSectionView(
-                    title: data.tripFacilities.title,
-                    view: createBenefitListView(titles: data.tripFacilities.content)
-                )
-            )
-        }
+        contentStackView.addArrangedSubview(createDivider())
         
-        // TnC
-        if !data.tnc.isEmpty {
-            let tncLabel: UILabel = UILabel(
-                font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
-                textColor: Token.additionalColorsBlack,
-                numberOfLines: 0
-            )
-            tncLabel.text = data.tnc
-            contentStackView.addArrangedSubview(createSectionView(
-                title: "Terms and Conditon",
-                view: tncLabel
-            ))
-        }
-        
-        if !data.availablePackages.content.isEmpty {
-            contentStackView.addArrangedSubview(packageSection)
+        // 6) Review Section
+        let reviewSection = createReviewSection()
             
-            if data.availablePackages.content.count == data.hiddenPackages.count {
-                packageButton.isHidden = true
-                data.availablePackages.content.forEach { data in
-                    packageContainer.addArrangedSubview(createPackageView(data: data))
-                }
-            }
-            else {
-                data.hiddenPackages.forEach { data in
-                    packageContainer.addArrangedSubview(createPackageView(data: data))
-                }
-            }
-            
-            packageLabel.text = data.availablePackages.title
-        }
+        sectionTitles.append("Review")
+        let reviewAnchor = makeAnchor()
+        contentStackView.addArrangedSubview(reviewAnchor)
+        sectionAnchors.append(reviewAnchor)
         
-        packageLabel.isHidden = data.availablePackages.content.isEmpty
+        contentStackView.addArrangedSubview(reviewSection)
+
+        scrollView.setContentOffset(.zero, animated: false)
+
+        let tabs = CustomTabBar(titles: sectionTitles)
+        tabs.translatesAutoresizingMaskIntoConstraints = false
+        tabs.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        tabs.delegate = self
+        tabs.isHidden = true
+        addSubview(tabs)
+        NSLayoutConstraint.activate([
+            tabs.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
+            tabs.leadingAnchor.constraint(equalTo: leadingAnchor),
+            tabs.trailingAnchor.constraint(equalTo: trailingAnchor),
+            tabs.heightAnchor.constraint(equalToConstant: 48)
+        ])
+        self.stickyTabBar?.removeFromSuperview()
+        self.stickyTabBar = tabs
+        self.tabBarView = tabs
+
+        tabs.setSelected(index: 0, animated: false, notify: false)
+        layoutIfNeeded()
+        scrollViewDidScroll(scrollView)
+        setNavigationTitle?(data.title)
+        
+        if let priceText = data.lowestPriceFormatted {
+            // Buat attributed string untuk harga
+            let boldAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.jakartaSans(forTextStyle: .title3, weight: .bold),
+                .foregroundColor: Token.additionalColorsBlack
+            ]
+            let regularAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.jakartaSans(forTextStyle: .footnote, weight: .regular),
+                .foregroundColor: Token.grayscale70
+            ]
+
+            let attributedPrice = NSMutableAttributedString(string: priceText, attributes: boldAttributes)
+            attributedPrice.append(NSAttributedString(string: "/pax", attributes: regularAttributes))
+
+            bottomBarPriceLabel?.attributedText = attributedPrice
+            stickyBottomBar.isHidden = false
+        } else {
+            stickyBottomBar.isHidden = true
+        }
     }
-    
+
     func addImageSliderView(with view: UIView) {
         imageSliderView.subviews.forEach { $0.removeFromSuperview() }
         imageSliderView.addSubviewAndLayout(view)
     }
-    
+
     func toggleImageSliderView(isShown: Bool) {
         imageSliderView.isHidden = !isShown
+        imageSliderHeight?.constant = isShown ? 250 : 0
+        setNeedsLayout()
+        layoutIfNeeded()
     }
-    
+
     func updatePackageData(_ data: [ActivityDetailDataModel.Package]) {
         packageContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        
+
         for (index, item) in data.enumerated() {
-            let view: UIView = createPackageView(data: item)
+            let view = createPackageView(data: item)
             view.alpha = 0
             view.transform = CGAffineTransform(translationX: 0, y: 8)
             packageContainer.addArrangedSubview(view)
@@ -131,483 +240,221 @@ final class ActivityDetailView: UIView {
             )
         }
     }
-    
-    private lazy var imageSliderView: UIView = UIView()
-    private lazy var titleView: UIView = createTitleView()
-    private lazy var titleLabel: UILabel = UILabel(
+
+    // MARK: - UI Components
+    private lazy var imageSliderView = UIView()
+    lazy var titleLabel = UILabel(
         font: .jakartaSans(forTextStyle: .title2, weight: .bold),
         textColor: Token.additionalColorsBlack,
         numberOfLines: 2
     )
-    
-    private lazy var locationLabel: UILabel = UILabel(
+
+    lazy var locationLabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
         textColor: Token.grayscale90,
-        numberOfLines: 2
+        numberOfLines: 1
     )
-    
-    private lazy var packageSection: UIView = createPackageSection()
-    private lazy var packageLabel: UILabel = UILabel(
+
+    private lazy var packageSection = createPackageSection()
+    lazy var packageLabel = UILabel(
         font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
         textColor: Token.additionalColorsBlack,
         numberOfLines: 2
     )
-    private lazy var packageButton: UIButton = createPackageTextButton()
-    
-    private lazy var packageContainer: UIStackView = createStackView(spacing: 18.0)
-    private lazy var contentStackView: UIStackView = createStackView(spacing: 29.0)
-    private lazy var headerStackView: UIStackView = createStackView(spacing: 0)
-    
-    private lazy var isPackageButtonStateHidden: Bool = true
+
+    lazy var packageContainer = createStackView(spacing: 18.0)
+    private lazy var contentStackView = createStackView(spacing: 12)
+    private lazy var headerStackView = createStackView(spacing: 0)
+
 }
 
-extension ActivityDetailView {
+// MARK: - Setup
+extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
     func setupView() {
-        let scrollView: UIScrollView = UIScrollView()
-        let contentView: UIView = UIView()
-        
+        scrollView.delegate = self
+
         scrollView.addSubviewAndLayout(contentView)
-        contentView.layout {
-            $0.widthAnchor(to: scrollView.widthAnchor)
-        }
-        
+        contentView.layout { $0.widthAnchor(to: scrollView.widthAnchor) }
+
         addSubviewAndLayout(scrollView)
-        
-        contentView.addSubviews([
-            headerStackView,
-            contentStackView
-        ])
-        
-        headerStackView.backgroundColor = UIColor.from("#F5F5F5")
-        headerStackView.addArrangedSubview(imageSliderView)
-        headerStackView.addArrangedSubview(titleView)
-        
-        headerStackView.layout {
+        backgroundColor = UIColor.from("#F5F5F5")
+        scrollView.backgroundColor = .clear
+
+        contentView.addSubviews([imageSliderView, contentStackView])
+
+        imageSliderView.layout {
             $0.top(to: contentView.topAnchor)
                 .leading(to: contentView.leadingAnchor)
                 .trailing(to: contentView.trailingAnchor)
         }
-        
+        imageSliderHeight = imageSliderView.heightAnchor.constraint(equalToConstant: 250)
+        imageSliderHeight?.isActive = true
+
         contentStackView.layout {
-            $0.top(to: headerStackView.bottomAnchor, constant: -8.0)
+            $0.top(to: imageSliderView.bottomAnchor, constant: 0)
                 .leading(to: contentView.leadingAnchor)
                 .trailing(to: contentView.trailingAnchor)
                 .bottom(to: contentView.bottomAnchor)
         }
-        
+
         contentStackView.isLayoutMarginsRelativeArrangement = true
-        contentStackView.layoutMargins = .init(vertical: 20.0, horizontal: 15.0)
+        contentStackView.layoutMargins = .init(
+            top: 0,
+            left: 16,
+            bottom: 0,
+            right: 16
+        )
         contentStackView.layer.cornerRadius = 24.0
+        contentStackView.layer.maskedCorners = [
+            .layerMinXMinYCorner, .layerMaxXMinYCorner
+        ]
         contentStackView.backgroundColor = Token.additionalColorsWhite
-        
-        scrollView.backgroundColor = UIColor.from("#F5F5F5")
-        
+
         imageSliderView.isHidden = true
-    }
-}
 
-private extension ActivityDetailView {
-    func createStackView(
-        spacing: CGFloat,
-        axis: NSLayoutConstraint.Axis = .vertical
-    ) -> UIStackView {
-        let stackView: UIStackView = UIStackView()
-        stackView.spacing = spacing
-        stackView.axis = axis
-        
-        return stackView
-    }
-    
-    func createSectionView(title: String, view: UIView) -> UIView {
-        let contentView: UIView = UIView()
-        let titleLabel: UILabel = UILabel(
-            font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
-            textColor: Token.additionalColorsBlack,
-            numberOfLines: 2
-        )
-        titleLabel.text = title
-        
-        contentView.addSubviews([
-            titleLabel,
-            view
-        ])
-        
-        titleLabel.layout {
-            $0.top(to: contentView.topAnchor)
-                .leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
-        }
-        
-        view.layout {
-            $0.top(to: titleLabel.bottomAnchor, constant: 8.0)
-                .leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
-                .bottom(to: contentView.bottomAnchor)
-        }
-        
-        return contentView
-    }
-    
-    func createIconTextView(image: UIImage, text: String) -> UIView {
-        let imageView: UIImageView = UIImageView(image: image)
-        imageView.layout {
-            $0.size(20.0)
-        }
-        
-        let label: UILabel = UILabel(
-            font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-            textColor: Token.grayscale90,
-            numberOfLines: 2
-        )
-        label.text = text
-        
-        let containerView: UIView = UIView()
-        containerView.addSubviews([
-            imageView,
-            label
-        ])
-        
-        imageView.layout {
-            $0.leading(to: containerView.leadingAnchor)
-                .centerY(to: containerView.centerYAnchor)
-        }
-        
-        label.layout {
-            $0.leading(to: imageView.trailingAnchor, constant: 4.0)
-                .trailing(to: containerView.trailingAnchor)
-                .centerY(to: containerView.centerYAnchor)
-        }
-        
-        return containerView
-    }
-    
-    func createTitleView() -> UIView {
-        let pinPointImage: UIImageView = UIImageView(image: CocoIcon.icPinPointBlue.image)
-        pinPointImage.layout {
-            $0.size(20.0)
-        }
-        
-        let locationView: UIView = UIView()
-        locationView.addSubviews([
-            pinPointImage,
-            locationLabel
-        ])
-        
-        pinPointImage.layout {
-            $0.leading(to: locationView.leadingAnchor)
-                .bottom(to: locationView.bottomAnchor)
-                .top(to: locationView.topAnchor)
-        }
-        
-        locationLabel.layout {
-            $0.leading(to: pinPointImage.trailingAnchor, constant: 4.0)
-                .trailing(to: locationView.trailingAnchor)
-                .centerY(to: locationView.centerYAnchor)
-        }
-        
-        let contentView: UIView = UIView()
-        contentView.addSubviews([
-            titleLabel,
-            locationView
-        ])
-        
-        titleLabel.layout {
-            $0.leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
-                .top(to: contentView.topAnchor)
-        }
-        
-        locationView.layout {
-            $0.top(to: titleLabel.bottomAnchor, constant: 8.0)
-                .leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
-                .bottom(to: contentView.bottomAnchor)
-        }
-        
-        let contentWrapperView: UIView = UIView()
-        contentWrapperView.addSubviewAndLayout(
-            contentView,
-            insets: .init(
-                top: 16.0,
-                left: 24.0,
-                bottom: 16.0 + 8.0,
-                right: 16.0
-            )
-        )
-        
-        return contentWrapperView
-    }
-    
-    func createBenefitView(title: String) -> UIView {
-        let contentView: UIView = UIView()
-        let benefitImageView: UIImageView = UIImageView(image: CocoIcon.icCheckMarkFill.image)
-        benefitImageView.layout {
-            $0.size(24.0)
-        }
-        let benefitLabel: UILabel = UILabel(
-            font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
-            textColor: Token.additionalColorsBlack,
-            numberOfLines: 0
-        )
-        benefitLabel.text = title
-        
-        contentView.addSubviews([
-            benefitImageView,
-            benefitLabel
-        ])
-        
-        benefitImageView.layout {
-            $0.top(to: contentView.topAnchor)
-                .leading(to: contentView.leadingAnchor)
-                .bottom(to: contentView.bottomAnchor, relation: .lessThanOrEqual)
-        }
-        
-        benefitLabel.layout {
-            $0.leading(to: benefitImageView.trailingAnchor, constant: 4.0)
-                .top(to: contentView.topAnchor)
-                .bottom(to: contentView.bottomAnchor)
-                .trailing(to: contentView.trailingAnchor)
-        }
-        
-        return contentView
-    }
-    
-    func createBenefitListView(titles: [String]) -> UIView {
-        let stackView: UIStackView = createStackView(spacing: 12.0)
-        
-        titles.forEach { title in
-            stackView.addArrangedSubview(createBenefitView(title: title))
-        }
-        
-        return stackView
-    }
-    
-    func createProviderDetail(imageUrl: String, name: String, description: String) -> UIView {
-        let contentView: UIView = UIView()
-        let imageView: UIImageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.layout {
-            $0.size(92.0)
-        }
-        imageView.layer.cornerRadius = 14.0
-        imageView.loadImage(from: URL(string: imageUrl))
-        imageView.clipsToBounds = true
-        
-        let nameLabel: UILabel = UILabel(
-            font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
-            textColor: Token.additionalColorsBlack,
-            numberOfLines: 2
-        )
-        nameLabel.text = name
-        
-        let descriptionLabel: UILabel = UILabel(
-            font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-            textColor: Token.grayscale90,
-            numberOfLines: 0
-        )
-        descriptionLabel.text = description
-        
-        contentView.addSubviews([
-            imageView,
-            nameLabel,
-            descriptionLabel,
-        ])
-        
-        imageView.layout {
-            $0.leading(to: contentView.leadingAnchor)
-                .top(to: contentView.topAnchor)
-                .bottom(to: contentView.bottomAnchor, relation: .lessThanOrEqual)
-        }
-        
-        nameLabel.layout {
-            $0.leading(to: imageView.trailingAnchor, constant: 10.0)
-                .top(to: contentView.topAnchor)
-                .trailing(to: contentView.trailingAnchor)
-        }
-        
-        descriptionLabel.layout {
-            $0.leading(to: nameLabel.leadingAnchor)
-                .top(to: nameLabel.bottomAnchor, constant: 8.0)
-                .trailing(to: contentView.trailingAnchor)
-                .bottom(to: contentView.bottomAnchor, relation: .lessThanOrEqual)
-        }
-        
-        return contentView
-    }
-    
-    func createPackageView(data: ActivityDetailDataModel.Package) -> UIView {
-        let containerStackView: UIStackView = createStackView(spacing: 12.0, axis: .horizontal)
-        let contentStackView: UIStackView = createStackView(spacing: 10.0)
-        
-        let headerStackView: UIStackView = createStackView(spacing: 12.0)
-        headerStackView.alignment = .leading
-        
-        let footerContentView: UIView = UIView()
-        
-        let imageView: UIImageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.layout {
-            $0.size(92.0)
-        }
-        imageView.layer.cornerRadius = 14.0
-        imageView.loadImage(from: URL(string: data.imageUrlString))
-        imageView.clipsToBounds = true
-        
-        let nameLabel: UILabel = UILabel(
-            font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
-            textColor: Token.additionalColorsBlack,
-            numberOfLines: 2
-        )
-        nameLabel.text = data.name
-        
-        let ratingAreaStackView: UIStackView = createStackView(spacing: 4.0, axis: .horizontal)
-        ratingAreaStackView.alignment = .leading
-        
-        ratingAreaStackView.addArrangedSubview(
-            createIconTextView(
-                image: CocoIcon.icActivityAreaIcon.getImageWithTintColor(Token.grayscale70),
-                text: data.description
-            )
-        )
-        
-        let priceLabel: UILabel = UILabel(
-            font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
-            textColor: Token.additionalColorsBlack,
-            numberOfLines: 2
-        )
-        
-        let attributedString: NSMutableAttributedString = NSMutableAttributedString(
-            string: data.price,
-            attributes: [
-                .font : UIFont.jakartaSans(forTextStyle: .subheadline, weight: .bold),
-                .foregroundColor : Token.additionalColorsBlack
-            ]
-        )
-        
-        attributedString.append(
-            NSAttributedString(
-                string: "/Person",
-                attributes: [
-                    .font : UIFont.jakartaSans(forTextStyle: .subheadline, weight: .medium),
-                    .foregroundColor : Token.grayscale60
-                ]
-            )
-        )
-        
-        priceLabel.setContentHuggingPriority(.defaultLow - 1, for: .horizontal)
-        priceLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
-        
-        priceLabel.attributedText = attributedString
-        
-        containerStackView.addArrangedSubview(imageView)
-        containerStackView.addArrangedSubview(contentStackView)
-        
-        contentStackView.addArrangedSubview(headerStackView)
-        contentStackView.addArrangedSubview(footerContentView)
-        
-        headerStackView.addArrangedSubview(nameLabel)
-        headerStackView.addArrangedSubview(ratingAreaStackView)
-        
-        let action: UIAction = UIAction { [weak self] _ in
-            self?.delegate?.notifyPackagesDetailDidTap(with: data.id)
-        }
-         
-        var config = UIButton.Configuration.filled()
-        config.image = CocoIcon.icArrowTopRight.image
-        config.baseBackgroundColor = Token.mainColorPrimary
-        config.baseForegroundColor = .white
-        config.cornerStyle = .capsule
+        tabSpacer.translatesAutoresizingMaskIntoConstraints = false
+        tabSpacerHeight = tabSpacer.heightAnchor.constraint(equalToConstant: 12)
+        tabSpacerHeight?.isActive = true
+        contentStackView.addArrangedSubview(tabSpacer)
 
-        let button: UIButton = UIButton(configuration: config, primaryAction: action)
-        button.layout {
-            $0.size(40.0)
+        addSubview(stickyBottomBar)
+        stickyBottomBar.layout {
+            $0.leading(to: leadingAnchor)
+            $0.trailing(to: trailingAnchor)
+            $0.bottom(to: bottomAnchor)
         }
-        
-        button.setContentHuggingPriority(.required + 1, for: .horizontal)
-        button.setContentHuggingPriority(.required + 1, for: .vertical)
 
-        button.setContentCompressionResistancePriority(.required, for: .horizontal)
-        button.setContentCompressionResistancePriority(.required, for: .vertical)
-        
-        footerContentView.addSubviews([
-            priceLabel,
-            button
-        ])
-        
-        priceLabel.layout {
-            $0.leading(to: footerContentView.leadingAnchor)
-                .top(to: footerContentView.topAnchor)
-                .bottom(to: footerContentView.bottomAnchor)
-        }
-        
-        button.layout {
-            $0.leading(to: priceLabel.trailingAnchor, relation: .lessThanOrEqual)
-                .centerY(to: footerContentView.centerYAnchor)
-                .trailing(to: footerContentView.trailingAnchor)
-        }
-        
-        containerStackView.isLayoutMarginsRelativeArrangement = true
-        containerStackView.layoutMargins = .init(edges: 12.0)
-        containerStackView.layer.cornerRadius = 16.0
-        containerStackView.backgroundColor = Token.mainColorForth
-        
-        return containerStackView
     }
     
-    func createPackageSection() -> UIView {
-        let containerView: UIView = UIView()
-        containerView.addSubviews([
-            packageLabel,
-            packageButton
-        ])
-        
-        packageButton.setContentHuggingPriority(.required, for: .horizontal)
-        packageButton.setContentCompressionResistancePriority(.required, for: .horizontal)
-        
-        packageLabel.layout {
-            $0.leading(to: containerView.leadingAnchor)
-                .top(to: containerView.topAnchor)
-                .bottom(to: containerView.bottomAnchor)
+    private func createStickyBottomBar() -> UIView {
+        let container = UIView()
+        container.backgroundColor = .systemBackground
+        container.layer.shadowColor = UIColor.black.cgColor
+        container.layer.shadowOpacity = 0.1
+        container.layer.shadowOffset = .init(width: 0, height: -2)
+        container.layer.shadowRadius = 4
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let startFromLabel = UILabel()
+        startFromLabel.text = "Start from"
+        startFromLabel.font = .jakartaSans(forTextStyle: .caption1, weight: .regular)
+        startFromLabel.textColor = .secondaryLabel
+
+        let priceLabel = UILabel()
+        self.bottomBarPriceLabel = priceLabel
+
+        let seePackagesButton = UIButton(type: .system)
+        seePackagesButton.setTitle("See Packages", for: .normal)
+        seePackagesButton.titleLabel?.font = .jakartaSans(forTextStyle: .subheadline, weight: .bold)
+        seePackagesButton.backgroundColor = Token.mainColorPrimary
+        seePackagesButton.setTitleColor(.white, for: .normal)
+        seePackagesButton.layer.cornerRadius = 14
+        seePackagesButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 24, bottom: 12, right: 24)
+        seePackagesButton.addTarget(self, action: #selector(seePackagesButtonTapped), for: .touchUpInside)
+
+        let priceStack = createStackView(spacing: 2, axis: .vertical)
+        priceStack.alignment = .leading
+        priceStack.addArrangedSubview(startFromLabel)
+        priceStack.addArrangedSubview(priceLabel)
+
+        container.addSubviews([priceStack, seePackagesButton])
+
+        priceStack.layout {
+            $0.leading(to: container.leadingAnchor, constant: 16)
+            $0.centerY(to: container.centerYAnchor)
+            $0.top(to: container.topAnchor, constant: 12)
+            $0.bottom(to: container.safeAreaLayoutGuide.bottomAnchor, constant: 4)
         }
-        
-        packageButton.layout {
-            $0.leading(to: packageLabel.trailingAnchor, constant: 4.0)
-                .trailing(to: containerView.trailingAnchor)
-                .centerY(to: containerView.centerYAnchor)
+
+        seePackagesButton.layout {
+            $0.trailing(to: container.trailingAnchor, constant: -16)
+            $0.centerY(to: container.centerYAnchor)
+            $0.top(to: container.topAnchor, constant: 12)
+            $0.bottom(to: container.safeAreaLayoutGuide.bottomAnchor, constant: 4)
         }
-        
-        let contentView: UIView = UIView()
-        contentView.addSubviews([
-            containerView,
-            packageContainer
-        ])
-        
-        containerView.layout {
-            $0.top(to: contentView.topAnchor)
-                .leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
-        }
-        
-        packageContainer.layout {
-            $0.top(to: containerView.bottomAnchor, constant: 16.0)
-                .bottom(to: contentView.bottomAnchor)
-                .leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
-        }
-        
-        return contentView
+
+        container.isHidden = true
+        return container
     }
-    
-    func createPackageTextButton() -> UIButton {
-        let textButton: UIButton = UIButton.textButton(title: "Show All")
-        textButton.addTarget(self, action: #selector(didTapTextButton), for: .touchUpInside)
+
+    @objc private func seePackagesButtonTapped() {
+        guard let packageSectionIndex = sectionTitles.firstIndex(of: "Packages") else { return }
+        tabBarView?.setSelected(index: packageSectionIndex, animated: true, notify: false)
+        scrollToSection(packageSectionIndex, animated: true)
+    }
+
+    private func makeAnchor() -> UIView {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.heightAnchor.constraint(equalToConstant: 0.01).isActive = true
+        return v
+    }
+
+    private func scrollToSection(_ index: Int, animated: Bool) {
+        guard sectionAnchors.indices.contains(index) else { return }
+        layoutIfNeeded()
+        let anchor = sectionAnchors[index]
+        let origin = anchor.convert(CGPoint.zero, to: scrollView)
+        let y = max(0, origin.y - scrollView.adjustedContentInset.top)
+        isProgrammaticScroll = true
+        scrollView.setContentOffset(CGPoint(x: 0, y: y-50), animated: animated)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.isProgrammaticScroll = false
+        }
+    }
+
+    // MARK: - CustomTabBarDelegate
+    func customTabBar(_ tabBar: CustomTabBar, didSelect index: Int) {
+        scrollToSection(index, animated: true)
+    }
+
+    // MARK: - UIScrollViewDelegate
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let imageBottomInScroll = imageSliderView.convert(imageSliderView.bounds, to: scrollView).maxY
+        let spacerY = tabSpacer.convert(CGPoint.zero, to: scrollView).y
+        let viewportTop = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        let stickThreshold = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+        let shouldStick = viewportTop >= imageBottomInScroll
+        stickyTabBar?.isHidden = !shouldStick
         
-        return textButton
+        let targetSpacer: CGFloat = 0
+        if tabSpacerHeight?.constant != targetSpacer {
+            tabSpacerHeight?.constant = targetSpacer
+            UIView.performWithoutAnimation { self.layoutIfNeeded() }
+        }
+        
+        if shouldStick != lastStickyVisible {
+            lastStickyVisible = shouldStick
+            onStickyTabVisibilityChanged?(shouldStick)
+        }
+
+        guard !isProgrammaticScroll, !sectionAnchors.isEmpty else { return }
+
+        var active = 0
+        for i in sectionAnchors.indices {
+            let y = sectionAnchors[i].convert(CGPoint.zero, to: scrollView).y
+            let nextY =
+                (i + 1 < sectionAnchors.count)
+                ? sectionAnchors[i + 1].convert(CGPoint.zero, to: scrollView).y
+                : .greatestFiniteMagnitude
+
+            let halfway = y + (nextY - y) / 2.0
+            if viewportTop < halfway {
+                active = i
+                break
+            }
+            if i == sectionAnchors.count - 1 {
+                active = i
+            }
+        }
+
+        if active != tabBarView?.selectedIndex {
+            tabBarView?.setSelected(
+                index: active,
+                animated: true,
+                notify: false
+            )
+        }
     }
-    
-    @objc func didTapTextButton() {
-        isPackageButtonStateHidden.toggle()
-        packageButton.setTitle(isPackageButtonStateHidden ? "Show All" : "Show Less", for: .normal)
-        delegate?.notifyPackagesButtonDidTap(shouldShowAll: !isPackageButtonStateHidden)
-    }
+
 }

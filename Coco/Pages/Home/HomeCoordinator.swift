@@ -47,13 +47,23 @@ extension HomeCoordinator: HomeViewModelNavigationDelegate {
 }
 
 extension HomeCoordinator: HomeFormScheduleViewModelDelegate {
-    func notifyFormScheduleDidNavigateToCheckout(with response: CreateBookingResponse) {
-        let viewModel: CheckoutViewModel = CheckoutViewModel(
-            bookingResponse: response.bookingDetails
+    func notifyFormScheduleDidNavigateToCheckout(
+        package: ActivityDetailDataModel,
+        selectedPackageId: Int,
+        bookingDate: Date,
+        participants: Int,
+        userId: String
+    ) { 
+        let viewModel = CheckoutViewModel(
+            package: package,
+            selectedPackageId: selectedPackageId,
+            bookingDate: bookingDate,
+            participants: participants,
+            userId: userId
         )
         viewModel.delegate = self
         let viewController = CheckoutViewController(viewModel: viewModel)
-        
+
         DispatchQueue.main.async { [weak self] in
             self?.start(viewController: viewController)
         }

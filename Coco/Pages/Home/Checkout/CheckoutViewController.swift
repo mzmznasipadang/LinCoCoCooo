@@ -16,6 +16,8 @@ final class CheckoutViewController: UIViewController {
         self.viewModel.actionDelegate = self
     }
     
+    private var bookButtonVC: CocoButtonHostingController?
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -35,19 +37,30 @@ final class CheckoutViewController: UIViewController {
 }
 
 extension CheckoutViewController: CheckoutViewModelAction {
-    func configureView(bookingData: BookingDetails) {
+    func configureView(bookingData: CheckoutDisplayData) {
         thisView.configureView(bookingData)
         
-        let bookButtonVC: CocoButtonHostingController = CocoButtonHostingController(
+        let button = CocoButtonHostingController(
             action: viewModel.bookNowDidTap,
             text: "Book Now",
             style: .large,
             type: .primary,
             isStretch: true
         )
-        addChild(bookButtonVC)
-        thisView.addBooknowButton(from: bookButtonVC.view)
-        bookButtonVC.didMove(toParent: self)
+        addChild(button)
+        thisView.addBooknowButton(from: button.view)
+        button.didMove(toParent: self)
+        self.bookButtonVC = button
+    }
+    
+    func setLoading(_ isLoading: Bool) {
+        bookButtonVC?.view.isUserInteractionEnabled = !isLoading
+    }
+
+    func showError(message: String) {
+        let alert = UIAlertController(title: "Booking Failed!", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     func showPopUpSuccess(completion: @escaping () -> Void) {

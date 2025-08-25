@@ -16,9 +16,10 @@ final class HomeFormScheduleViewModel {
     weak var delegate: (any HomeFormScheduleViewModelDelegate)?
     weak var actionDelegate: (any HomeFormScheduleViewModelAction)?
     
-    init(input: HomeFormScheduleViewModelInput, fetcher: CreateBookingFetcherProtocol = CreateBookingFetcher()) {
+    init(input: HomeFormScheduleViewModelInput, fetcher: CreateBookingFetcherProtocol = CreateBookingFetcher(), activityFetcher: ActivityFetcherProtocol = ActivityFetcher()) {
         self.input = input
         self.fetcher = fetcher
+        self.activityFetcher = activityFetcher
     }
     
     private let input: HomeFormScheduleViewModelInput
@@ -50,23 +51,67 @@ final class HomeFormScheduleViewModel {
         }
     }
     private let fetcher: CreateBookingFetcherProtocol
+    
+    private let activityFetcher: ActivityFetcherProtocol
+    
+    private var minPax: Int?
+    private var maxPax: Int?
 }
 
 extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
+    func refreshPaxPlaceholder() {
+        let text: String
+        switch (minPax, maxPax) {
+        case let (min?, max?):
+            text = "Input total Pax... \(min) - \(max) Person(s)"
+        case let (min?, nil):
+            text = "Input total Pax... min \(min) Person(s)"
+        case let (nil, max?):
+            text = "Input total Pax... up to \(max) Person(s)"
+        default:
+            text = "Input total Pax..."
+        }
+        
+        paxInputViewModel.placeholderText = text
+    }
+    
     func onViewDidLoad() {
         actionDelegate?.setupView(
             calendarViewModel: calendarInputViewModel,
             paxInputViewModel: paxInputViewModel
         )
         
+        let allPackages = input.package.availablePackages.content.values.flatMap { $0 }
+            
+        let selectedPackage = allPackages.first { $0.id == input.selectedPackageId }
+        
         let data: HomeFormScheduleViewData = HomeFormScheduleViewData(
-            imageString: input.package.imageUrlsString.first ?? "",
+            imageString: selectedPackage?.imageUrlString ?? input.package.imageUrlsString.first ?? "",
             activityName: input.package.title,
-            packageName: input.package.availablePackages.content.first { $0.id == input.selectedPackageId }?.name ?? "",
+            packageName: selectedPackage?.name ?? "",
             location: input.package.location
         )
         
         actionDelegate?.configureView(data: data)
+        
+        if let selected = selectedPackage {
+            self.minPax = selected.minParticipants
+            self.maxPax = selected.maxParticipants
+            self.refreshPaxPlaceholder()
+        }
+        
+        activityFetcher.fetchPackageDetail(packageId: input.selectedPackageId) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success(let pkg):
+                self.minPax = pkg.minParticipants
+                self.maxPax = pkg.maxParticipants
+                self.refreshPaxPlaceholder()
+            case .failure(let err):
+                print("fetchPackageDetail error:", err)
+            }
+        }
+
     }
     
     func onCalendarDidChoose(date: Date) {
@@ -74,22 +119,40 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
     }
     
     func onCheckout() {
-        Task {
-            do {
-                let request: CreateBookingSpec = CreateBookingSpec(
-                    packageId: input.selectedPackageId,
-                    bookingDate: chosenDateInput ?? Date(),
-                    participants: Int(paxInputViewModel.currentTypedText) ?? 1,
-                    userId: UserDefaults.standard.value(forKey: "user-id") as? String ?? ""
-                )
-
-                let response: CreateBookingResponse = try await fetcher.createBooking(request: request)
-                delegate?.notifyFormScheduleDidNavigateToCheckout(with: response)
-            }
-            catch {
-                
-            }
+        let raw = paxInputViewModel.currentTypedText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else {
+            actionDelegate?.showValidationError(message: "Masukkan jumlah orang terlebih dahulu.")
+            return
         }
+        guard let participants = Int(raw), participants > 0 else {
+            actionDelegate?.showValidationError(message: "Jumlah orang harus berupa angka yang valid.")
+            return
+        }
+
+        guard minPax != nil || maxPax != nil else {
+            actionDelegate?.showValidationError(message: "Tidak dapat memuat batas peserta paket. Coba lagi memilih paket atau periksa koneksi.")
+            return
+        }
+
+        if let min = minPax, participants < min {
+            actionDelegate?.showValidationError(message: "Minimal peserta untuk paket ini adalah \(min) orang.")
+            return
+        }
+        if let max = maxPax, participants > max {
+            actionDelegate?.showValidationError(message: "Maksimal peserta untuk paket ini adalah \(max) orang.")
+            return
+        }
+
+        let bookingDate = chosenDateInput ?? Date()
+        let userId = UserDefaults.standard.value(forKey: "user-id") as? String ?? ""
+
+        delegate?.notifyFormScheduleDidNavigateToCheckout(
+            package: input.package,
+            selectedPackageId: input.selectedPackageId,
+            bookingDate: bookingDate,
+            participants: participants,
+            userId: userId
+        )
     }
 }
 
@@ -97,8 +160,7 @@ extension HomeFormScheduleViewModel: HomeSearchBarViewModelDelegate {
     func notifyHomeSearchBarDidTap(isTypeAble: Bool, viewModel: HomeSearchBarViewModel) {
         if viewModel === calendarInputViewModel {
             actionDelegate?.showCalendarOption()
-        }
-        else if viewModel === paxInputViewModel {
+        } else if viewModel === paxInputViewModel {
             
         }
     }

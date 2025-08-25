@@ -93,7 +93,6 @@ private extension HomeFormScheduleView {
         }
     }
     
-    
     func createImageView() -> UIImageView {
         let imageView: UIImageView = UIImageView()
         imageView.contentMode = .scaleAspectFill

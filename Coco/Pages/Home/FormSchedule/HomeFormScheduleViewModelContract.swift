@@ -8,7 +8,13 @@
 import Foundation
 
 protocol HomeFormScheduleViewModelDelegate: AnyObject {
-    func notifyFormScheduleDidNavigateToCheckout(with response: CreateBookingResponse)
+    func notifyFormScheduleDidNavigateToCheckout(
+        package: ActivityDetailDataModel,
+        selectedPackageId: Int,
+        bookingDate: Date,
+        participants: Int,
+        userId: String
+    )
 }
 
 protocol HomeFormScheduleViewModelAction: AnyObject {
@@ -18,6 +24,7 @@ protocol HomeFormScheduleViewModelAction: AnyObject {
     )
     func configureView(data: HomeFormScheduleViewData)
     func showCalendarOption()
+    func showValidationError(message: String)
 }
 
 protocol HomeFormScheduleViewModelProtocol: AnyObject {
