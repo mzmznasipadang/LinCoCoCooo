@@ -239,7 +239,7 @@ extension ActivityDetailView {
         let reviewTextLabel = UILabel()
         reviewTextLabel.text = "Perfect family trip! Safe, fun, and the kids loved seeing the colorful fish in Piaynemo."
         reviewTextLabel.font = .jakartaSans(forTextStyle: .body, weight: .regular)
-        reviewTextLabel.numberOfLines = 0 // Biarkan bisa lebih dari 1 baris
+        reviewTextLabel.numberOfLines = 0
         
         let seeMoreButton = UIButton.textButton(title: "See more", color: Token.mainColorPrimary)
         

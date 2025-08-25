@@ -160,7 +160,6 @@ extension ActivityDetailView {
         return contentView
     }
     
-    // Simpan full text supaya bisa dilempar ke delegate saat tombol ditekan
     private struct AssociatedKeys { static var highlightsText = "hlFull" }
     private var highlightsFullText: String? {
         get { objc_getAssociatedObject(self, &AssociatedKeys.highlightsText) as? String }

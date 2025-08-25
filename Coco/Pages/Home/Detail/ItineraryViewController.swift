@@ -170,7 +170,6 @@ private class DottedLineView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        // Hapus layer lama jika ada untuk mencegah duplikasi saat re-layout
         layer.sublayers?.forEach { $0.removeFromSuperlayer() }
 
         let shapeLayer = CAShapeLayer()
