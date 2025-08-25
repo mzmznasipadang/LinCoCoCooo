@@ -197,7 +197,7 @@ final class ActivityDetailView: UIView {
             ]
 
             let attributedPrice = NSMutableAttributedString(string: priceText, attributes: boldAttributes)
-            attributedPrice.append(NSAttributedString(string: "/pax", attributes: regularAttributes))
+            attributedPrice.append(NSAttributedString(string: "/person", attributes: regularAttributes))
 
             bottomBarPriceLabel?.attributedText = attributedPrice
             stickyBottomBar.isHidden = false

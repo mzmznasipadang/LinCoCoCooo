@@ -74,12 +74,12 @@ struct ActivityDetailDataModel: Equatable {
             Package(
                 imageUrlString: $0.imageUrl,
                 name: $0.name,
-                description: "\($0.minParticipants) - \($0.maxParticipants) pax", // Format teks diubah
-                price: "Rp\($0.pricePerPerson.formatted(.number.locale(Locale(identifier: "id_ID"))))/pax", // Format harga diubah
+                description: "\($0.minParticipants) - \($0.maxParticipants) person",
+                price: "Rp \($0.pricePerPerson.formatted(.number.locale(Locale(identifier: "id_ID"))))",
                 id: $0.id,
                 minParticipants: $0.minParticipants,
                 maxParticipants: $0.maxParticipants,
-                hostName: $0.host?.name ?? "Unknown Host" // <-- Isi properti baru
+                hostName: $0.host?.name ?? "Unknown Host"
             )
         }
 
@@ -97,7 +97,7 @@ struct ActivityDetailDataModel: Equatable {
         if let price = lowestPriceValue {
             // Format angka menjadi format Rupiah
             let formattedPrice = PriceFormatting.formattedIndonesianDecimal(from: "\(price)")
-            self.lowestPriceFormatted = "IDR \(formattedPrice)"
+            self.lowestPriceFormatted = "Rp \(formattedPrice)"
         } else {
             self.lowestPriceFormatted = nil
         }

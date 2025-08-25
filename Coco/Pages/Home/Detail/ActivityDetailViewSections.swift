@@ -174,11 +174,11 @@ extension ActivityDetailView {
         case "family":
             return ("Family Friendly", Token.mainColorLemon)
         case "couples":
-            return ("Perfect for Couples", Token.mainColorLemon)
+            return ("Couples Getaway", Token.pinkBadge)
         case "group":
-            return ("Great for Groups", Token.mainColorLemon)
+            return ("Group Fun", Token.orangeBadge)
         case "solo":
-            return ("Solo Adventure", Token.mainColorLemon)
+            return ("Solo Adventure", Token.blueBadge)
         default:
             return (label, .systemGray4)
         }
