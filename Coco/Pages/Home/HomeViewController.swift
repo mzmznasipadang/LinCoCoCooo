@@ -38,7 +38,6 @@ final class HomeViewController: UIViewController {
     private let thisView: HomeView = HomeView()
     private let viewModel: HomeViewModelProtocol
     private var activitySections: [ActivitySection] = []
-    private let sectionOrder = ["Family", "Couples", "Group", "Solo"]
 }
 
 private extension HomeViewController {
@@ -67,13 +66,43 @@ extension HomeViewController: HomeViewModelAction {
             return adtData?.label ?? "Other"
         }
         
-        activitySections.removeAll()
+        var newActivitySections: [ActivitySection] = []
         
-        for sectionTitle in sectionOrder {
-            if let activities = groupedActivities[sectionTitle] {
-                activitySections.append(ActivitySection(title: "Perfect for \(sectionTitle)", activities: activities))
+        // Family
+        if let familyActivities = groupedActivities["Family"] {
+            newActivitySections.append(ActivitySection(title: "Perfect for Family", activities: familyActivities))
+        }
+        
+        // Dummy data: popularity, nearby, new
+        var popularActivities: [HomeActivityCellDataModel] = []
+        var nearActivities: [HomeActivityCellDataModel] = []
+        var newActivities: [HomeActivityCellDataModel] = []
+        
+        let otherSections = ["Couples", "Group", "Solo"]
+        let combinedActivities = otherSections.flatMap { groupedActivities[$0] ?? [] }
+        
+        for (index, activity) in combinedActivities.enumerated() {
+            switch index % 3 {
+            case 0:
+                popularActivities.append(activity)
+            case 1:
+                nearActivities.append(activity)
+            default:
+                newActivities.append(activity)
             }
         }
+        
+        if !popularActivities.isEmpty {
+            newActivitySections.append(ActivitySection(title: "Popular Activities", activities: popularActivities))
+        }
+        if !nearActivities.isEmpty {
+            newActivitySections.append(ActivitySection(title: "Near You", activities: nearActivities))
+        }
+        if !newActivities.isEmpty {
+            newActivitySections.append(ActivitySection(title: "Newly Added", activities: newActivities))
+        }
+        
+        self.activitySections = newActivitySections
         
         DispatchQueue.main.async {
             self.thisView.collectionView.reloadData()
