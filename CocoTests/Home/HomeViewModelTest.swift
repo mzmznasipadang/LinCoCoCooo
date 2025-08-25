@@ -67,8 +67,8 @@ struct HomeViewModelTest {
             filterPillDataState: [],
             priceRangeModel: HomeSearchFilterPriceRangeModel(
                 minPrice: 499000.0,
-                maxPrice: 200000,
-                range: 0...0
+                maxPrice: 500000,
+                range: 0...500000
             )
         )
         
@@ -77,7 +77,7 @@ struct HomeViewModelTest {
             .filterDidApplyPublisher.send(filterModel)
         
         #expect(context.actionDelegate.invokedOpenFilterTrayCount == 1)
-        #expect(context.viewModel.collectionViewModel.activityData.dataModel.count == 1)
+        #expect(context.actionDelegate.invokedDisplayActivitiesParameters?.data.count == 1)
     }
     
     // MARK: - Initial Load Tests
@@ -97,7 +97,7 @@ struct HomeViewModelTest {
         #expect(context.actionDelegate.invokedToggleLoadingViewParameters?.after == 1.0)
         
         let expectedActivity = HomeActivityCellDataModel(activity: context.activities.values[0])
-        #expect(context.viewModel.collectionViewModel.activityData == ("", [expectedActivity]))
+        #expect(context.actionDelegate.invokedDisplayActivitiesParameters?.data == [expectedActivity])
     }
     
     // MARK: - Search Tests
@@ -119,7 +119,7 @@ struct HomeViewModelTest {
         #expect(context.viewModel.searchBarViewModel.currentTypedText == "")
         #expect(context.viewModel.loadingState.percentage == 100)
         assertLoadingStates(context, states: [false, true, false])
-        #expect(context.viewModel.collectionViewModel.activityData == ("", []))
+        #expect(context.actionDelegate.invokedDisplayActivitiesParameters?.data.isEmpty == true)
     }
     
     // MARK: - Activity Selection Tests
@@ -131,16 +131,8 @@ struct HomeViewModelTest {
         
         context.viewModel.onViewDidLoad()
         
-        let activityData = HomeActivityCellDataModel(
-            id: 1,
-            area: "area",
-            name: "name",
-            priceText: "priceText",
-            imageUrl: nil
-        )
-        
         // --- WHEN ---
-        context.viewModel.notifyCollectionViewActivityDidTap(activityData)
+        context.viewModel.onActivityDidSelect(with: 1)
         
         // --- THEN ---
         #expect(context.actionDelegate.invokedActivityDidSelectCount == 1)
@@ -180,16 +172,8 @@ struct HomeViewModelTest {
         
         context.viewModel.onViewDidLoad()
         
-        let invalidActivityData = HomeActivityCellDataModel(
-            id: 999,
-            area: "area",
-            name: "name",
-            priceText: "priceText",
-            imageUrl: nil
-        )
-        
         // --- WHEN ---
-        context.viewModel.notifyCollectionViewActivityDidTap(invalidActivityData)
+        context.viewModel.onActivityDidSelect(with: 999)
         
         // --- THEN ---
         #expect(context.actionDelegate.invokedActivityDidSelectCount == 0)
@@ -250,7 +234,7 @@ struct HomeViewModelTest {
 
 private extension HomeViewModelTest {
     private func assertViewDidLoadSetup(_ context: TestContext) {
-        #expect(context.actionDelegate.invokedConstructCollectionViewCount == 1)
+        #expect(context.actionDelegate.invokedDisplayActivitiesCount == 1)
         #expect(context.actionDelegate.invokedConstructLoadingStateCount == 1)
         #expect(context.actionDelegate.invokedConstructNavBarCount == 1)
         #expect(context.viewModel.loadingState.percentage == 100)
@@ -263,12 +247,16 @@ private extension HomeViewModelTest {
 
 private final class MockHomeViewModelAction: HomeViewModelAction {
 
-    var invokedConstructCollectionView = false
-    var invokedConstructCollectionViewCount = 0
+    var invokedDisplayActivities = false
+    var invokedDisplayActivitiesCount = 0
+    var invokedDisplayActivitiesParameters: (data: [HomeActivityCellDataModel], Void)?
+    var invokedDisplayActivitiesParametersList = [(data: [HomeActivityCellDataModel], Void)]()
 
-    func constructCollectionView(viewModel: some HomeCollectionViewModelProtocol) {
-        invokedConstructCollectionView = true
-        invokedConstructCollectionViewCount += 1
+    func displayActivities(data: [HomeActivityCellDataModel]) {
+        invokedDisplayActivities = true
+        invokedDisplayActivitiesCount += 1
+        invokedDisplayActivitiesParameters = (data, ())
+        invokedDisplayActivitiesParametersList.append((data, ()))
     }
 
     var invokedConstructLoadingState = false
