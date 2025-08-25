@@ -13,7 +13,7 @@ struct HomeSearchFilterTray: View {
     
     var body: some View {
         VStack(alignment: .center) {
-            Text("Filter Search")
+            Text("Filter Trips")
                 .multilineTextAlignment(.center)
                 .font(.jakartaSans(forTextStyle: .body, weight: .semibold))
                 .foregroundStyle(Token.additionalColorsBlack.toColor())
@@ -42,33 +42,40 @@ struct HomeSearchFilterTray: View {
                         viewModel.updateApplyButtonTitle()
                     })
                     Spacer()
-                    HStack {
-                        CocoButton(
-                            action: {
-                                viewModel.filterDidApply()
-                            },
-                            text: viewModel.applyButtonTitle,
-                            style: .large,
-                            type: .primary
-                        )
-                        .stretch()
-                        
-                        Button(
-                            action: {
-                                viewModel.resetFilters()
-                            },
-                            label: {
-                                Image(systemName: "trash")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(.white)
-                                    .padding(14)
-                                    .background(Color.red)
-                                    .cornerRadius(24)
-                            }
-                        )
-                    }
                 }
             }
+            
+            HStack(spacing: 12) {
+                Button(
+                    action: {
+                        viewModel.resetFilters()
+                    },
+                    label: {
+                        Text("Reset")
+                            .font(.jakartaSans(forTextStyle: .body, weight: .semibold))
+                            .foregroundColor(Token.mainColorPrimary.toColor())
+                            .frame(height: 48)
+                            .padding(.horizontal, 24)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(Token.mainColorPrimary.toColor(), lineWidth: 1)
+                            )
+                    }
+                )
+                
+                CocoButton(
+                    action: {
+                        viewModel.filterDidApply()
+                    },
+                    text: viewModel.applyButtonTitle,
+                    style: .large,
+                    type: .primary
+                )
+                .stretch()
+            }
+            .padding(.vertical, 16)
+            .background(Color.white)
         }
         .frame(maxWidth: .infinity)
         .padding(24.0)

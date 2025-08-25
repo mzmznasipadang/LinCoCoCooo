@@ -25,15 +25,28 @@ struct HomeActivityCellDataModel: Hashable {
     
     init(activity: Activity) {
         self.id = activity.id
-        self.area = activity.title
-        self.name = activity.description
+        self.area = activity.destination.name
+        self.name = activity.title
         self.priceText = "\(activity.pricing)"
-        self.imageUrl = if let thumbnail = activity.images.first { $0.imageType == .thumbnail }?.imageUrl {
+        self.imageUrl = if let thumbnail = activity.images.first(where: { $0.imageType == .thumbnail })?.imageUrl {
             URL(string: thumbnail)
         }
         else {
             nil
         }
+    }
+    
+    static func from(activity: AdditionalData) -> HomeActivityCellDataModel {
+        let placeholderImageString = "https://placeholder.com/\(activity.id)"
+        let priceValue = Double(activity.id) * 100000
+        
+        return HomeActivityCellDataModel(
+            id: activity.id,
+            area: activity.label,
+            name: activity.title,
+            priceText: "\(priceValue)",
+            imageUrl: URL(string: placeholderImageString)
+        )
     }
 }
 

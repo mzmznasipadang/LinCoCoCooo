@@ -150,15 +150,15 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         let sections = buildSections()
         actionDelegate?.updateTableSections(sections)
         
-        let data = HomeFormScheduleViewData(
-            imageString: input.package.imageUrlsString.first ?? "",
+        let data: HomeFormScheduleViewData = HomeFormScheduleViewData(
+            imageString: selectedPackage?.imageUrlString ?? input.package.imageUrlsString.first ?? "",
             activityName: input.package.title,
-            packageName: selectedPackage?.name ?? "Package",
+            packageName: selectedPackage?.name ?? "",
             location: input.package.location
         )
         actionDelegate?.configureView(data: data)
         
-        if let selected = input.package.availablePackages.content.first(where: { $0.id == input.selectedPackageId }) {
+        if let selected = selectedPackage {
             self.minPax = selected.minParticipants
             self.maxPax = selected.maxParticipants
             self.refreshPaxPlaceholder()

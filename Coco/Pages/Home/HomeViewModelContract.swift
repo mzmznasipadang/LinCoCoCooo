@@ -8,11 +8,11 @@
 import Foundation
 
 protocol HomeViewModelNavigationDelegate: AnyObject {
-   func notifyHomeDidSelectActivity()
+    func notifyHomeDidSelectActivity()
 }
 
 protocol HomeViewModelAction: AnyObject {
-    func constructCollectionView(viewModel: some HomeCollectionViewModelProtocol)
+    func displayActivities(data: [HomeActivityCellDataModel])
     func constructLoadingState(state: HomeLoadingState)
     func constructNavBar(viewModel: HomeSearchBarViewModel)
     
@@ -33,4 +33,5 @@ protocol HomeViewModelProtocol: AnyObject {
     
     func onViewDidLoad()
     func onSearchDidApply(_ queryText: String)
+    func onActivityDidSelect(with id: Int)
 }
