@@ -79,7 +79,7 @@ final class PriceDetailsView: UIView {
     /// "Price Details" title label
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Price Details"
+        label.text = Localization.Price.details
         label.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
         label.textColor = Token.grayscale90
         return label
@@ -123,7 +123,7 @@ final class PriceDetailsView: UIView {
     /// Book Now button
     private lazy var bookNowButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Book Now", for: .normal)
+        button.setTitle(Localization.Price.bookNow, for: .normal)
         button.titleLabel?.font = .jakartaSans(forTextStyle: .body, weight: .semibold)
         button.backgroundColor = Token.mainColorPrimary
         button.setTitleColor(.white, for: .normal)
@@ -233,12 +233,12 @@ final class PriceDetailsView: UIView {
         
         // Add detail rows only if we have basic info
         if data.hasBasicInfo {
-            addDetailRow(title: "Dates", value: data.selectedDate)
-            addDetailRow(title: "Pax", value: "\(data.participantCount)")
+            addDetailRow(title: Localization.Price.dates, value: data.selectedDate)
+            addDetailRow(title: Localization.Price.pax, value: "\(data.participantCount)")
             if !data.travelerName.isEmpty {
-                addDetailRow(title: "Name", value: data.travelerName)
+                addDetailRow(title: Localization.Price.name, value: data.travelerName)
             }
-            addDetailRow(title: "Pay during trip", value: data.totalPrice, isTotal: true)
+            addDetailRow(title: Localization.Price.payDuringTrip, value: data.totalPrice, isTotal: true)
         }
         
         // Make sure we start collapsed if not expanded

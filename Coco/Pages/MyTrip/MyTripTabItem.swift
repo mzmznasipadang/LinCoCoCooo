@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 struct MyTripTabItem: TabItemRepresentable {
-    var tabTitle: String { "MyTrip" }
+    var tabTitle: String { Localization.Screen.myTrip }
     var defaultTabIcon: UIImage? { CocoIcon.icTabIconTrip.image }
     var selectedTabIcon: UIImage? { CocoIcon.icTabIconTripFill.image }
 

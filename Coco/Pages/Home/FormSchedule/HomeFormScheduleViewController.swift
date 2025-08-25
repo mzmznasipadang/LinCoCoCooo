@@ -42,7 +42,7 @@ final class HomeFormScheduleViewController: UIViewController {
         setupTableView()
         setupKeyboardHandling()
         viewModel.onViewDidLoad()
-        title = "Booking Detail"
+        title = Localization.Screen.bookingDetail
     }
     
     override func viewDidLayoutSubviews() {
@@ -113,7 +113,7 @@ final class HomeFormScheduleViewController: UIViewController {
             return
         }
         
-        let alert: UIAlertController = UIAlertController(title: "Select Participants", message: "Min: \(selectedPackage.minParticipants) - Max: \(selectedPackage.maxParticipants)", preferredStyle: .actionSheet)
+        let alert: UIAlertController = UIAlertController(title: Localization.Form.selectParticipants, message: "Min: \(selectedPackage.minParticipants) - Max: \(selectedPackage.maxParticipants)", preferredStyle: .actionSheet)
         
         let range: ClosedRange<Int> = selectedPackage.minParticipants...selectedPackage.maxParticipants
         for i in range {
@@ -123,7 +123,7 @@ final class HomeFormScheduleViewController: UIViewController {
             })
         }
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: Localization.Common.cancel, style: .cancel))
         
         if let popover = alert.popoverPresentationController {
             popover.sourceView = view
@@ -475,8 +475,8 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
     }
     
     func showValidationError(message: String) {
-        let alert = UIAlertController(title: "Tidak Valid", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        let alert = UIAlertController(title: Localization.Validation.Alert.title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Localization.Validation.Alert.ok, style: .default))
         present(alert, animated: true)
     }
 }

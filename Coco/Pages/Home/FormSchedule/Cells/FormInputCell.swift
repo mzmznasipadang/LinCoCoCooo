@@ -149,9 +149,9 @@ final class FormInputCell: UITableViewCell {
         contentView.backgroundColor = .clear
         
         // Configure labels with default text
-        selectTimeLabel.text = "Select Dates"
-        participantsLabel.text = "Number of participants"
-        availableSlotsLabel.text = "Available Slots: 10"
+        selectTimeLabel.text = Localization.Form.selectDates
+        participantsLabel.text = Localization.Form.numberParticipants
+        availableSlotsLabel.text = Localization.Form.availableSlots(10)
         availableSlotsLabel.textAlignment = .right
         
         // Add subviews

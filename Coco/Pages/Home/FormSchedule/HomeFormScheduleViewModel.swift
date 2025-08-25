@@ -57,7 +57,7 @@ final class HomeFormScheduleViewModel {
     /// Configured as non-typeable with calendar icon trigger
     private lazy var calendarInputViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: nil,
-        placeholderText: "Input Date Visit...",
+        placeholderText: Localization.Placeholder.inputDateVisit,
         currentTypedText: "",
         trailingIcon: (
             image: CocoIcon.icFilterIcon.image,
@@ -71,7 +71,7 @@ final class HomeFormScheduleViewModel {
     /// Configured with number pad keyboard and default value of 1
     private lazy var paxInputViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: nil,
-        placeholderText: "Input total Pax...",
+        placeholderText: Localization.Placeholder.inputTotalPax,
         currentTypedText: "1",
         trailingIcon: nil,
         isTypeAble: true,
@@ -127,13 +127,13 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         let text: String
         switch (minPax, maxPax) {
         case let (min?, max?):
-            text = "Input total Pax... \(min) - \(max) Person(s)"
+            text = Localization.Format.participantRangePerson(min: min, max: max)
         case let (min?, nil):
-            text = "Input total Pax... min \(min) Person(s)"
+            text = Localization.Format.participantMinPerson(min)
         case let (nil, max?):
-            text = "Input total Pax... up to \(max) Person(s)"
+            text = Localization.Format.participantMaxPerson(max)
         default:
-            text = "Input total Pax..."
+            text = Localization.Format.participantDefault
         }
         
         paxInputViewModel.placeholderText = text

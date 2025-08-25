@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 struct ProfileTabItem: TabItemRepresentable {
-    var tabTitle: String { "Profile" }
+    var tabTitle: String { Localization.Screen.profile }
     var defaultTabIcon: UIImage? { CocoIcon.icTabIconProfile.image }
     var selectedTabIcon: UIImage? { CocoIcon.icTabIconProfileFill.image }
 

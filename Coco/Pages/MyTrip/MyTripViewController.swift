@@ -24,7 +24,7 @@ final class MyTripViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "My Trip"
+        title = Localization.Screen.myTrip
         thisView.delegate = self
     }
     
