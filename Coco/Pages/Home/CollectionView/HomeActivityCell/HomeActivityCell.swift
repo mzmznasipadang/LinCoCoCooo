@@ -20,9 +20,12 @@ final class HomeActivityCell: UICollectionViewCell {
     
     func configureCell(_ dataModel: HomeActivityCellDataModel) {
         imageView.loadImage(from: dataModel.imageUrl)
-        areaLabel.text = dataModel.area
         nameLabel.text = dataModel.name
         let priceText = PriceFormatting.formattedIndonesianDecimal(from: dataModel.priceText)
+        
+        var areaText = dataModel.area
+        if areaText.count > 17 { areaText = "\(areaText.prefix(17))..." }
+        areaLabel.text = areaText
         
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineSpacing = 6.0
@@ -151,7 +154,7 @@ private extension HomeActivityCell {
                 .leading(to: cardView.leadingAnchor, constant: 12)
                 .trailing(to: cardView.trailingAnchor, constant: -12)
                 .bottom(to: cardView.bottomAnchor, constant: -12)
-                .height(130) // Set a fixed height for the content area
+                .height(150)
         }
     }
     
@@ -226,12 +229,12 @@ private extension HomeActivityCell {
         }
         
         bulletDividerLabel.layout {
-            $0.leading(to: areaLabel.trailingAnchor, constant: 8.0)
+            $0.leading(to: areaLabel.trailingAnchor, constant: 6.0)
                 .centerY(to: containerView.centerYAnchor)
         }
         
         rateIcon.layout {
-            $0.leading(to: bulletDividerLabel.trailingAnchor, constant: 8.0)
+            $0.leading(to: bulletDividerLabel.trailingAnchor, constant: 6.0)
                 .centerY(to: containerView.centerYAnchor)
         }
         
