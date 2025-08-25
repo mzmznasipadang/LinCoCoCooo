@@ -45,7 +45,8 @@ final class CheckoutViewModel {
 
 extension CheckoutViewModel: CheckoutViewModelProtocol {
     func onViewDidLoad() {
-        let selectedPackage = package.availablePackages.content.first { $0.id == selectedPackageId }
+        let allPackages = package.availablePackages.content.values.flatMap { $0 }
+        let selectedPackage = allPackages.first { $0.id == selectedPackageId }
         
         let df = DateFormatter()
         df.locale = Locale(identifier: "id_ID")
