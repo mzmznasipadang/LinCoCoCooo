@@ -66,9 +66,9 @@ struct HomeViewModelTest {
         let filterModel = HomeSearchFilterTrayDataModel(
             filterPillDataState: [],
             priceRangeModel: HomeSearchFilterPriceRangeModel(
-                minPrice: 499000.0,
+                minPrice: 49900.0,
                 maxPrice: 200000,
-                range: 0...0
+                range: 0...1
             )
         )
         
