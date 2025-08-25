@@ -113,9 +113,10 @@ final class HomeFormScheduleViewController: UIViewController {
             return
         }
         
-        let alert = UIAlertController(title: "Select Participants", message: "Min: \(selectedPackage.minParticipants) - Max: \(selectedPackage.maxParticipants)", preferredStyle: .actionSheet)
+        let alert: UIAlertController = UIAlertController(title: "Select Participants", message: "Min: \(selectedPackage.minParticipants) - Max: \(selectedPackage.maxParticipants)", preferredStyle: .actionSheet)
         
-        for i in selectedPackage.minParticipants...selectedPackage.maxParticipants {
+        let range: ClosedRange<Int> = selectedPackage.minParticipants...selectedPackage.maxParticipants
+        for i in range {
             alert.addAction(UIAlertAction(title: "\(i)", style: .default) { [weak self] _ in
                 // Update pax count in form
                 self?.updateParticipantCount(i)
@@ -377,7 +378,7 @@ extension HomeFormScheduleViewController: UITableViewDelegate {
             headerView.backgroundColor = Token.grayscale10
             
             let titleLabel = UILabel()
-            titleLabel.text = "Traveler details"
+            titleLabel.text = Localization.Form.TravelerDetails.title
             titleLabel.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
             titleLabel.textColor = Token.grayscale90
             

@@ -41,7 +41,7 @@ final class FormInputCell: UITableViewCell {
     ///   - selectedTime: The selected date string or "Select Date" placeholder
     ///   - participantCount: The current participant count as string
     func configure(selectedTime: String, participantCount: String) {
-        timeButton.setTitle(selectedTime.isEmpty ? "Select Date" : selectedTime, for: .normal)
+        timeButton.setTitle(selectedTime.isEmpty ? Localization.Common.selectDate : selectedTime, for: .normal)
         paxTextField.text = participantCount.isEmpty ? "1" : participantCount
     }
     

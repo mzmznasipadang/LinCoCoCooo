@@ -105,6 +105,24 @@ final class HomeFormScheduleViewModel {
 // MARK: - HomeFormScheduleViewModelProtocol
 
 extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
+    func updateParticipantCount(_ count: Int) {
+        paxInputViewModel.currentTypedText = "\(count)"
+        // Rebuild sections to reflect the updated participant count
+        let sections = buildSections()
+        actionDelegate?.updateTableSections(sections)
+        
+        // Update price details
+        let priceData = buildPriceDetailsData()
+        actionDelegate?.updatePriceDetails(priceData)
+    }
+    
+    func onTravelerDataChanged(_ data: TravelerData) {
+        currentTravelerData = data
+        // Update price details with new traveler name
+        let priceData = buildPriceDetailsData()
+        actionDelegate?.updatePriceDetails(priceData)
+    }
+    
     func refreshPaxPlaceholder() {
         let text: String
         switch (minPax, maxPax) {
@@ -132,6 +150,12 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         let sections = buildSections()
         actionDelegate?.updateTableSections(sections)
         
+        let data = HomeFormScheduleViewData(
+            imageString: input.package.imageUrlsString.first ?? "",
+            activityName: input.package.title,
+            packageName: selectedPackage?.name ?? "Package",
+            location: input.package.location
+        )
         actionDelegate?.configureView(data: data)
         
         if let selected = input.package.availablePackages.content.first(where: { $0.id == input.selectedPackageId }) {
@@ -174,25 +198,36 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
     func onCheckout() {
         let raw = paxInputViewModel.currentTypedText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !raw.isEmpty else {
-            actionDelegate?.showValidationError(message: "Masukkan jumlah orang terlebih dahulu.")
+            actionDelegate?.showValidationError(message: Localization.Validation.Participant.empty)
             return
         }
         guard let participants = Int(raw), participants > 0 else {
-            actionDelegate?.showValidationError(message: "Jumlah orang harus berupa angka yang valid.")
+            actionDelegate?.showValidationError(message: Localization.Validation.Participant.invalid)
             return
         }
 
         guard minPax != nil || maxPax != nil else {
-            actionDelegate?.showValidationError(message: "Tidak dapat memuat batas peserta paket. Coba lagi memilih paket atau periksa koneksi.")
+            actionDelegate?.showValidationError(message: Localization.Validation.Participant.packageLimitsUnavailable)
             return
         }
 
         if let min = minPax, participants < min {
-            actionDelegate?.showValidationError(message: "Minimal peserta untuk paket ini adalah \(min) orang.")
+            actionDelegate?.showValidationError(message: Localization.Validation.Participant.belowMinimum(min))
             return
         }
         if let max = maxPax, participants > max {
-            actionDelegate?.showValidationError(message: "Maksimal peserta untuk paket ini adalah \(max) orang.")
+            actionDelegate?.showValidationError(message: Localization.Validation.Participant.aboveMaximum(max))
+            return
+        }
+
+        // Validate traveler data
+        guard !currentTravelerData.name.isEmpty else {
+            actionDelegate?.showValidationError(message: Localization.Validation.Traveler.nameEmpty)
+            return
+        }
+        
+        guard currentTravelerData.isValid else {
+            actionDelegate?.showValidationError(message: Localization.Validation.Traveler.dataIncomplete)
             return
         }
 
@@ -221,6 +256,135 @@ extension HomeFormScheduleViewModel: HomeSearchBarViewModelDelegate {
 
 private extension HomeFormScheduleViewModel {
     func openCalendar() {
+        actionDelegate?.showCalendarOption()
+    }
+    
+    private var selectedPackage: ActivityDetailDataModel.Package? {
+        return input.package.availablePackages.content.first { $0.id == input.selectedPackageId }
+    }
+    
+    private func buildSections() -> [BookingDetailSection] {
+        var sections: [BookingDetailSection] = []
         
+        // Package Info Section
+        if let selectedPackage = selectedPackage {
+            let packageInfo = PackageInfoDisplayData(
+                imageUrl: selectedPackage.imageUrlString,
+                packageName: selectedPackage.name,
+                paxRange: "Min.\(selectedPackage.minParticipants) - Max.\(selectedPackage.maxParticipants)",
+                pricePerPax: selectedPackage.price,
+                originalPrice: nil,
+                hasDiscount: false,
+                description: selectedPackage.description,
+                duration: "Full Day"
+            )
+            
+            sections.append(BookingDetailSection(
+                type: .packageInfo,
+                title: nil,
+                isExpandable: false,
+                isExpanded: false,
+                items: [packageInfo]
+            ))
+        }
+        
+        // Trip Provider Section
+        let tripProviderItem = TripProviderDisplayItem(
+            name: input.package.providerDetail.content.name,
+            description: input.package.providerDetail.content.description,
+            imageUrl: input.package.providerDetail.content.imageUrlString
+        )
+        
+        sections.append(BookingDetailSection(
+            type: .tripProvider,
+            title: input.package.providerDetail.title,
+            isExpandable: true,
+            isExpanded: false,
+            items: [tripProviderItem]
+        ))
+        
+        // Itinerary Section (mock data for now)
+        let itineraryItems = [
+            ItineraryDisplayItem(
+                time: "09:00",
+                title: "Departure",
+                description: "Start the journey",
+                duration: "30 min",
+                isFirstItem: true,
+                isLastItem: false
+            ),
+            ItineraryDisplayItem(
+                time: "17:00",
+                title: "Return",
+                description: "End of the journey",
+                duration: "30 min",
+                isFirstItem: false,
+                isLastItem: true
+            )
+        ]
+        
+        sections.append(BookingDetailSection(
+            type: .itinerary,
+            title: "Itinerary",
+            isExpandable: true,
+            isExpanded: false,
+            items: itineraryItems
+        ))
+        
+        // Form Inputs Section
+        let selectedTime: String
+        if let date = chosenDateInput {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd MMMM, yyyy"
+            selectedTime = dateFormatter.string(from: date)
+        } else {
+            selectedTime = Localization.Common.selectDate
+        }
+        
+        let formData = FormInputData(
+            selectedTime: selectedTime,
+            participantCount: paxInputViewModel.currentTypedText
+        )
+        
+        sections.append(BookingDetailSection(
+            type: .formInputs,
+            title: nil,
+            isExpandable: false,
+            isExpanded: false,
+            items: [formData]
+        ))
+        
+        // Traveler Details Section
+        sections.append(BookingDetailSection(
+            type: .travelerDetails,
+            title: nil,
+            isExpandable: false,
+            isExpanded: false,
+            items: [currentTravelerData]
+        ))
+        
+        return sections
+    }
+    
+    private func buildPriceDetailsData() -> PriceDetailsData {
+        let selectedDate: String
+        if let date = chosenDateInput {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEE, dd MMM yyyy"
+            selectedDate = formatter.string(from: date)
+        } else {
+            selectedDate = "Select Date"
+        }
+        
+        let participantCount = Int(paxInputViewModel.currentTypedText) ?? 1
+        let pricePerPerson = selectedPackage?.pricePerPerson ?? 0
+        let totalPrice = pricePerPerson * Double(participantCount)
+        
+        return PriceDetailsData(
+            selectedDate: selectedDate,
+            participantCount: participantCount,
+            travelerName: currentTravelerData.name,
+            totalPrice: "Rp\(Int(totalPrice).formatted())"
+        )
     }
 }

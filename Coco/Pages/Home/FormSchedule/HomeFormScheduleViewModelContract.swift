@@ -40,6 +40,14 @@ protocol HomeFormScheduleViewModelAction: AnyObject {
     /// Shows the calendar selection popup
     func showCalendarOption()
     func showValidationError(message: String)
+    
+    /// Updates the table view sections with new data
+    /// - Parameter sections: Array of sections to display in the table view
+    func updateTableSections(_ sections: [BookingDetailSection])
+    
+    /// Updates the price details view with new pricing information
+    /// - Parameter data: Updated price details data
+    func updatePriceDetails(_ data: PriceDetailsData)
 }
 
 // MARK: - HomeFormScheduleViewModelProtocol

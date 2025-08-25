@@ -71,7 +71,7 @@ final class TravelerDetailsCell: UITableViewCell {
         numberOfLines: 1
     )
     
-    private lazy var nameTextField: UITextField = createTextField(placeholder: "Type here...")
+    private lazy var nameTextField: UITextField = createTextField(placeholder: Localization.Common.typeHere)
     
     private lazy var phoneLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
@@ -80,7 +80,7 @@ final class TravelerDetailsCell: UITableViewCell {
     )
     
     private lazy var phoneTextField: UITextField = {
-        let textField = createTextField(placeholder: "Type here...")
+        let textField = createTextField(placeholder: Localization.Common.typeHere)
         textField.keyboardType = .phonePad
         return textField
     }()
@@ -92,12 +92,21 @@ final class TravelerDetailsCell: UITableViewCell {
     )
     
     private lazy var emailTextField: UITextField = {
-        let textField = createTextField(placeholder: "Type here...")
+        let textField = createTextField(placeholder: Localization.Common.typeHere)
         textField.keyboardType = .emailAddress
         return textField
     }()
     
     // Error labels
+    private lazy var nameErrorLabel: UILabel = {
+        let label = UILabel()
+        label.font = .jakartaSans(forTextStyle: .caption1, weight: .regular)
+        label.textColor = .systemRed
+        label.numberOfLines = 1
+        label.isHidden = true
+        return label
+    }()
+    
     private lazy var phoneErrorLabel: UILabel = {
         let label = UILabel()
         label.font = .jakartaSans(forTextStyle: .caption1, weight: .regular)
@@ -147,14 +156,15 @@ final class TravelerDetailsCell: UITableViewCell {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
         
-        nameLabel.text = "Name"
-        phoneLabel.text = "Phone"
-        emailLabel.text = "Email"
+        nameLabel.text = Localization.Form.TravelerDetails.name
+        phoneLabel.text = Localization.Form.TravelerDetails.phone
+        emailLabel.text = Localization.Form.TravelerDetails.email
         
         contentView.addSubview(containerView)
         containerView.addSubviews([
             nameLabel,
             nameTextField,
+            nameErrorLabel,
             phoneLabel,
             phoneTextField,
             phoneErrorLabel,
@@ -183,8 +193,14 @@ final class TravelerDetailsCell: UITableViewCell {
             $0.height(48)
         }
         
+        nameErrorLabel.layout {
+            $0.top(to: nameTextField.bottomAnchor, constant: 4)
+            $0.leading(to: containerView.leadingAnchor, constant: 16)
+            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+        }
+        
         phoneLabel.layout {
-            $0.top(to: nameTextField.bottomAnchor, constant: 20)
+            $0.top(to: nameErrorLabel.bottomAnchor, constant: 16)
             $0.leading(to: containerView.leadingAnchor, constant: 16)
             $0.trailing(to: containerView.trailingAnchor, constant: -16)
         }
@@ -238,15 +254,20 @@ final class TravelerDetailsCell: UITableViewCell {
         let text = textField.text ?? ""
         
         switch textField {
+        case nameTextField:
+            let isValid = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            updateFieldValidation(textField: nameTextField, errorLabel: nameErrorLabel, 
+                                 isValid: isValid, errorMessage: Localization.Validation.Name.required)
+            
         case phoneTextField:
             let isValid = isValidPhone(text)
             updateFieldValidation(textField: phoneTextField, errorLabel: phoneErrorLabel, 
-                                 isValid: isValid, errorMessage: "Please enter a valid phone number (10-15 digits)")
+                                 isValid: isValid, errorMessage: Localization.Validation.Phone.invalid)
             
         case emailTextField:
             let isValid = isValidEmail(text)
             updateFieldValidation(textField: emailTextField, errorLabel: emailErrorLabel, 
-                                 isValid: isValid, errorMessage: "Please enter a valid email address")
+                                 isValid: isValid, errorMessage: Localization.Validation.Email.invalid)
         default:
             break
         }
@@ -258,11 +279,16 @@ final class TravelerDetailsCell: UITableViewCell {
                 textField.layer.borderColor = UIColor.systemRed.cgColor
                 errorLabel.text = errorMessage
                 errorLabel.isHidden = false
+                errorLabel.alpha = 1.0
             } else {
                 textField.layer.borderColor = UIColor.clear.cgColor
                 errorLabel.isHidden = true
+                errorLabel.alpha = 0.0
             }
         }
+        
+        // Force layout update to ensure error label is visible
+        self.contentView.layoutIfNeeded()
     }
     
     private func isValidPhone(_ phone: String) -> Bool {

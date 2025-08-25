@@ -21,6 +21,7 @@ final class HomeSearchBarViewModel: ObservableObject {
     let trailingIcon: ImageHandler?
     let isTypeAble: Bool
     @Published var placeholderText: String
+    let keyboardType: UIKeyboardType
     
     init(
         leadingIcon: UIImage?,

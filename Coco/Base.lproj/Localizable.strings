@@ -1,0 +1,31 @@
+/* 
+  Localizable.strings
+  Coco
+
+  Created by Claude on 25/08/25.
+  
+*/
+
+// MARK: - Validation Messages
+"validation.participant.empty" = "Masukkan jumlah orang terlebih dahulu.";
+"validation.participant.invalid" = "Jumlah orang harus berupa angka yang valid.";
+"validation.participant.package_limits_unavailable" = "Tidak dapat memuat batas peserta paket. Coba lagi memilih paket atau periksa koneksi.";
+"validation.participant.below_minimum" = "Minimal peserta untuk paket ini adalah %d orang.";
+"validation.participant.above_maximum" = "Maksimal peserta untuk paket ini adalah %d orang.";
+
+"validation.traveler.name_empty" = "Harap masukkan nama traveler.";
+"validation.traveler.data_incomplete" = "Harap lengkapi data traveler dengan benar (nama, nomor telepon yang valid, dan email yang valid).";
+
+"validation.phone.invalid" = "Please enter a valid phone number (10-15 digits)";
+"validation.email.invalid" = "Please enter a valid email address";
+"validation.name.required" = "Name is required";
+
+// MARK: - Form Labels
+"form.traveler_details.name" = "Name";
+"form.traveler_details.phone" = "Phone"; 
+"form.traveler_details.email" = "Email";
+"form.traveler_details.title" = "Traveler details";
+
+// MARK: - Common
+"common.select_date" = "Select Date";
+"common.type_here" = "Type here...";
