@@ -15,6 +15,7 @@ struct ActivitySection {
 }
 
 final class HomeViewController: UIViewController {
+    var coordinator: HomeCoordinator? // Changed from weak to strong
     init(viewModel: HomeViewModelProtocol) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -104,9 +105,25 @@ extension HomeViewController: HomeViewModelAction {
     }
     
     func activityDidSelect(data: ActivityDetailDataModel) {
-        let detailViewModel = ActivityDetailViewModel(data: data)
-        let detailViewController = ActivityDetailViewController(viewModel: detailViewModel)
-        navigationController?.pushViewController(detailViewController, animated: true)
+        print("🟣 HomeViewController: Received activity data: \(data.title)")
+        
+        // Always use the HomeCoordinator approach for consistency
+        guard let navigationController = navigationController else { 
+            print("❌ HomeViewController: navigationController is nil")
+            return 
+        }
+        
+        print("🟣 HomeViewController: Creating HomeCoordinator for activity detail")
+        let homeCoordinator = HomeCoordinator(input: .init(
+            navigationController: navigationController,
+            flow: .activityDetail(data: data)
+        ))
+        
+        // Store the coordinator reference to prevent it from being deallocated
+        self.coordinator = homeCoordinator
+        
+        print("🟣 HomeViewController: Starting HomeCoordinator")
+        homeCoordinator.start()
     }
     
     func openSearchTray(

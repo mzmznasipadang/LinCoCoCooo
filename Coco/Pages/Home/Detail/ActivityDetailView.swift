@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 protocol ActivityDetailViewDelegate: AnyObject {
-    func notifyPackagesDetailDidTap(with packageId: Int)
+    func notifyUserDidTapBookPackage(with packageId: Int)
     func notifyHighlightsSeeMoreDidTap(fullText: String)
     func notifyPackageDetailsDidTap(with packageId: Int)
 }

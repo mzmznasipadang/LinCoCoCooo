@@ -20,10 +20,13 @@ final class ActivityDetailViewModel {
 
 extension ActivityDetailViewModel: ActivityDetailViewModelProtocol {
     func onViewDidLoad() {
+        print("🟡 ActivityDetailViewModel: onViewDidLoad called, navigationDelegate: \(navigationDelegate != nil ? "SET" : "NIL")")
         actionDelegate?.configureView(data: data)
     }
     
     func onPackagesDetailDidTap(with packageId: Int) {
+        print("🟡 ViewModel received packageId=\(packageId), navDelegate nil? \(navigationDelegate == nil)")
+        print("🟡 ViewModel navigationDelegate type: \(type(of: navigationDelegate))")
         navigationDelegate?.notifyActivityDetailPackageDidSelect(package: data, selectedPackageId: packageId)
     }
 }

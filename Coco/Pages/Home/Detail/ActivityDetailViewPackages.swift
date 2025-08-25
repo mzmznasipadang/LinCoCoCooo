@@ -157,10 +157,11 @@ extension ActivityDetailView {
         bookButton.titleLabel?.font = .jakartaSans(forTextStyle: .subheadline, weight: .bold)
         bookButton.layer.cornerRadius = 12
         
-        let action = UIAction { [weak self] _ in
-            self?.delegate?.notifyPackagesDetailDidTap(with: data.id)
+        let bookAction = UIAction { [weak self] _ in
+            print("🔵 Book button tapped for package ID: \(data.id)")
+            self?.delegate?.notifyUserDidTapBookPackage(with: data.id)
         }
-        bookButton.addAction(action, for: .touchUpInside)
+        bookButton.addAction(bookAction, for: .touchUpInside)
 
         // --- Layout ---
         let paxStack = UIStackView(arrangedSubviews: [paxIcon, paxLabel])
