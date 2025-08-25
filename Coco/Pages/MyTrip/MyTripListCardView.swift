@@ -9,6 +9,35 @@ import Foundation
 import UIKit
 import SwiftUI
 
+final class HorizontalDottedLineView: UIView {
+    private let shapeLayer = CAShapeLayer()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupLayer()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupLayer()
+    }
+    
+    private func setupLayer() {
+        shapeLayer.strokeColor = Token.grayscale40.cgColor
+        shapeLayer.lineWidth = 1
+        shapeLayer.lineDashPattern = [4, 4] // 4 points drawn, 4 points empty
+        layer.addSublayer(shapeLayer)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let path = CGMutablePath()
+        path.addLines(between: [CGPoint(x: 0, y: bounds.midY), CGPoint(x: bounds.width, y: bounds.midY)])
+        shapeLayer.path = path
+    }
+}
+
+
 protocol MyTripListCardViewDelegate: AnyObject {
     func notifyTripListCardDidTap(at index: Int)
 }
@@ -61,6 +90,9 @@ final class MyTripListCardView: UIView {
             attributes: [.font: paxRegularFont, .foregroundColor: Token.grayscale90]
         ))
         totalPaxLabel.attributedText = paxAttributedString
+        
+        // Hide for incompleted trip
+        reviewContainer.isHidden = dataModel.statusLabel.text != "Completed"
     }
     
     private lazy var imageView: UIImageView = createImageView()
@@ -93,6 +125,8 @@ final class MyTripListCardView: UIView {
         textColor: Token.grayscale90,
         numberOfLines: 1
     )
+    private lazy var reviewContainer: UIStackView = createReviewContainer()
+    private lazy var dividerView: UIView = createDividerView()
     
     private var index: Int = 0
 }
@@ -174,7 +208,8 @@ private extension MyTripListCardView {
         let mainStackView = UIStackView(arrangedSubviews: [
             topContainer,
             mainContentContainer,
-            bottomInfoStackView
+            bottomInfoStackView,
+            reviewContainer
         ])
         mainStackView.axis = .vertical
         mainStackView.spacing = 12.0
@@ -201,6 +236,62 @@ private extension MyTripListCardView {
                 .height(100)
         }
         return imageView
+    }
+    
+    func createDividerView() -> UIView {
+        let view = HorizontalDottedLineView()
+        view.backgroundColor = .clear
+        view.layout {
+            $0.height(1)
+        }
+        return view
+    }
+    
+    func createReviewPromptView() -> UIView {
+        let container = UIView()
+        
+        let label = UILabel()
+        label.font = .jakartaSans(forTextStyle: .footnote, weight: .regular)
+        label.textColor = Token.grayscale90
+        label.text = "Tell us about your trip"
+        
+        let starsStackView = UIStackView()
+        starsStackView.axis = .horizontal
+        starsStackView.spacing = 2
+        for _ in 0..<5 {
+            let rateIcon = UIImageView(image: CocoIcon.icStarred.image)
+            rateIcon.contentMode = .scaleAspectFit
+            rateIcon.layout { $0.size(16) }
+            starsStackView.addArrangedSubview(rateIcon)
+        }
+        
+        container.addSubviews([label, starsStackView])
+        
+        label.layout {
+            $0.leading(to: container.leadingAnchor)
+                .centerY(to: container.centerYAnchor)
+                .top(to: container.topAnchor)
+                .bottom(to: container.bottomAnchor)
+        }
+        
+        starsStackView.layout {
+            $0.trailing(to: container.trailingAnchor)
+                .centerY(to: label.centerYAnchor)
+        }
+        
+        return container
+    }
+    
+    func createReviewContainer() -> UIStackView {
+        let reviewPromptView = createReviewPromptView()
+        let stackView = UIStackView(arrangedSubviews: [
+            dividerView,
+            reviewPromptView
+        ])
+        stackView.axis = .vertical
+        stackView.spacing = 12.0
+        stackView.isHidden = true
+        return stackView
     }
     
     func addGesture() {
