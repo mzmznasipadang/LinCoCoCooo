@@ -34,6 +34,16 @@ final class HomeSearchFilterTrayViewModel: ObservableObject {
         let tempActivity: [Activity] = HomeFilterUtil.doFilter(activities, filterDataModel: dataModel)
         applyButtonTitle = Self.getTitle(tempActivity)
     }
+    
+    func resetFilters() {
+        dataModel.filterPillDataState = dataModel.filterPillDataState.map { pill in
+            var newPill = pill
+            newPill.isSelected = false
+            return newPill
+        }
+        dataModel.priceRangeModel.reset()
+        updateApplyButtonTitle()
+    }
 }
 
 private extension HomeSearchFilterTrayViewModel {

@@ -33,7 +33,7 @@ final class MyTripListCardView: UIView {
         tripLabel.text = dataModel.title
         locationLabel.text = dataModel.location
         totalPaxLabel.text = "\(dataModel.totalPax) person"
-        totalPriceLabel.text = dataModel.price
+        totalPriceLabel.text = "Rp \(PriceFormatting.formattedIndonesianDecimal(from: String(String(dataModel.price).dropFirst(3))))"
         imageView.loadImage(from: URL(string: dataModel.imageUrl))
     }
     
@@ -63,7 +63,7 @@ final class MyTripListCardView: UIView {
         numberOfLines: 2
     )
     private lazy var totalPriceLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .subheadline, weight: .semibold),
+        font: .jakartaSans(forTextStyle: .footnote, weight: .semibold),
         textColor: Token.additionalColorsBlack,
         numberOfLines: 2
     )
@@ -216,7 +216,6 @@ private extension MyTripListCardView {
                 .bottom(to: contentView.bottomAnchor)
         }
         
-        
         addSubviewAndLayout(contentView, insets: UIEdgeInsets(edges: 12.0))
         
         backgroundColor = Token.additionalColorsWhite
@@ -232,7 +231,7 @@ private extension MyTripListCardView {
         imageView.layer.cornerRadius = 14.0
         imageView.layout {
             $0.width(89)
-                .height(106)
+                .height(120)
         }
         
         return imageView

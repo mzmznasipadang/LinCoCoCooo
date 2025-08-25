@@ -15,11 +15,31 @@ protocol ActivityFetcherProtocol: AnyObject {
     func fetchTopDestination(
         completion: @escaping (Result<ActivityTopDestinationModelArray, NetworkServiceError>) -> Void
     )
+    func fetchPackageDetail(
+        packageId: Int,
+        completion: @escaping (Result<ActivityPackage, NetworkServiceError>) -> Void
+    )
 }
 
 final class ActivityFetcher: ActivityFetcherProtocol {
     init(networkService: NetworkServiceProtocol = NetworkService.shared) {
         self.networkService = networkService
+    }
+    
+    func fetchPackageDetail(
+        packageId: Int,
+        completion: @escaping (Result<ActivityPackage, NetworkServiceError>) -> Void
+    ) {
+        networkService.request(
+            urlString: ActivityEndpoint.packageDetail(id: packageId).urlString,
+            method: .get,
+            parameters: [:],
+            headers: [
+                "Accept": "application/vnd.pgrst.object+json"
+            ],
+            body: nil,
+            completion: completion
+        )
     }
     
     func fetchActivity(

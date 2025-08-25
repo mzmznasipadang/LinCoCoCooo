@@ -76,7 +76,8 @@ final class NetworkService: NetworkServiceProtocol {
                     return
                 }
                 assertionFailure("Request Failed")
-                completeOnMain(.failure(.requestFailed(error)), completion)
+                // completeOnMain(.failure(.requestFailed(error)), completion)
+                completeOnMain(.failure(.requestFailedWithMessage(error: error, data: data)), completion)
                 return
             }
 
@@ -87,7 +88,9 @@ final class NetworkService: NetworkServiceProtocol {
             }
 
             guard (200..<300).contains(httpResponse.statusCode) else {
-                completeOnMain(.failure(.statusCode(httpResponse.statusCode)), completion)
+                // completeOnMain(.failure(.statusCode(httpResponse.statusCode)), completion)
+                let error = NSError(domain: "HTTPError", code: httpResponse.statusCode, userInfo: nil)
+                completeOnMain(.failure(.requestFailedWithMessage(error: error, data: data)), completion)
                 return
             }
 

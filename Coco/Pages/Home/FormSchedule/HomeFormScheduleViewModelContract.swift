@@ -11,9 +11,13 @@ import Foundation
 
 /// Delegate protocol for handling ViewModel events that require navigation or external actions
 protocol HomeFormScheduleViewModelDelegate: AnyObject {
-    /// Called when the booking creation is successful and should navigate to checkout
-    /// - Parameter response: The booking response containing booking details
-    func notifyFormScheduleDidNavigateToCheckout(with response: CreateBookingResponse)
+    func notifyFormScheduleDidNavigateToCheckout(
+        package: ActivityDetailDataModel,
+        selectedPackageId: Int,
+        bookingDate: Date,
+        participants: Int,
+        userId: String
+    )
 }
 
 // MARK: - HomeFormScheduleViewModelAction
@@ -35,14 +39,7 @@ protocol HomeFormScheduleViewModelAction: AnyObject {
     
     /// Shows the calendar selection popup
     func showCalendarOption()
-    
-    /// Updates the table view with new sections data
-    /// - Parameter sections: Array of booking detail sections to display
-    func updateTableSections(_ sections: [BookingDetailSection])
-    
-    /// Updates the price details view with booking summary
-    /// - Parameter data: Price details data containing booking information
-    func updatePriceDetails(_ data: PriceDetailsData)
+    func showValidationError(message: String)
 }
 
 // MARK: - HomeFormScheduleViewModelProtocol

@@ -11,6 +11,7 @@ enum NetworkServiceError: Error {
     case invalidURL
     case bodyParsingFailed
     case requestFailed(Error)
+    case requestFailedWithMessage(error: Error, data: Data?)
     case invalidResponse
     case decodingFailed(Error)
     case statusCode(Int)

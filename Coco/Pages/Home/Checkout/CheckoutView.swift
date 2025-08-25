@@ -18,14 +18,14 @@ final class CheckoutView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configureView(_ data: BookingDetails) {
-        if let imageUrl: String = data.destination.imageUrl, imageUrl.count > 0{
+    func configureView(_ data: CheckoutDisplayData) {
+        if let imageUrl: String = data.imageUrl, !imageUrl.isEmpty {
             activityImage.loadImage(from: URL(string: imageUrl))
         }
         
         activityTitle.text = data.activityTitle
         activityDescription.text = data.packageName
-        activityLocationTitle.text = data.destination.name
+        activityLocationTitle.text = data.destinationName
         
         let vacationStackView: UIStackView = UIStackView()
         vacationStackView.axis = .vertical
@@ -36,7 +36,7 @@ final class CheckoutView: UIView {
             textColor: Token.additionalColorsBlack,
             numberOfLines: 2
         )
-        participantTotalLabel.text = "\(data.participants)"
+        participantTotalLabel.text = data.participantsText
         vacationStackView.addArrangedSubview(
             createLeftRightAlignment(
                 lhs: createIconTextView(
@@ -52,7 +52,7 @@ final class CheckoutView: UIView {
             textColor: Token.additionalColorsBlack,
             numberOfLines: 2
         )
-        dateTotalLabel.text = data.activityDate
+        dateTotalLabel.text = data.dateText
         vacationStackView.addArrangedSubview(
             createLeftRightAlignment(
                 lhs: createIconTextView(
@@ -82,7 +82,7 @@ final class CheckoutView: UIView {
             textColor: Token.additionalColorsBlack,
             numberOfLines: 2
         )
-        priceDetailPrice.text = "Rp\(data.totalPrice)"
+        priceDetailPrice.text = data.totalPriceText ?? "-"
         
         cardSectionStackView.addArrangedSubview(
             createSectionView(
