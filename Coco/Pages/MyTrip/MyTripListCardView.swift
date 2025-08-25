@@ -259,7 +259,7 @@ private extension MyTripListCardView {
         starsStackView.axis = .horizontal
         starsStackView.spacing = 2
         for _ in 0..<5 {
-            let rateIcon = UIImageView(image: CocoIcon.icStarred.image)
+            let rateIcon = UIImageView(image: CocoIcon.icStarRating.image)
             rateIcon.contentMode = .scaleAspectFit
             rateIcon.layout { $0.size(16) }
             starsStackView.addArrangedSubview(rateIcon)
