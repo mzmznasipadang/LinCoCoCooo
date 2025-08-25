@@ -31,7 +31,22 @@ final class HomeActivityCell: UICollectionViewCell {
         paragraphStyle.lineSpacing = 6.0
         
         let adtData = AdditionalDataService.shared.getActivity(byId: dataModel.id)
-        badgeLabel.text = adtData?.label
+        let labelText = adtData?.label
+        badgeLabel.text = labelText
+        
+        // Set badge color based on label text
+        switch labelText {
+        case "Family":
+            badgeView.backgroundColor = Token.mainColorLemon
+        case "Couples":
+            badgeView.backgroundColor = Token.pinkBadge
+        case "Group":
+            badgeView.backgroundColor = Token.blueBadge
+        case "Solo":
+            badgeView.backgroundColor = Token.orangeBadge
+        default:
+            badgeView.backgroundColor = Token.mainColorLemon
+        }
         
         let attributedString = NSMutableAttributedString(
             string: "Starts from\n",
@@ -76,6 +91,7 @@ final class HomeActivityCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         imageView.image = nil
+        badgeView.backgroundColor = Token.mainColorLemon
     }
     
     private lazy var cardView: UIView = createCardView()
