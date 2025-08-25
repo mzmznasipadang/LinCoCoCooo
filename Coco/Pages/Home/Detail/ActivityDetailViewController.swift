@@ -15,6 +15,7 @@ final class ActivityDetailViewController: UIViewController {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
         self.viewModel.actionDelegate = self
+        self.hidesBottomBarWhenPushed = true
     }
     
     required init?(coder: NSCoder) {

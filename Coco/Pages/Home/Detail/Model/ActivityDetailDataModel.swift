@@ -8,6 +8,8 @@
 import Foundation
 
 struct ActivityDetailDataModel: Equatable {
+    let id : Int
+    let label: String?
     let title: String
     let location: String
     let imageUrlsString: [String]
@@ -40,6 +42,8 @@ struct ActivityDetailDataModel: Equatable {
     }
     
     init(_ response: Activity) {
+        id = response.id
+        label = AdditionalDataService.shared.getActivity(byId: response.id)?.label
         title = response.title
         location = response.destination.name
         imageUrlsString = response.images

@@ -60,7 +60,7 @@ final class ActivityDetailView: UIView {
         locationLabel.text = data.location
         
         // 1) Title Section
-        contentStackView.addArrangedSubview(createTitleView())
+        contentStackView.addArrangedSubview(createTitleView(with: data.label))
         contentStackView.addArrangedSubview(createDivider())
 
         // 2) Highlights Section

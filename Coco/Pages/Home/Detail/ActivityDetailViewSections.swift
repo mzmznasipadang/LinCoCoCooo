@@ -76,8 +76,23 @@ extension ActivityDetailView {
         return card
     }
     
-    func createTitleView() -> UIView {
-        let chipLabel = createChipLabel(text: "Family Friendly", backgroundColor: Token.mainColorLemon)
+    func createTitleView(with labelText: String?) -> UIView {
+        let contentView = UIView()
+        var currentTopAnchor = contentView.topAnchor
+        var topSpacing: CGFloat = 0
+        if let labelText = labelText, !labelText.isEmpty {
+            let (text, color) = badgeStyle(for: labelText)
+            let chipLabel = createChipLabel(text: text, backgroundColor: color)
+            
+            contentView.addSubview(chipLabel)
+            chipLabel.layout {
+                $0.leading(to: contentView.leadingAnchor)
+                $0.top(to: currentTopAnchor)
+                $0.trailing(to: contentView.trailingAnchor, relation: .lessThanOrEqual)
+            }
+            currentTopAnchor = chipLabel.bottomAnchor
+            topSpacing = 8
+        }
         
         let pinPointImage = UIImageView(image: CocoIcon.icPinPointBlue.image)
         pinPointImage.layout {
@@ -136,18 +151,12 @@ extension ActivityDetailView {
         locationRatingStackView.addArrangedSubview(locationView)
         locationRatingStackView.addArrangedSubview(ratingView)
         
-        let contentView = UIView()
-        contentView.addSubviews([chipLabel, titleLabel, locationRatingStackView])
-        
-        chipLabel.layout {
-            $0.leading(to: contentView.leadingAnchor)
-                .top(to: contentView.topAnchor)
-        }
+        contentView.addSubviews([titleLabel, locationRatingStackView])
         
         titleLabel.layout {
             $0.leading(to: contentView.leadingAnchor)
-                .trailing(to: contentView.trailingAnchor)
-                .top(to: chipLabel.bottomAnchor, constant: 8)
+            $0.trailing(to: contentView.trailingAnchor)
+            $0.top(to: currentTopAnchor, constant: topSpacing)
         }
         
         locationRatingStackView.layout {
@@ -158,6 +167,21 @@ extension ActivityDetailView {
         }
         
         return contentView
+    }
+    
+    private func badgeStyle(for label: String) -> (text: String, color: UIColor) {
+        switch label.lowercased() {
+        case "family":
+            return ("Family Friendly", Token.mainColorLemon)
+        case "couples":
+            return ("Perfect for Couples", Token.mainColorLemon)
+        case "group":
+            return ("Great for Groups", Token.mainColorLemon)
+        case "solo":
+            return ("Solo Adventure", Token.mainColorLemon)
+        default:
+            return (label, .systemGray4)
+        }
     }
     
     private struct AssociatedKeys { static var highlightsText = "hlFull" }
