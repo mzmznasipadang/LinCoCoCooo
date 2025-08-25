@@ -260,7 +260,8 @@ private extension HomeFormScheduleViewModel {
     }
     
     private var selectedPackage: ActivityDetailDataModel.Package? {
-        return input.package.availablePackages.content.first { $0.id == input.selectedPackageId }
+        let allPackages = input.package.availablePackages.content.values.flatMap { $0 }
+        return allPackages.first { $0.id == input.selectedPackageId }
     }
     
     private func buildSections() -> [BookingDetailSection] {

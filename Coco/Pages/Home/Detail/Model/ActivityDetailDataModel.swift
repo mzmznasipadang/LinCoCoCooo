@@ -76,9 +76,10 @@ struct ActivityDetailDataModel: Equatable {
                 name: $0.name,
                 description: "\($0.minParticipants) - \($0.maxParticipants) pax", // Format teks diubah
                 price: "Rp\($0.pricePerPerson.formatted(.number.locale(Locale(identifier: "id_ID"))))/pax", // Format harga diubah
-                id: $0.id,
+                pricePerPerson: $0.pricePerPerson,
                 minParticipants: $0.minParticipants,
                 maxParticipants: $0.maxParticipants,
+                id: $0.id,
                 hostName: $0.host?.name ?? "Unknown Host" // <-- Isi properti baru
             )
         }

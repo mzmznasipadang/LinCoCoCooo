@@ -67,8 +67,9 @@ final class BookingDetailDataTransformer {
         packageId: Int
     ) -> PackageInfoDisplayData? {
         
-        // Find selected package
-        guard let selectedPackage = activity.availablePackages.content.first(where: { $0.id == packageId }) else {
+        // Find selected package from grouped dictionary
+        let allPackages = activity.availablePackages.content.values.flatMap { $0 }
+        guard let selectedPackage = allPackages.first(where: { $0.id == packageId }) else {
             return nil
         }
         
@@ -86,7 +87,7 @@ final class BookingDetailDataTransformer {
             pricePerPax: "\(selectedPackage.price)/pax",
             originalPrice: nil,
             hasDiscount: false,
-            description: activity.detailInfomation.content,
+            description: activity.descriptionInfomation.content,
             duration: durationText
         )
     }

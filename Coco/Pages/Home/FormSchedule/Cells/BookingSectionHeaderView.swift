@@ -8,8 +8,8 @@
 import Foundation
 import UIKit
 
-// MARK: - Section Header View (Collapsible)
-final class SectionHeaderView: UITableViewHeaderFooterView {
+// MARK: - Booking Section Header View (Collapsible)
+final class BookingSectionHeaderView: UITableViewHeaderFooterView {
     
     // A closure to handle the tap event, which will be implemented in the view controller.
     var tapHandler: (() -> Void)?

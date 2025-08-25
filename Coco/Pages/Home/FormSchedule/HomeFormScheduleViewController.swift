@@ -83,7 +83,7 @@ final class HomeFormScheduleViewController: UIViewController {
         thisView.tableView.register(SectionContainerCell.self, forCellReuseIdentifier: "SectionContainerCell")
         thisView.tableView.register(FormInputCell.self, forCellReuseIdentifier: "FormInputCell")
         thisView.tableView.register(TravelerDetailsCell.self, forCellReuseIdentifier: "TravelerDetailsCell")
-        thisView.tableView.register(SectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "SectionHeaderView")
+        thisView.tableView.register(BookingSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "BookingSectionHeaderView")
     }
     
     // MARK: - Helper Methods
@@ -136,7 +136,8 @@ final class HomeFormScheduleViewController: UIViewController {
     /// Gets the currently selected package from the ViewModel
     /// - Returns: The selected package or nil if not found
     private func getSelectedPackage() -> ActivityDetailDataModel.Package? {
-        return viewModel.input.package.availablePackages.content.first { $0.id == viewModel.input.selectedPackageId }
+        let allPackages = viewModel.input.package.availablePackages.content.values.flatMap { $0 }
+        return allPackages.first { $0.id == viewModel.input.selectedPackageId }
     }
     
     /// Updates the participant count through the ViewModel
@@ -396,8 +397,8 @@ extension HomeFormScheduleViewController: UITableViewDelegate {
         
         // Collapsible headers for trip provider and itinerary sections
         guard let headerView = tableView.dequeueReusableHeaderFooterView(
-            withIdentifier: "SectionHeaderView"
-        ) as? SectionHeaderView else {
+            withIdentifier: "BookingSectionHeaderView"
+        ) as? BookingSectionHeaderView else {
             return nil
         }
         

@@ -33,6 +33,7 @@ final class ActivityDetailView: UIView {
     private var lastStickyVisible: Bool = false
     private lazy var stickyBottomBar = createStickyBottomBar()
     private var bottomBarPriceLabel: UILabel?
+    private var activityData: ActivityDetailDataModel?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -52,6 +53,7 @@ final class ActivityDetailView: UIView {
     }
 
     func configureView(_ data: ActivityDetailDataModel) {
+        self.activityData = data
         sectionTitles.removeAll()
         sectionAnchors.removeAll()
         tabBarView?.removeFromSuperview()
@@ -321,7 +323,7 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
         stickyBottomBar.layout {
             $0.leading(to: leadingAnchor)
             $0.trailing(to: trailingAnchor)
-            $0.bottom(to: bottomAnchor)
+            $0.bottom(to: safeAreaLayoutGuide.bottomAnchor)
         }
 
     }
@@ -362,15 +364,16 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
         priceStack.layout {
             $0.leading(to: container.leadingAnchor, constant: 16)
             $0.centerY(to: container.centerYAnchor)
-            $0.top(to: container.topAnchor, constant: 12)
-            $0.bottom(to: container.safeAreaLayoutGuide.bottomAnchor, constant: 4)
         }
 
         seePackagesButton.layout {
             $0.trailing(to: container.trailingAnchor, constant: -16)
             $0.centerY(to: container.centerYAnchor)
-            $0.top(to: container.topAnchor, constant: 12)
-            $0.bottom(to: container.safeAreaLayoutGuide.bottomAnchor, constant: 4)
+        }
+        
+        // Set container height constraint
+        container.layout {
+            $0.height(80)
         }
 
         container.isHidden = true
