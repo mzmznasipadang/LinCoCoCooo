@@ -168,7 +168,7 @@ struct Localization {
         static let typeHere = string(for: "common.type_here")
         static let detail = string(for: "common.detail")
         static let cancel = string(for: "common.cancel")
-        static let continue = string(for: "common.continue")
+        static let continueAction = string(for: "common.continue")
         static let search = string(for: "common.search")
         static let ok = string(for: "common.ok")
     }
