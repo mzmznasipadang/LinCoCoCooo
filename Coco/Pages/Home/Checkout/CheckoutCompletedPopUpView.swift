@@ -40,4 +40,3 @@ struct CheckoutCompletedPopUpView: View {
         .padding(32.0)
     }
 }
-
