@@ -131,6 +131,13 @@ struct Localization {
         static let person = string(for: "booking.person")
         static let meetingPoint = string(for: "booking.meeting_point")
         static let completed = string(for: "booking.completed")
+        
+        struct Success {
+            static let title = string(for: "booking.success.title")
+            static func message(_ bookingId: String) -> String {
+                return string(for: "booking.success.message", bookingId)
+            }
+        }
     }
     
     // MARK: - Price & Payment

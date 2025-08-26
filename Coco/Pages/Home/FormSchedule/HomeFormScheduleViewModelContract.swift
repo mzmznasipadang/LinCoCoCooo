@@ -18,6 +18,9 @@ protocol HomeFormScheduleViewModelDelegate: AnyObject {
         participants: Int,
         userId: String
     )
+    
+    /// Called when booking is successfully created
+    func notifyBookingDidSucceed(bookingId: String)
 }
 
 // MARK: - HomeFormScheduleViewModelAction
