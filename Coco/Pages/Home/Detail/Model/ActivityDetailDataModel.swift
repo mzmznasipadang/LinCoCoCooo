@@ -83,7 +83,7 @@ struct ActivityDetailDataModel: Equatable {
                 minParticipants: $0.minParticipants,
                 maxParticipants: $0.maxParticipants,
                 id: $0.id,
-                hostName: $0.host?.name ?? "Unknown Host",
+                hostName: $0.host?.name ?? "Unknown Host"
             )
         }
         
