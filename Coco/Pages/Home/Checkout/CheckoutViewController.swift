@@ -29,7 +29,7 @@ final class CheckoutViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         viewModel.onViewDidLoad()
-        title = "Checkout"
+        title = Localization.Screen.checkout
     }
     
     private let viewModel: CheckoutViewModelProtocol

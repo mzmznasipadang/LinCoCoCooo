@@ -107,6 +107,7 @@ extension ActivityDetailView {
         cardView.layer.cornerRadius = 16
         cardView.layer.borderWidth = 1
         cardView.layer.borderColor = UIColor.systemGray5.cgColor
+        cardView.isUserInteractionEnabled = true
         
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -154,6 +155,8 @@ extension ActivityDetailView {
         priceLabel.attributedText = attributedPrice
         
         let detailsButton = UIButton.textButton(title: "Details", color: Token.mainColorPrimary)
+        detailsButton.isEnabled = true
+        detailsButton.isUserInteractionEnabled = true
         let detailsAction = UIAction { [weak self] _ in
             self?.delegate?.notifyPackageDetailsDidTap(with: data.id)
         }
@@ -165,6 +168,8 @@ extension ActivityDetailView {
         bookButton.setTitleColor(.white, for: .normal)
         bookButton.titleLabel?.font = .jakartaSans(forTextStyle: .subheadline, weight: .bold)
         bookButton.layer.cornerRadius = 12
+        bookButton.isEnabled = true
+        bookButton.isUserInteractionEnabled = true
         
         let action = UIAction { [weak self] _ in
             self?.delegate?.notifyPackagesDetailDidTap(with: data.id)

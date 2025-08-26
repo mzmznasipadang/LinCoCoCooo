@@ -11,6 +11,7 @@ struct ActivityDetailDataModel: Equatable {
     let title: String
     let location: String
     let imageUrlsString: [String]
+    let durationMinutes: Int
     
     let descriptionInfomation: ActivitySectionLayout<String>
     let providerDetail: ActivitySectionLayout<ProviderDetail>
@@ -33,15 +34,18 @@ struct ActivityDetailDataModel: Equatable {
         let name: String
         let description: String
         let price: String
-        let id: Int
+        let pricePerPerson: Double
         let minParticipants: Int
         let maxParticipants: Int
+        
+        let id: Int
         let hostName: String
     }
     
     init(_ response: Activity) {
         title = response.title
         location = response.destination.name
+        durationMinutes = response.durationMinutes
         imageUrlsString = response.images
             .filter { $0.imageType != .banner }
             .map { $0.imageUrl }
@@ -72,9 +76,10 @@ struct ActivityDetailDataModel: Equatable {
                 name: $0.name,
                 description: "\($0.minParticipants) - \($0.maxParticipants) pax", // Format teks diubah
                 price: "Rp\($0.pricePerPerson.formatted(.number.locale(Locale(identifier: "id_ID"))))/pax", // Format harga diubah
-                id: $0.id,
+                pricePerPerson: $0.pricePerPerson,
                 minParticipants: $0.minParticipants,
                 maxParticipants: $0.maxParticipants,
+                id: $0.id,
                 hostName: $0.host?.name ?? "Unknown Host" // <-- Isi properti baru
             )
         }
