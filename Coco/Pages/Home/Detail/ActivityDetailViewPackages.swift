@@ -158,7 +158,6 @@ extension ActivityDetailView {
         bookButton.layer.cornerRadius = 12
         
         let bookAction = UIAction { [weak self] _ in
-            print("🔵 Book button tapped for package ID: \(data.id)")
             self?.delegate?.notifyUserDidTapBookPackage(with: data.id)
         }
         bookButton.addAction(bookAction, for: .touchUpInside)

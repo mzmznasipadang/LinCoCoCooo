@@ -25,17 +25,14 @@ final class HomeCoordinator: BaseCoordinator {
     
     override func start() {
         super.start()
-        print("🟠 HomeCoordinator: Starting with flow: \(input.flow)")
         
         switch input.flow {
         case .activityDetail(let data):
-            print("🟠 HomeCoordinator: Creating ActivityDetailViewModel for: \(data.title)")
             let detailViewModel: ActivityDetailViewModel = ActivityDetailViewModel(
                 data: data
             )
             // Set the navigation delegate BEFORE creating the view controller
             detailViewModel.navigationDelegate = self
-            print("🟠 HomeCoordinator: Set navigationDelegate, creating view controller")
             let detailViewController: ActivityDetailViewController = ActivityDetailViewController(viewModel: detailViewModel)
             start(viewController: detailViewController)
         }
@@ -87,7 +84,6 @@ extension HomeCoordinator: CheckoutViewModelDelegate {
 
 extension HomeCoordinator: ActivityDetailNavigationDelegate {
     func notifyActivityDetailPackageDidSelect(package: ActivityDetailDataModel, selectedPackageId: Int) {
-        print("🟠 Coordinator received selectedPackageId=\(selectedPackageId)")
         let viewModel: HomeFormScheduleViewModel = HomeFormScheduleViewModel(
             input: HomeFormScheduleViewModelInput(
                 package: package,

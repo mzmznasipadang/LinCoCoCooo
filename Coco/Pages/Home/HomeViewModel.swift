@@ -57,13 +57,7 @@ extension HomeViewModel: HomeViewModelProtocol {
     }
     
     func onActivityDidSelect(with id: Int) {
-        print("🔍 HomeViewModel: Looking for activity with ID: \(id)")
-        print("🔍 HomeViewModel: Available IDs in responseMap: \(Array(responseMap.keys).sorted())")
-        guard let activity = responseMap[id] else {
-            print("❌ HomeViewModel: Activity with ID \(id) not found in responseMap")
-            return
-        }
-        print("✅ HomeViewModel: Found activity: \(activity.title)")
+        guard let activity = responseMap[id] else { return }
         let data = ActivityDetailDataModel(activity)
         actionDelegate?.activityDidSelect(data: data)
     }
@@ -93,18 +87,15 @@ private extension HomeViewModel {
             guard let self else { return }
             switch result {
             case .success(let response):
-                print("🟦 HomeViewModel: Fetched \(response.values.count) activities")
                 self.loadingState.percentage = 100
                 self.actionDelegate?.toggleLoadingView(isShown: false, after: 1.0)
                 
                 var sectionData: [HomeActivityCellDataModel] = []
                 response.values.forEach {
-                    print("🟦 HomeViewModel: Adding activity ID \($0.id) to responseMap")
                     sectionData.append(HomeActivityCellDataModel(activity: $0))
                     self.responseMap[$0.id] = $0
                 }
                 responseData = response.values
-                print("🟦 HomeViewModel: Final responseMap contains \(self.responseMap.count) activities")
                 self.actionDelegate?.displayActivities(data: sectionData)
                 
                 contructFilterData()

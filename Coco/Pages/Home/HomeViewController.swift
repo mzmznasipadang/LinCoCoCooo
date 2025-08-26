@@ -105,24 +105,13 @@ extension HomeViewController: HomeViewModelAction {
     }
     
     func activityDidSelect(data: ActivityDetailDataModel) {
-        print("🟣 HomeViewController: Received activity data: \(data.title)")
+        guard let navigationController = navigationController else { return }
         
-        // Always use the HomeCoordinator approach for consistency
-        guard let navigationController = navigationController else { 
-            print("❌ HomeViewController: navigationController is nil")
-            return 
-        }
-        
-        print("🟣 HomeViewController: Creating HomeCoordinator for activity detail")
         let homeCoordinator = HomeCoordinator(input: .init(
             navigationController: navigationController,
             flow: .activityDetail(data: data)
         ))
-        
-        // Store the coordinator reference to prevent it from being deallocated
         self.coordinator = homeCoordinator
-        
-        print("🟣 HomeViewController: Starting HomeCoordinator")
         homeCoordinator.start()
     }
     

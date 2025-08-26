@@ -142,17 +142,7 @@ final class ActivityDetailView: UIView {
 
         contentStackView.addArrangedSubview(createDivider())
         
-        // 5) Promo Section
-        sectionTitles.append("Promo")
-        let promoAnchor = makeAnchor()
-        contentStackView.addArrangedSubview(promoAnchor)
-        sectionAnchors.append(promoAnchor)
-        let promoView = createPromoSection()
-        contentStackView.addArrangedSubview(promoView)
-        
-        contentStackView.addArrangedSubview(createDivider())
-        
-        // 6) Review Section
+        // 5) Review Section
         let reviewSection = createReviewSection()
             
         sectionTitles.append("Review")
@@ -186,7 +176,6 @@ final class ActivityDetailView: UIView {
         setNavigationTitle?(data.title)
         
         if let priceText = data.lowestPriceFormatted {
-            // Buat attributed string untuk harga
             let boldAttributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.jakartaSans(forTextStyle: .title3, weight: .bold),
                 .foregroundColor: Token.additionalColorsBlack

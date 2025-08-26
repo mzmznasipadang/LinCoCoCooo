@@ -160,7 +160,7 @@ private class ItineraryRowView: UIView {
             textStack.leadingAnchor.constraint(equalTo: dotView.trailingAnchor, constant: 20),
             textStack.trailingAnchor.constraint(equalTo: trailingAnchor),
             textStack.topAnchor.constraint(equalTo: topAnchor),
-            textStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -32) // Jarak antar item
+            textStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -32)
         ])
     }
 }

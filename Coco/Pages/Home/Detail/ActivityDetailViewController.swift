@@ -75,7 +75,6 @@ extension ActivityDetailViewController: ActivityDetailViewModelAction {
 extension ActivityDetailViewController: ActivityDetailViewDelegate {
 
     func notifyUserDidTapBookPackage(with packageId: Int) {
-        print("🟢 ViewController received packageId=\(packageId)")
         viewModel.onPackagesDetailDidTap(with: packageId)
     }
     
