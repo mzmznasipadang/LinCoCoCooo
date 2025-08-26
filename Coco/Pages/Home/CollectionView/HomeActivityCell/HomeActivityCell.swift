@@ -20,15 +20,33 @@ final class HomeActivityCell: UICollectionViewCell {
     
     func configureCell(_ dataModel: HomeActivityCellDataModel) {
         imageView.loadImage(from: dataModel.imageUrl)
-        areaLabel.text = dataModel.area
         nameLabel.text = dataModel.name
         let priceText = PriceFormatting.formattedIndonesianDecimal(from: dataModel.priceText)
+        
+        var areaText = dataModel.area
+        if areaText.count > 17 { areaText = "\(areaText.prefix(17))..." }
+        areaLabel.text = areaText
         
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineSpacing = 6.0
         
         let adtData = AdditionalDataService.shared.getActivity(byId: dataModel.id)
-        badgeLabel.text = adtData?.label
+        let labelText = adtData?.label
+        badgeLabel.text = labelText
+        
+        // Set badge color based on label text
+        switch labelText {
+        case "Family":
+            badgeView.backgroundColor = Token.mainColorLemon
+        case "Couples":
+            badgeView.backgroundColor = Token.pinkBadge
+        case "Group":
+            badgeView.backgroundColor = Token.blueBadge
+        case "Solo":
+            badgeView.backgroundColor = Token.orangeBadge
+        default:
+            badgeView.backgroundColor = Token.mainColorLemon
+        }
         
         let attributedString = NSMutableAttributedString(
             string: "Starts from\n",
@@ -73,6 +91,7 @@ final class HomeActivityCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         imageView.image = nil
+        badgeView.backgroundColor = Token.mainColorLemon
     }
     
     private lazy var cardView: UIView = createCardView()
@@ -151,7 +170,7 @@ private extension HomeActivityCell {
                 .leading(to: cardView.leadingAnchor, constant: 12)
                 .trailing(to: cardView.trailingAnchor, constant: -12)
                 .bottom(to: cardView.bottomAnchor, constant: -12)
-                .height(130) // Set a fixed height for the content area
+                .height(150)
         }
     }
     
@@ -226,12 +245,12 @@ private extension HomeActivityCell {
         }
         
         bulletDividerLabel.layout {
-            $0.leading(to: areaLabel.trailingAnchor, constant: 8.0)
+            $0.leading(to: areaLabel.trailingAnchor, constant: 6.0)
                 .centerY(to: containerView.centerYAnchor)
         }
         
         rateIcon.layout {
-            $0.leading(to: bulletDividerLabel.trailingAnchor, constant: 8.0)
+            $0.leading(to: bulletDividerLabel.trailingAnchor, constant: 6.0)
                 .centerY(to: containerView.centerYAnchor)
         }
         
