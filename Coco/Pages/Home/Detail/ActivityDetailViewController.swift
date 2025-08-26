@@ -15,7 +15,6 @@ final class ActivityDetailViewController: UIViewController {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
         self.viewModel.actionDelegate = self
-        self.hidesBottomBarWhenPushed = true
     }
     
     required init?(coder: NSCoder) {
@@ -74,7 +73,7 @@ extension ActivityDetailViewController: ActivityDetailViewModelAction {
 
 extension ActivityDetailViewController: ActivityDetailViewDelegate {
 
-    func notifyUserDidTapBookPackage(with packageId: Int) {
+    func notifyPackagesDetailDidTap(with packageId: Int) {
         viewModel.onPackagesDetailDidTap(with: packageId)
     }
     

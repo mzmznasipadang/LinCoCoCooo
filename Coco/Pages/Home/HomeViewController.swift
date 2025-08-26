@@ -15,7 +15,6 @@ struct ActivitySection {
 }
 
 final class HomeViewController: UIViewController {
-    var coordinator: HomeCoordinator? // Changed from weak to strong
     init(viewModel: HomeViewModelProtocol) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -105,14 +104,9 @@ extension HomeViewController: HomeViewModelAction {
     }
     
     func activityDidSelect(data: ActivityDetailDataModel) {
-        guard let navigationController = navigationController else { return }
-        
-        let homeCoordinator = HomeCoordinator(input: .init(
-            navigationController: navigationController,
-            flow: .activityDetail(data: data)
-        ))
-        self.coordinator = homeCoordinator
-        homeCoordinator.start()
+        let detailViewModel = ActivityDetailViewModel(data: data)
+        let detailViewController = ActivityDetailViewController(viewModel: detailViewModel)
+        navigationController?.pushViewController(detailViewController, animated: true)
     }
     
     func openSearchTray(

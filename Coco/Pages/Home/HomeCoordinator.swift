@@ -31,7 +31,6 @@ final class HomeCoordinator: BaseCoordinator {
             let detailViewModel: ActivityDetailViewModel = ActivityDetailViewModel(
                 data: data
             )
-            // Set the navigation delegate BEFORE creating the view controller
             detailViewModel.navigationDelegate = self
             let detailViewController: ActivityDetailViewController = ActivityDetailViewController(viewModel: detailViewModel)
             start(viewController: detailViewController)
@@ -54,7 +53,7 @@ extension HomeCoordinator: HomeFormScheduleViewModelDelegate {
         bookingDate: Date,
         participants: Int,
         userId: String
-    ) {
+    ) { 
         let viewModel = CheckoutViewModel(
             package: package,
             selectedPackageId: selectedPackageId,
