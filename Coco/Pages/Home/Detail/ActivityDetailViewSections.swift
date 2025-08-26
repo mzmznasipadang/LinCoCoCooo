@@ -176,9 +176,9 @@ extension ActivityDetailView {
         case "couples":
             return ("Couples Getaway", Token.pinkBadge)
         case "group":
-            return ("Group Fun", Token.orangeBadge)
+            return ("Group Fun", Token.blueBadge)
         case "solo":
-            return ("Solo Adventure", Token.blueBadge)
+            return ("Solo Adventure", Token.orangeBadge)
         default:
             return (label, .systemGray4)
         }
