@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 protocol ActivityDetailViewDelegate: AnyObject {
-    func notifyPackagesDetailDidTap(with packageId: Int)
+    func notifyUserDidTapBookPackage(with packageId: Int)
     func notifyHighlightsSeeMoreDidTap(fullText: String)
     func notifyPackageDetailsDidTap(with packageId: Int)
 }
@@ -62,7 +62,7 @@ final class ActivityDetailView: UIView {
         locationLabel.text = data.location
         
         // 1) Title Section
-        contentStackView.addArrangedSubview(createTitleView())
+        contentStackView.addArrangedSubview(createTitleView(with: data.label))
         contentStackView.addArrangedSubview(createDivider())
 
         // 2) Highlights Section
@@ -144,17 +144,7 @@ final class ActivityDetailView: UIView {
 
         contentStackView.addArrangedSubview(createDivider())
         
-        // 5) Promo Section
-        sectionTitles.append("Promo")
-        let promoAnchor = makeAnchor()
-        contentStackView.addArrangedSubview(promoAnchor)
-        sectionAnchors.append(promoAnchor)
-        let promoView = createPromoSection()
-        contentStackView.addArrangedSubview(promoView)
-        
-        contentStackView.addArrangedSubview(createDivider())
-        
-        // 6) Review Section
+        // 5) Review Section
         let reviewSection = createReviewSection()
             
         sectionTitles.append("Review")
@@ -188,7 +178,6 @@ final class ActivityDetailView: UIView {
         setNavigationTitle?(data.title)
         
         if let priceText = data.lowestPriceFormatted {
-            // Buat attributed string untuk harga
             let boldAttributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.jakartaSans(forTextStyle: .title3, weight: .bold),
                 .foregroundColor: Token.additionalColorsBlack
@@ -199,7 +188,7 @@ final class ActivityDetailView: UIView {
             ]
 
             let attributedPrice = NSMutableAttributedString(string: priceText, attributes: boldAttributes)
-            attributedPrice.append(NSAttributedString(string: "/pax", attributes: regularAttributes))
+            attributedPrice.append(NSAttributedString(string: "/person", attributes: regularAttributes))
 
             bottomBarPriceLabel?.attributedText = attributedPrice
             stickyBottomBar.isHidden = false
