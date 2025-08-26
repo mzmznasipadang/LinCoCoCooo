@@ -16,7 +16,7 @@ protocol ActivityDetailViewDelegate: AnyObject {
 
 final class ActivityDetailView: UIView {
     weak var delegate: ActivityDetailViewDelegate?
-
+    
     // MARK: - NEW: Scroll & Tabs
     private let scrollView = UIScrollView()
     private let contentView = UIView()
@@ -33,24 +33,24 @@ final class ActivityDetailView: UIView {
     private var lastStickyVisible: Bool = false
     private lazy var stickyBottomBar = createStickyBottomBar()
     private var bottomBarPriceLabel: UILabel?
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
-    
+        
         let barHeight = stickyBottomBar.isHidden ? 0 : stickyBottomBar.frame.height
         scrollView.contentInset.bottom = barHeight
         scrollView.verticalScrollIndicatorInsets.bottom = barHeight
     }
-
+    
     func configureView(_ data: ActivityDetailDataModel) {
         sectionTitles.removeAll()
         sectionAnchors.removeAll()
@@ -62,7 +62,7 @@ final class ActivityDetailView: UIView {
         // 1) Title Section
         contentStackView.addArrangedSubview(createTitleView(with: data.label))
         contentStackView.addArrangedSubview(createDivider())
-
+        
         // 2) Highlights Section
         let highlightsDescription = UILabel(
             font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
@@ -71,7 +71,7 @@ final class ActivityDetailView: UIView {
         )
         let fullHighlights = data.tnc
         let highlightsView = createHighlightsSection(fullText: fullHighlights)
-
+        
         sectionTitles.append("Highlights")
         let hlAnchor = makeAnchor()
         contentStackView.addArrangedSubview(hlAnchor)
@@ -85,43 +85,43 @@ final class ActivityDetailView: UIView {
             let pkgAnchor = makeAnchor()
             contentStackView.addArrangedSubview(pkgAnchor)
             sectionAnchors.append(pkgAnchor)
-
+            
             packageContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
-
+            
             let sortedHosts = data.availablePackages.content.keys.sorted()
-
+            
             for hostName in sortedHosts {
                 guard let packagesForHost = data.availablePackages.content[hostName] else { continue }
-
+                
                 let hostLabel = UILabel(
                     font: .jakartaSans(forTextStyle: .body, weight: .semibold),
                     textColor: Token.additionalColorsBlack
                 )
                 hostLabel.text = hostName
                 packageContainer.addArrangedSubview(hostLabel)
-
+                
                 for packageData in packagesForHost {
                     packageContainer.addArrangedSubview(
                         createPackageView(data: packageData)
                     )
                 }
-
+                
                 if let lastViewInGroup = packageContainer.arrangedSubviews.last {
                     packageContainer.setCustomSpacing(24, after: lastViewInGroup)
                 }
             }
-
+            
             contentStackView.addArrangedSubview(packageSection)
-
+            
             packageLabel.text = data.availablePackages.title
             packageLabel.isHidden = false
-
+            
         } else {
             packageLabel.isHidden = true
         }
         
         contentStackView.addArrangedSubview(createDivider())
-
+        
         // 4) Description Section
         let detailDescription = UILabel(
             font: .jakartaSans(forTextStyle: .body, weight: .regular),
@@ -133,27 +133,27 @@ final class ActivityDetailView: UIView {
             title: data.descriptionInfomation.title,
             view: detailDescription
         )
-
+        
         sectionTitles.append("Description")
         let detailAnchor = makeAnchor()
         contentStackView.addArrangedSubview(detailAnchor)
         sectionAnchors.append(detailAnchor)
         contentStackView.addArrangedSubview(detailView)
-
+        
         contentStackView.addArrangedSubview(createDivider())
         
         // 5) Review Section
         let reviewSection = createReviewSection()
-            
+        
         sectionTitles.append("Review")
         let reviewAnchor = makeAnchor()
         contentStackView.addArrangedSubview(reviewAnchor)
         sectionAnchors.append(reviewAnchor)
         
         contentStackView.addArrangedSubview(reviewSection)
-
+        
         scrollView.setContentOffset(.zero, animated: false)
-
+        
         let tabs = CustomTabBar(titles: sectionTitles)
         tabs.translatesAutoresizingMaskIntoConstraints = false
         tabs.heightAnchor.constraint(equalToConstant: 48).isActive = true
@@ -169,7 +169,7 @@ final class ActivityDetailView: UIView {
         self.stickyTabBar?.removeFromSuperview()
         self.stickyTabBar = tabs
         self.tabBarView = tabs
-
+        
         tabs.setSelected(index: 0, animated: false, notify: false)
         layoutIfNeeded()
         scrollViewDidScroll(scrollView)
@@ -184,38 +184,38 @@ final class ActivityDetailView: UIView {
                 .font: UIFont.jakartaSans(forTextStyle: .footnote, weight: .regular),
                 .foregroundColor: Token.grayscale70
             ]
-
+            
             let attributedPrice = NSMutableAttributedString(string: priceText, attributes: boldAttributes)
             attributedPrice.append(NSAttributedString(string: "/person", attributes: regularAttributes))
-
+            
             bottomBarPriceLabel?.attributedText = attributedPrice
             stickyBottomBar.isHidden = false
         } else {
             stickyBottomBar.isHidden = true
         }
     }
-
+    
     func addImageSliderView(with view: UIView) {
         imageSliderView.subviews.forEach { $0.removeFromSuperview() }
         imageSliderView.addSubviewAndLayout(view)
     }
-
+    
     func toggleImageSliderView(isShown: Bool) {
         imageSliderView.isHidden = !isShown
         imageSliderHeight?.constant = isShown ? 250 : 0
         setNeedsLayout()
         layoutIfNeeded()
     }
-
+    
     func updatePackageData(_ data: [ActivityDetailDataModel.Package]) {
         packageContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
-
+        
         for (index, item) in data.enumerated() {
             let view = createPackageView(data: item)
             view.alpha = 0
             view.transform = CGAffineTransform(translationX: 0, y: 8)
             packageContainer.addArrangedSubview(view)
-
+            
             UIView.animate(
                 withDuration: 0.3,
                 delay: 0.05 * Double(index),
@@ -229,7 +229,7 @@ final class ActivityDetailView: UIView {
             )
         }
     }
-
+    
     // MARK: - UI Components
     private lazy var imageSliderView = UIView()
     lazy var titleLabel = UILabel(
@@ -237,40 +237,40 @@ final class ActivityDetailView: UIView {
         textColor: Token.additionalColorsBlack,
         numberOfLines: 2
     )
-
+    
     lazy var locationLabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
         textColor: Token.grayscale90,
         numberOfLines: 1
     )
-
+    
     private lazy var packageSection = createPackageSection()
     lazy var packageLabel = UILabel(
         font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
         textColor: Token.additionalColorsBlack,
         numberOfLines: 2
     )
-
+    
     lazy var packageContainer = createStackView(spacing: 18.0)
     private lazy var contentStackView = createStackView(spacing: 12)
     private lazy var headerStackView = createStackView(spacing: 0)
-
+    
 }
 
 // MARK: - Setup
 extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
     func setupView() {
         scrollView.delegate = self
-
+        
         scrollView.addSubviewAndLayout(contentView)
         contentView.layout { $0.widthAnchor(to: scrollView.widthAnchor) }
-
+        
         addSubviewAndLayout(scrollView)
         backgroundColor = UIColor.from("#F5F5F5")
         scrollView.backgroundColor = .clear
-
+        
         contentView.addSubviews([imageSliderView, contentStackView])
-
+        
         imageSliderView.layout {
             $0.top(to: contentView.topAnchor)
                 .leading(to: contentView.leadingAnchor)
@@ -278,14 +278,14 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
         }
         imageSliderHeight = imageSliderView.heightAnchor.constraint(equalToConstant: 250)
         imageSliderHeight?.isActive = true
-
+        
         contentStackView.layout {
             $0.top(to: imageSliderView.bottomAnchor, constant: 0)
                 .leading(to: contentView.leadingAnchor)
                 .trailing(to: contentView.trailingAnchor)
                 .bottom(to: contentView.bottomAnchor)
         }
-
+        
         contentStackView.isLayoutMarginsRelativeArrangement = true
         contentStackView.layoutMargins = .init(
             top: 0,
@@ -298,21 +298,20 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
             .layerMinXMinYCorner, .layerMaxXMinYCorner
         ]
         contentStackView.backgroundColor = Token.additionalColorsWhite
-
+        
         imageSliderView.isHidden = true
-
+        
         tabSpacer.translatesAutoresizingMaskIntoConstraints = false
         tabSpacerHeight = tabSpacer.heightAnchor.constraint(equalToConstant: 12)
         tabSpacerHeight?.isActive = true
         contentStackView.addArrangedSubview(tabSpacer)
-
+        
         addSubview(stickyBottomBar)
         stickyBottomBar.layout {
             $0.leading(to: leadingAnchor)
             $0.trailing(to: trailingAnchor)
             $0.bottom(to: bottomAnchor)
         }
-
     }
     
     private func createStickyBottomBar() -> UIView {
@@ -323,15 +322,15 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
         container.layer.shadowOffset = .init(width: 0, height: -2)
         container.layer.shadowRadius = 4
         container.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let startFromLabel = UILabel()
         startFromLabel.text = "Start from"
         startFromLabel.font = .jakartaSans(forTextStyle: .caption1, weight: .regular)
         startFromLabel.textColor = .secondaryLabel
-
+        
         let priceLabel = UILabel()
         self.bottomBarPriceLabel = priceLabel
-
+        
         let seePackagesButton = UIButton(type: .system)
         seePackagesButton.setTitle("See Packages", for: .normal)
         seePackagesButton.titleLabel?.font = .jakartaSans(forTextStyle: .subheadline, weight: .bold)
@@ -340,45 +339,45 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
         seePackagesButton.layer.cornerRadius = 14
         seePackagesButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 24, bottom: 12, right: 24)
         seePackagesButton.addTarget(self, action: #selector(seePackagesButtonTapped), for: .touchUpInside)
-
+        
         let priceStack = createStackView(spacing: 2, axis: .vertical)
         priceStack.alignment = .leading
         priceStack.addArrangedSubview(startFromLabel)
         priceStack.addArrangedSubview(priceLabel)
-
+        
         container.addSubviews([priceStack, seePackagesButton])
-
+        
         priceStack.layout {
             $0.leading(to: container.leadingAnchor, constant: 16)
             $0.centerY(to: container.centerYAnchor)
             $0.top(to: container.topAnchor, constant: 12)
             $0.bottom(to: container.safeAreaLayoutGuide.bottomAnchor, constant: 4)
         }
-
+        
         seePackagesButton.layout {
             $0.trailing(to: container.trailingAnchor, constant: -16)
             $0.centerY(to: container.centerYAnchor)
             $0.top(to: container.topAnchor, constant: 12)
             $0.bottom(to: container.safeAreaLayoutGuide.bottomAnchor, constant: 4)
         }
-
+        
         container.isHidden = true
         return container
     }
-
+    
     @objc private func seePackagesButtonTapped() {
         guard let packageSectionIndex = sectionTitles.firstIndex(of: "Packages") else { return }
         tabBarView?.setSelected(index: packageSectionIndex, animated: true, notify: false)
         scrollToSection(packageSectionIndex, animated: true)
     }
-
+    
     private func makeAnchor() -> UIView {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
         v.heightAnchor.constraint(equalToConstant: 0.01).isActive = true
         return v
     }
-
+    
     private func scrollToSection(_ index: Int, animated: Bool) {
         guard sectionAnchors.indices.contains(index) else { return }
         layoutIfNeeded()
@@ -391,12 +390,12 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
             self?.isProgrammaticScroll = false
         }
     }
-
+    
     // MARK: - CustomTabBarDelegate
     func customTabBar(_ tabBar: CustomTabBar, didSelect index: Int) {
         scrollToSection(index, animated: true)
     }
-
+    
     // MARK: - UIScrollViewDelegate
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let imageBottomInScroll = imageSliderView.convert(imageSliderView.bounds, to: scrollView).maxY
@@ -416,17 +415,17 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
             lastStickyVisible = shouldStick
             onStickyTabVisibilityChanged?(shouldStick)
         }
-
+        
         guard !isProgrammaticScroll, !sectionAnchors.isEmpty else { return }
-
+        
         var active = 0
         for i in sectionAnchors.indices {
             let y = sectionAnchors[i].convert(CGPoint.zero, to: scrollView).y
             let nextY =
-                (i + 1 < sectionAnchors.count)
-                ? sectionAnchors[i + 1].convert(CGPoint.zero, to: scrollView).y
-                : .greatestFiniteMagnitude
-
+            (i + 1 < sectionAnchors.count)
+            ? sectionAnchors[i + 1].convert(CGPoint.zero, to: scrollView).y
+            : .greatestFiniteMagnitude
+            
             let halfway = y + (nextY - y) / 2.0
             if viewportTop < halfway {
                 active = i
@@ -436,7 +435,7 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
                 active = i
             }
         }
-
+        
         if active != tabBarView?.selectedIndex {
             tabBarView?.setSelected(
                 index: active,
@@ -445,5 +444,4 @@ extension ActivityDetailView: UIScrollViewDelegate, CustomTabBarDelegate {
             )
         }
     }
-
 }

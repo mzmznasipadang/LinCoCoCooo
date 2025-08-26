@@ -100,15 +100,14 @@ extension ActivityDetailView {
         
         return contentView
     }
-
+    
     func createPackageView(data: ActivityDetailDataModel.Package) -> UIView {
         let cardView = UIView()
         cardView.backgroundColor = .white
         cardView.layer.cornerRadius = 16
         cardView.layer.borderWidth = 1
         cardView.layer.borderColor = UIColor.systemGray6.cgColor
-
-        // --- UI Components ---
+        cardView.isUserInteractionEnabled = true
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
@@ -131,7 +130,7 @@ extension ActivityDetailView {
         let paxIcon = UIImageView(image: UIImage(systemName: "person.fill"))
         paxIcon.tintColor = Token.grayscale70
         paxIcon.contentMode = .scaleAspectFit
-
+        
         let priceLabel = UILabel(
             font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
             textColor: Token.additionalColorsBlack
@@ -145,6 +144,8 @@ extension ActivityDetailView {
         perPersonLabel.text = "per person"
         
         let detailsButton = UIButton.textButton(title: "Details", color: Token.mainColorPrimary)
+        detailsButton.isEnabled = true
+        detailsButton.isUserInteractionEnabled = true
         let detailsAction = UIAction { [weak self] _ in
             self?.delegate?.notifyPackageDetailsDidTap(with: data.id)
         }
@@ -156,12 +157,14 @@ extension ActivityDetailView {
         bookButton.setTitleColor(.white, for: .normal)
         bookButton.titleLabel?.font = .jakartaSans(forTextStyle: .subheadline, weight: .bold)
         bookButton.layer.cornerRadius = 12
+        bookButton.isEnabled = true
+        bookButton.isUserInteractionEnabled = true
         
         let bookAction = UIAction { [weak self] _ in
             self?.delegate?.notifyUserDidTapBookPackage(with: data.id)
         }
         bookButton.addAction(bookAction, for: .touchUpInside)
-
+        
         // --- Layout ---
         let paxStack = UIStackView(arrangedSubviews: [paxIcon, paxLabel])
         paxStack.spacing = 6
@@ -175,9 +178,9 @@ extension ActivityDetailView {
         priceStack.axis = .vertical
         priceStack.spacing = 0
         priceStack.alignment = .leading
-
+        
         cardView.addSubviews([imageView, infoStack, priceStack, detailsButton, bookButton])
-
+        
         imageView.layout {
             $0.leading(to: cardView.leadingAnchor, constant: 12)
             $0.centerY(to: cardView.centerYAnchor)
