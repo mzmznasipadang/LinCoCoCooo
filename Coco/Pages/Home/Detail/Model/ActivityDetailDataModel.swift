@@ -8,7 +8,7 @@
 import Foundation
 
 struct ActivityDetailDataModel: Equatable {
-    let id : Int
+    let id: Int
     let label: String?
     let title: String
     let location: String
@@ -28,7 +28,7 @@ struct ActivityDetailDataModel: Equatable {
     struct ProviderDetail: Equatable {
         let name: String
         let description: String
-        let imageUrlString: String	
+        let imageUrlString: String
     }
     
     struct Package: Equatable {
@@ -39,7 +39,6 @@ struct ActivityDetailDataModel: Equatable {
         let pricePerPerson: Double
         let minParticipants: Int
         let maxParticipants: Int
-        
         let id: Int
         let hostName: String
     }
@@ -80,15 +79,16 @@ struct ActivityDetailDataModel: Equatable {
                 name: $0.name,
                 description: "\($0.minParticipants) - \($0.maxParticipants) person",
                 price: "Rp \($0.pricePerPerson.formatted(.number.locale(Locale(identifier: "id_ID"))))",
-                id: $0.id,
+                pricePerPerson: $0.pricePerPerson,
                 minParticipants: $0.minParticipants,
                 maxParticipants: $0.maxParticipants,
+                id: $0.id,
                 hostName: $0.host?.name ?? "Unknown Host"
             )
         }
-
+        
         let groupedPackages = Dictionary(grouping: allPackages, by: { $0.hostName })
-
+        
         availablePackages = ActivitySectionLayout(
             title: "Available Packages",
             content: groupedPackages
@@ -97,9 +97,8 @@ struct ActivityDetailDataModel: Equatable {
         hiddenPackages = Array(allPackages.prefix(2))
         
         let lowestPriceValue = response.packages.min(by: { $0.pricePerPerson < $1.pricePerPerson })?.pricePerPerson
-
+        
         if let price = lowestPriceValue {
-            // Format angka menjadi format Rupiah
             let formattedPrice = PriceFormatting.formattedIndonesianDecimal(from: "\(price)")
             self.lowestPriceFormatted = "Rp \(formattedPrice)"
         } else {

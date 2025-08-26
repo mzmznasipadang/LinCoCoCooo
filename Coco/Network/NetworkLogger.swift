@@ -24,8 +24,7 @@ struct NetworkLogger {
         if let data: Data = data {
             if let json: Any = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers) {
                 print("📦 Body: \(json)")
-            }
-            else if let text: String = String(data: data, encoding: .utf8) {
+            } else if let text: String = String(data: data, encoding: .utf8) {
                 print("📦 Raw Body: \(text)")
             }
         }
