@@ -145,14 +145,14 @@ final class ActivityDetailView: UIView {
         contentStackView.addArrangedSubview(createDivider())
         
         // 5) Promo Section
-        sectionTitles.append("Promo")
-        let promoAnchor = makeAnchor()
-        contentStackView.addArrangedSubview(promoAnchor)
-        sectionAnchors.append(promoAnchor)
-        let promoView = createPromoSection()
-        contentStackView.addArrangedSubview(promoView)
-        
-        contentStackView.addArrangedSubview(createDivider())
+//        sectionTitles.append("Promo")
+//        let promoAnchor = makeAnchor()
+//        contentStackView.addArrangedSubview(promoAnchor)
+//        sectionAnchors.append(promoAnchor)
+//        let promoView = createPromoSection()
+//        contentStackView.addArrangedSubview(promoView)
+//        
+//        contentStackView.addArrangedSubview(createDivider())
         
         // 6) Review Section
         let reviewSection = createReviewSection()
