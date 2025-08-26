@@ -8,6 +8,8 @@
 import Foundation
 
 struct ActivityDetailDataModel: Equatable {
+    let id : Int
+    let label: String?
     let title: String
     let location: String
     let imageUrlsString: [String]
@@ -43,6 +45,8 @@ struct ActivityDetailDataModel: Equatable {
     }
     
     init(_ response: Activity) {
+        id = response.id
+        label = AdditionalDataService.shared.getActivity(byId: response.id)?.label
         title = response.title
         location = response.destination.name
         durationMinutes = response.durationMinutes
@@ -74,13 +78,12 @@ struct ActivityDetailDataModel: Equatable {
             Package(
                 imageUrlString: $0.imageUrl,
                 name: $0.name,
-                description: "\($0.minParticipants) - \($0.maxParticipants) pax", // Format teks diubah
-                price: "Rp\($0.pricePerPerson.formatted(.number.locale(Locale(identifier: "id_ID"))))/pax", // Format harga diubah
-                pricePerPerson: $0.pricePerPerson,
+                description: "\($0.minParticipants) - \($0.maxParticipants) person",
+                price: "Rp \($0.pricePerPerson.formatted(.number.locale(Locale(identifier: "id_ID"))))",
+                id: $0.id,
                 minParticipants: $0.minParticipants,
                 maxParticipants: $0.maxParticipants,
-                id: $0.id,
-                hostName: $0.host?.name ?? "Unknown Host" // <-- Isi properti baru
+                hostName: $0.host?.name ?? "Unknown Host"
             )
         }
 
@@ -98,7 +101,7 @@ struct ActivityDetailDataModel: Equatable {
         if let price = lowestPriceValue {
             // Format angka menjadi format Rupiah
             let formattedPrice = PriceFormatting.formattedIndonesianDecimal(from: "\(price)")
-            self.lowestPriceFormatted = "IDR \(formattedPrice)"
+            self.lowestPriceFormatted = "Rp \(formattedPrice)"
         } else {
             self.lowestPriceFormatted = nil
         }

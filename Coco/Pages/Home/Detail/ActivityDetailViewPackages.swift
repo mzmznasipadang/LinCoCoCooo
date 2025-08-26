@@ -100,7 +100,7 @@ extension ActivityDetailView {
         
         return contentView
     }
-    
+
     func createPackageView(data: ActivityDetailDataModel.Package) -> UIView {
         let cardView = UIView()
         cardView.backgroundColor = .white
@@ -108,7 +108,8 @@ extension ActivityDetailView {
         cardView.layer.borderWidth = 1
         cardView.layer.borderColor = UIColor.systemGray5.cgColor
         cardView.isUserInteractionEnabled = true
-        
+
+        // --- UI Components ---
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
@@ -116,14 +117,14 @@ extension ActivityDetailView {
         imageView.loadImage(from: URL(string: data.imageUrlString))
         
         let titleLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
+            font: .jakartaSans(forTextStyle: .headline, weight: .semibold),
             textColor: Token.additionalColorsBlack,
             numberOfLines: 2
         )
         titleLabel.text = data.name
         
         let paxLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
+            font: .jakartaSans(forTextStyle: .subheadline, weight: .regular),
             textColor: Token.grayscale70
         )
         paxLabel.text = data.description
@@ -131,28 +132,18 @@ extension ActivityDetailView {
         let paxIcon = UIImageView(image: UIImage(systemName: "person.fill"))
         paxIcon.tintColor = Token.grayscale70
         paxIcon.contentMode = .scaleAspectFit
+
+        let priceLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
+            textColor: Token.additionalColorsBlack
+        )
+        priceLabel.text = data.price
         
-        let priceLabel = UILabel()
-                
-        let priceComponents = data.price.split(separator: "/")
-        let pricePart = String(priceComponents.first ?? "")
-        let perPaxString = priceComponents.count > 1 ? "/" + String(priceComponents.last ?? "") : ""
-
-        let rawDigits = pricePart.digits
-        let formattedNumber = PriceFormatting.formattedIndonesianDecimal(from: rawDigits)
-
-        let boldAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.jakartaSans(forTextStyle: .subheadline, weight: .bold),
-            .foregroundColor: Token.additionalColorsBlack
-        ]
-        let regularAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.jakartaSans(forTextStyle: .footnote, weight: .regular),
-            .foregroundColor: Token.grayscale70
-        ]
-
-        let attributedPrice = NSMutableAttributedString(string: "Rp" + formattedNumber, attributes: boldAttributes)
-        attributedPrice.append(NSAttributedString(string: perPaxString, attributes: regularAttributes))
-        priceLabel.attributedText = attributedPrice
+        let perPersonLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .caption1, weight: .regular),
+            textColor: Token.grayscale70
+        )
+        perPersonLabel.text = "per person"
         
         let detailsButton = UIButton.textButton(title: "Details", color: Token.mainColorPrimary)
         detailsButton.isEnabled = true
@@ -171,52 +162,58 @@ extension ActivityDetailView {
         bookButton.isEnabled = true
         bookButton.isUserInteractionEnabled = true
         
-        let action = UIAction { [weak self] _ in
-            self?.delegate?.notifyPackagesDetailDidTap(with: data.id)
+        let bookAction = UIAction { [weak self] _ in
+            self?.delegate?.notifyUserDidTapBookPackage(with: data.id)
         }
-        bookButton.addAction(action, for: .touchUpInside)
+        bookButton.addAction(bookAction, for: .touchUpInside)
 
-        let paxStack = createStackView(spacing: 4, axis: .horizontal)
-        paxStack.addArrangedSubview(paxIcon)
-        paxStack.addArrangedSubview(paxLabel)
+        // --- Layout ---
+        let paxStack = UIStackView(arrangedSubviews: [paxIcon, paxLabel])
+        paxStack.spacing = 6
         
-        let infoStack = createStackView(spacing: 4, axis: .vertical)
+        let infoStack = UIStackView(arrangedSubviews: [titleLabel, paxStack])
+        infoStack.axis = .vertical
+        infoStack.spacing = 4
         infoStack.alignment = .leading
-        infoStack.addArrangedSubview(titleLabel)
-        infoStack.addArrangedSubview(paxStack)
         
-        cardView.addSubviews([imageView, infoStack, priceLabel, detailsButton, bookButton])
+        let priceStack = UIStackView(arrangedSubviews: [priceLabel, perPersonLabel])
+        priceStack.axis = .vertical
+        priceStack.spacing = 0
+        priceStack.alignment = .leading
+
+        cardView.addSubviews([imageView, infoStack, priceStack, detailsButton, bookButton])
 
         imageView.layout {
             $0.leading(to: cardView.leadingAnchor, constant: 12)
-                .centerY(to: cardView.centerYAnchor)
-                .width(90)
-                .height(90)
+            $0.centerY(to: cardView.centerYAnchor)
+            $0.width(90)
+            $0.height(120)
         }
         
         infoStack.layout {
-            $0.leading(to: imageView.trailingAnchor, constant: 12)
-            .top(to: imageView.topAnchor, constant: 4)
-            .trailing(to: detailsButton.leadingAnchor, constant: -8)
+            $0.leading(to: imageView.trailingAnchor, constant: 16)
+            $0.top(to: imageView.topAnchor)
+            $0.trailing(to: detailsButton.leadingAnchor, constant: -8)
         }
         
         detailsButton.layout {
             $0.top(to: cardView.topAnchor, constant: 12)
-            .trailing(to: cardView.trailingAnchor, constant: -16)
+            $0.trailing(to: cardView.trailingAnchor, constant: -16)
         }
         
-        priceLabel.layout {
-            $0.leading(to: imageView.trailingAnchor, constant: 12)
-            .bottom(to: imageView.bottomAnchor, constant: -4)
+        priceStack.layout {
+            $0.leading(to: imageView.trailingAnchor, constant: 16)
+            $0.bottom(to: cardView.bottomAnchor, constant: -12)
         }
         
         bookButton.layout {
             $0.trailing(to: cardView.trailingAnchor, constant: -16)
-            .bottom(to: cardView.bottomAnchor, constant: -12)
-            .width(90)
-            .height(40)
+            $0.bottom(to: cardView.bottomAnchor, constant: -12)
+            $0.width(90)
+            $0.height(40)
         }
-        cardView.heightAnchor.constraint(equalToConstant: 115).isActive = true
+        
+        cardView.heightAnchor.constraint(equalToConstant: 150).isActive = true
         
         return cardView
     }

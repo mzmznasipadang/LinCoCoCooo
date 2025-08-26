@@ -80,4 +80,13 @@ enum Token {
      
     @ColorElement(light: UIColor.from("#171725"), dark: UIColor.from("#171725"))
     static var grayscale100: UIColor
+    
+    @ColorElement(light: UIColor.from("#FF7D9E"), dark: UIColor.from("#FF7D9E"))
+    static var pinkBadge: UIColor
+    
+    @ColorElement(light: UIColor.from("#FFA85B"), dark: UIColor.from("#FFA85B"))
+    static var orangeBadge: UIColor
+    
+    @ColorElement(light: UIColor.from("#B0C1FF"), dark: UIColor.from("#B0C1FF"))
+    static var blueBadge: UIColor
 }
