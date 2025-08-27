@@ -127,12 +127,12 @@ extension ActivityDetailView {
             topSpacing = 8
         }
         
-        let pinPointImage = UIImageView(image: CocoIcon.icPinPointBlue.image)
+        let pinPointImage = UIImageView(image: CocoIcon.icActivityAreaIcon.image)
         pinPointImage.layout {
             $0.size(20.0)
         }
         
-        let starImage = UIImageView(image: CocoIcon.icStarRating.image)
+        let starImage = UIImageView(image: CocoIcon.icStarred.image)
         starImage.layout {
             $0.size(16.0)
         }
@@ -446,8 +446,8 @@ extension ActivityDetailView {
         nameLabel.text = "Linda"
         nameLabel.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
         
-        let tagView = createChipLabel(text: "Family", backgroundColor: UIColor.systemGreen.withAlphaComponent(0.2))
-        (tagView.subviews.first as? UILabel)?.textColor = .systemGreen
+        let tagView = createChipLabel(text: "Family", backgroundColor: Token.mainColorLemon)
+        (tagView.subviews.first as? UILabel)?.textColor = UIColor.black
         
         let topStack = UIStackView(arrangedSubviews: [nameLabel, tagView])
         topStack.spacing = 8
@@ -464,7 +464,7 @@ extension ActivityDetailView {
         
         let packageLabel = UILabel()
         packageLabel.text = "Package: Family Fun Snorkel"
-        packageLabel.font = .jakartaSans(forTextStyle: .subheadline, weight: .regular)
+        packageLabel.font = .jakartaSans(forTextStyle: .subheadline, weight: .semibold)
         packageLabel.textColor = .secondaryLabel
         
         let reviewTextLabel = UILabel()
