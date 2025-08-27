@@ -154,9 +154,12 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
             paxInputViewModel: paxInputViewModel
         )
         
-        // Build and set table sections
+        // Build initial sections (availability will be updated async)
         let sections = buildSections()
         actionDelegate?.updateTableSections(sections)
+        
+        // Check availability for today's date initially
+        checkAvailability(for: Date())
         
         let data: HomeFormScheduleViewData = HomeFormScheduleViewData(
             imageString: selectedPackage?.imageUrlString ?? input.package.imageUrlsString.first ?? "",
@@ -198,14 +201,10 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
     func onCalendarDidChoose(date: Date) {
         chosenDateInput = date
         
-        // Check availability for selected date
+        // Check availability for selected date (this will update UI when response comes back)
         checkAvailability(for: date)
         
-        // Rebuild sections to reflect the updated date
-        let sections = buildSections()
-        actionDelegate?.updateTableSections(sections)
-        
-        // Update price details
+        // Update price details immediately
         let priceData = buildPriceDetailsData()
         actionDelegate?.updatePriceDetails(priceData)
     }
@@ -246,24 +245,27 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
             } catch {
                 print("❌ Failed to check availability: \(error)")
                 await MainActor.run {
-                    // Create mock availability based on date to demonstrate the feature
-                    let calendar = Calendar.current
-                    let day = calendar.component(.day, from: date)
-                    
-                    // Simulate availability: even days have slots, odd days don't
-                    let isAvailable = day % 2 == 0
-                    let slots = isAvailable ? (day % 10 == 0 ? 2 : 5) : 0
+                    // Set availability to unavailable if API call fails
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "yyyy-MM-dd"
                     
                     self.currentAvailability = AvailabilityResponse(
-                        availableSlots: slots, 
-                        isAvailable: isAvailable
+                        id: 0,
+                        packageId: input.selectedPackageId,
+                        date: formatter.string(from: date),
+                        startTime: "09:00:00",
+                        endTime: "17:00:00",
+                        availableSlots: 0
                     )
                     
-                    print("🔧 Using mock availability - Available: \(isAvailable), Slots: \(slots)")
+                    print("⚠️ Using fallback availability - Available: false, Slots: 0")
                     
-                    // Rebuild sections to show the mock availability
+                    // Rebuild sections to show the unavailable state
                     let sections = self.buildSections()
                     actionDelegate?.updateTableSections(sections)
+                    
+                    // Show error message to user
+                    actionDelegate?.showValidationError(message: "Unable to check availability for selected date. Please try again or contact support.")
                 }
             }
         }

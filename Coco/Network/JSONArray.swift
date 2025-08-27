@@ -25,4 +25,15 @@ struct JSONArray<T: JSONDecodable>: JSONDecodable {
     }
 }
 
-extension Array: JSONDecodable where Element: JSONDecodable {}
+extension Array: JSONDecodable where Element: JSONDecodable {
+    init(json: JSONObject) throws {
+        // Arrays should be decoded from JSON arrays, not objects
+        throw NSError(domain: "Array init expects a top-level array in jsonArray parameter", code: -1)
+    }
+}
+
+extension Array: JSONArrayProtocol where Element: JSONDecodable {
+    init(jsonArray: [JSONObject]) throws {
+        self = try jsonArray.map { try Element(json: $0) }
+    }
+}
