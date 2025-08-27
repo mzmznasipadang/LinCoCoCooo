@@ -169,6 +169,7 @@ final class SectionContainerCell: UITableViewCell {
             numberOfLines: 1
         )
         timeLabel.text = item.time
+        timeLabel.textAlignment = .left
         
         let titleLabel = UILabel(
             font: .jakartaSans(forTextStyle: .callout, weight: .semibold),
@@ -176,6 +177,7 @@ final class SectionContainerCell: UITableViewCell {
             numberOfLines: 0
         )
         titleLabel.text = item.title
+        titleLabel.textAlignment = .left
         
         let descLabel = UILabel(
             font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
@@ -183,6 +185,7 @@ final class SectionContainerCell: UITableViewCell {
             numberOfLines: 0
         )
         descLabel.text = item.description
+        descLabel.textAlignment = .left
         
         view.addSubviews([dotView, topLine, bottomLine, timeLabel, titleLabel, descLabel])
         
@@ -209,7 +212,8 @@ final class SectionContainerCell: UITableViewCell {
         
         timeLabel.layout {
             $0.leading(to: dotView.trailingAnchor, constant: 16)
-            $0.centerY(to: dotView.centerYAnchor)
+            $0.top(to: dotView.topAnchor, constant: -2)
+            $0.width(60) // Fixed width for time column
         }
         
         titleLabel.layout {
