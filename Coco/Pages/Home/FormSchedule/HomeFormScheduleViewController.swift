@@ -473,7 +473,10 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
     }
     
     func showCalendarOption() {
-        let calendarVC = CocoCalendarViewController()
+        let calendarVC = CocoCalendarViewController(
+            packageId: viewModel.input.selectedPackageId,
+            availabilityFetcher: AvailabilityFetcher()
+        )
         calendarVC.delegate = self
         let popup = CocoPopupViewController(child: calendarVC)
         present(popup, animated: true)
