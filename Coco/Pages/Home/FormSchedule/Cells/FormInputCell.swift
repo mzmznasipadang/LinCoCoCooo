@@ -46,6 +46,11 @@ final class FormInputCell: UITableViewCell {
         paxTextField.text = participantCount.isEmpty ? "1" : participantCount
         
         print("🔍 FormInputCell configure - SelectedTime: \(selectedTime), ParticipantCount: \(participantCount), AvailableSlots: \(availableSlots ?? -999)")
+        print("🔍 FormInputCell - paxTextField.text after setting: '\(paxTextField.text ?? "nil")'")
+        
+        // Force the text field to refresh its display
+        paxTextField.setNeedsDisplay()
+        paxTextField.layoutIfNeeded()
         
         // Update available slots text
         if let slots = availableSlots {
@@ -136,21 +141,24 @@ final class FormInputCell: UITableViewCell {
         // Prevent keyboard from showing by providing empty input view
         textField.inputView = UIView()
         
-        // Add padding for better visual appearance
+        // Add padding for better visual appearance - leave space for chevron on the right
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftView = paddingView
         textField.leftViewMode = .always
         
-        // Add chevron for dropdown indication
-        let chevronContainer = UIView(frame: CGRect(x: 0, y: 0, width: 36, height: 20))
-        let chevron = UIImageView(image: UIImage(systemName: "chevron.down"))
-        chevron.tintColor = UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1)
-        chevron.frame = CGRect(x: 16, y: 0, width: 20, height: 20)
-        chevronContainer.addSubview(chevron)
-        textField.rightView = chevronContainer
+        // Set text insets to account for chevron space
+        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 0))
         textField.rightViewMode = .always
         
         return textField
+    }()
+    
+    /// Chevron icon for participant field dropdown indication
+    private lazy var paxChevronView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(systemName: "chevron.down"))
+        imageView.tintColor = UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
     }()
     
     /// Label showing available slots information
@@ -181,6 +189,7 @@ final class FormInputCell: UITableViewCell {
             timeButton,
             participantsLabel,
             paxTextField,
+            paxChevronView,
             availableSlotsLabel
         ])
         
@@ -216,6 +225,13 @@ final class FormInputCell: UITableViewCell {
             $0.leading(to: containerView.leadingAnchor, constant: 24)
             $0.trailing(to: containerView.trailingAnchor, constant: -24)
             $0.height(52)
+        }
+        
+        paxChevronView.layout {
+            $0.centerY(to: paxTextField.centerYAnchor)
+            $0.trailing(to: paxTextField.trailingAnchor, constant: -16)
+            $0.width(20)
+            $0.height(20)
         }
         
         availableSlotsLabel.layout {

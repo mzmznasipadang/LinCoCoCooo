@@ -155,7 +155,17 @@ extension HomeCoordinator: CheckoutViewModelDelegate {
         else {
             return
         }
+        
+        // Switch to MyTrip tab
         tabBarController.selectedIndex = 1
+        
+        // Get the MyTrip navigation controller and trigger refresh
+        if let myTripNavController = tabBarController.viewControllers?[1] as? UINavigationController,
+           let myTripViewController = myTripNavController.viewControllers.first as? MyTripViewController {
+            // Trigger viewWillAppear to refresh the data
+            myTripViewController.viewWillAppear(true)
+        }
+        
         navigationController?.popToRootViewController(animated: true)
     }
 }
