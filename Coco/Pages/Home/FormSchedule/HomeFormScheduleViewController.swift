@@ -333,9 +333,9 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             
             // Configure with current form data from ViewModel
             if let formData = sectionData.items.first as? FormInputData {
-                cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount)
+                cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount, availableSlots: formData.availableSlots)
             } else {
-                cell.configure(selectedTime: "7.30", participantCount: "1")
+                cell.configure(selectedTime: "7.30", participantCount: "1", availableSlots: nil)
             }
             cell.onSelectTime = { [weak self] in
                 self?.showTimeSelector()
@@ -437,7 +437,11 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
         // Set up the price details view
         let priceDetailsView = PriceDetailsView()
         priceDetailsView.onBookNow = { [weak self] in
+            print("🚨 VIEWCONTROLLER: onBookNow callback received!")
+            NSLog("🚨 VIEWCONTROLLER: onBookNow callback received!")
             self?.viewModel.onCheckout()
+            print("🚨 VIEWCONTROLLER: viewModel.onCheckout() called!")
+            NSLog("🚨 VIEWCONTROLLER: viewModel.onCheckout() called!")
         }
         
         view.addSubview(priceDetailsView)

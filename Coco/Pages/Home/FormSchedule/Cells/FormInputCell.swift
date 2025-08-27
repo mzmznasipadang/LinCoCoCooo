@@ -40,9 +40,25 @@ final class FormInputCell: UITableViewCell {
     /// - Parameters:
     ///   - selectedTime: The selected date string or "Select Date" placeholder
     ///   - participantCount: The current participant count as string
-    func configure(selectedTime: String, participantCount: String) {
+    ///   - availableSlots: The number of available slots (optional)
+    func configure(selectedTime: String, participantCount: String, availableSlots: Int? = nil) {
         timeButton.setTitle(selectedTime.isEmpty ? Localization.Common.selectDate : selectedTime, for: .normal)
         paxTextField.text = participantCount.isEmpty ? "1" : participantCount
+        
+        print("🔍 FormInputCell configure - SelectedTime: \(selectedTime), ParticipantCount: \(participantCount), AvailableSlots: \(availableSlots ?? -999)")
+        
+        // Update available slots text
+        if let slots = availableSlots {
+            let slotsText = Localization.Form.availableSlots(slots)
+            availableSlotsLabel.text = slotsText
+            availableSlotsLabel.textColor = slots > 0 ? Token.grayscale50 : Token.alertsError
+            print("✅ Updated available slots label: \(slotsText), Color: \(slots > 0 ? "Normal" : "Red")")
+        } else {
+            let defaultSlotsText = Localization.Form.availableSlots(10)
+            availableSlotsLabel.text = defaultSlotsText
+            availableSlotsLabel.textColor = Token.grayscale50
+            print("⚠️ Using default slots: \(defaultSlotsText)")
+        }
     }
     
     // MARK: - UI Components

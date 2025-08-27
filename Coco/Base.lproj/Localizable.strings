@@ -93,6 +93,10 @@
 "common.search" = "Search";
 "common.ok" = "OK";
 
+// MARK: - Booking
+"booking.success.title" = "Booking Confirmed";
+"booking.success.message" = "Your booking has been successfully created! Booking ID: %@";
+
 // MARK: - Numbers & Formatting
 "format.min_max_participants" = "Min.%d - Max.%d";
 "format.participant_range_person" = "Input total Pax... %d - %d Person(s)";
