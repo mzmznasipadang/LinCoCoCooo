@@ -45,7 +45,7 @@ final class CustomTabBar: UIView, UICollectionViewDataSource, UICollectionViewDe
 
     private func setup() {
         translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = .white  // sesuai desain ActivityDetailView
+        backgroundColor = .white
 
         [topHairline, bottomHairline].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -81,12 +81,10 @@ final class CustomTabBar: UIView, UICollectionViewDataSource, UICollectionViewDe
             collection.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
 
-        // Underline di dalam collectionView → ikut scroll
-        underline.backgroundColor = .systemBlue
+        underline.backgroundColor = Token.mainColorPrimary
         underline.frame = .zero
         collection.addSubview(underline)
 
-        // State awal
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.collection.reloadData()
@@ -136,7 +134,6 @@ final class CustomTabBar: UIView, UICollectionViewDataSource, UICollectionViewDe
         }
     }
 
-    // Follow scrolling/relayout
     override func layoutSubviews() {
         super.layoutSubviews()
         updateUnderline(animated: false)
@@ -194,7 +191,7 @@ private final class TabCell: UICollectionViewCell {
         label.font = font
     }
     func setActive(_ active: Bool, font: UIFont) {
-        label.textColor = active ? .systemBlue : .label
+        label.textColor = active ? Token.mainColorPrimary : .label
         label.font = active ? UIFont.systemFont(ofSize: font.pointSize, weight: .semibold)
                             : UIFont.systemFont(ofSize: font.pointSize, weight: .regular)
     }

@@ -11,6 +11,12 @@ import UIKit
 // MARK: - UI Creation Methods
 extension ActivityDetailView {
     
+    private func excerpt(from text: String, maxWords: Int = 14) -> String {
+        let words = text.split { $0.isNewline || $0.isWhitespace }
+        guard words.count > maxWords else { return text }
+        return words.prefix(maxWords).joined(separator: " ") + "…"
+    }
+    
     func createChipLabel(text: String, backgroundColor: UIColor) -> UIView {
         let label = UILabel(
             font: .jakartaSans(forTextStyle: .caption1, weight: .medium),
@@ -103,52 +109,277 @@ extension ActivityDetailView {
         return containerView
     }
     
-    // MARK: - Promo Section
-    func createPromoSection() -> UIView {
-        let titleLabel = UILabel()
-        titleLabel.text = "Promo"
-        titleLabel.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
-        titleLabel.textColor = Token.additionalColorsBlack
-        
-        let scrollView = UIScrollView()
-        scrollView.showsHorizontalScrollIndicator = false
-        
-        let imageStackView = UIStackView()
-        imageStackView.axis = .horizontal
-        imageStackView.spacing = 16
-        
-        let promoImageNames = ["Banner1", "Banner2", "Banner3", "Banner4"]
-        
-        for imageName in promoImageNames {
-            let imageView = UIImageView()
-            imageView.image = UIImage(named: imageName)
-            imageView.contentMode = .scaleAspectFill
-            imageView.clipsToBounds = true
+    func createTitleView(with labelText: String?) -> UIView {
+        let contentView = UIView()
+        var currentTopAnchor = contentView.topAnchor
+        var topSpacing: CGFloat = 0
+        if let labelText = labelText, !labelText.isEmpty {
+            let (text, color) = badgeStyle(for: labelText)
+            let chipLabel = createChipLabel(text: text, backgroundColor: color)
             
-            imageView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                imageView.widthAnchor.constraint(equalToConstant: 280),
-                imageView.heightAnchor.constraint(equalToConstant: 160)
-            ])
-            
-            imageStackView.addArrangedSubview(imageView)
+            contentView.addSubview(chipLabel)
+            chipLabel.layout {
+                $0.leading(to: contentView.leadingAnchor)
+                $0.top(to: currentTopAnchor)
+                $0.trailing(to: contentView.trailingAnchor, relation: .lessThanOrEqual)
+            }
+            currentTopAnchor = chipLabel.bottomAnchor
+            topSpacing = 8
         }
         
-        scrollView.addSubview(imageStackView)
-        imageStackView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            imageStackView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            imageStackView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            imageStackView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            imageStackView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            imageStackView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
-        ])
-
-        let mainStackView = createStackView(spacing: 16)
-        mainStackView.addArrangedSubview(titleLabel)
-        mainStackView.addArrangedSubview(scrollView)
+        let pinPointImage = UIImageView(image: CocoIcon.icPinPointBlue.image)
+        pinPointImage.layout {
+            $0.size(20.0)
+        }
         
-        return mainStackView
+        let starImage = UIImageView(image: CocoIcon.icStarRating.image)
+        starImage.layout {
+            $0.size(16.0)
+        }
+        
+        let ratingLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
+            textColor: Token.grayscale90,
+            numberOfLines: 1
+        )
+        ratingLabel.text = "4.5"
+        
+        let locationRatingStackView = UIStackView()
+        locationRatingStackView.axis = .horizontal
+        locationRatingStackView.spacing = 16
+        locationRatingStackView.alignment = .center
+        
+        let locationView = UIView()
+        locationView.addSubviews([pinPointImage, locationLabel])
+        
+        pinPointImage.layout {
+            $0.leading(to: locationView.leadingAnchor)
+                .centerY(to: locationView.centerYAnchor)
+        }
+        
+        locationLabel.layout {
+            $0.leading(to: pinPointImage.trailingAnchor, constant: 4)
+                .trailing(to: locationView.trailingAnchor)
+                .centerY(to: locationView.centerYAnchor)
+                .top(to: locationView.topAnchor)
+                .bottom(to: locationView.bottomAnchor)
+        }
+        
+        let ratingView = UIView()
+        ratingView.addSubviews([starImage, ratingLabel])
+        
+        starImage.layout {
+            $0.leading(to: ratingView.leadingAnchor)
+                .centerY(to: ratingView.centerYAnchor)
+        }
+        
+        ratingLabel.layout {
+            $0.leading(to: starImage.trailingAnchor, constant: 4)
+                .trailing(to: ratingView.trailingAnchor)
+                .centerY(to: ratingView.centerYAnchor)
+                .top(to: ratingView.topAnchor)
+                .bottom(to: ratingView.bottomAnchor)
+        }
+        
+        locationRatingStackView.addArrangedSubview(locationView)
+        locationRatingStackView.addArrangedSubview(ratingView)
+        
+        contentView.addSubviews([titleLabel, locationRatingStackView])
+        
+        titleLabel.layout {
+            $0.leading(to: contentView.leadingAnchor)
+            $0.trailing(to: contentView.trailingAnchor)
+            $0.top(to: currentTopAnchor, constant: topSpacing)
+        }
+        
+        locationRatingStackView.layout {
+            $0.top(to: titleLabel.bottomAnchor, constant: 8)
+                .leading(to: contentView.leadingAnchor)
+                .trailing(to: contentView.trailingAnchor, relation: .lessThanOrEqual)
+                .bottom(to: contentView.bottomAnchor)
+        }
+        
+        return contentView
+    }
+    
+    // Create Highlights Section
+    func createHighlightsSection(fullText: String) -> UIView {
+        let card = UIView()
+        card.backgroundColor = UIColor.from("#E8F6FD")
+        card.layer.cornerRadius = 16
+
+        let titleLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
+            textColor: Token.additionalColorsBlack,
+            numberOfLines: 1
+        )
+        titleLabel.text = "Highlights"
+
+        let previewText = "“" + excerpt(from: fullText, maxWords: 14) + "”"
+        let quoteLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .subheadline, weight: .regular),
+            textColor: Token.additionalColorsBlack,
+            numberOfLines: 0
+        )
+        quoteLabel.font = {
+            let base = UIFont.jakartaSans(forTextStyle: .subheadline, weight: .regular)
+            let desc = base.fontDescriptor.withSymbolicTraits(.traitItalic) ?? base.fontDescriptor
+            return UIFont(descriptor: desc, size: base.pointSize)
+        }()
+        quoteLabel.text = previewText
+
+        let seeMoreButton = UIButton(type: .system)
+        seeMoreButton.setTitle("See more", for: .normal)
+        seeMoreButton.setTitleColor(Token.mainColorPrimary, for: .normal)
+        seeMoreButton.titleLabel?.font = .jakartaSans(forTextStyle: .footnote, weight: .semibold)
+        seeMoreButton.contentHorizontalAlignment = .leading
+        seeMoreButton.addTarget(self, action: #selector(seeMoreButtonTapped), for: .touchUpInside)
+
+        self.highlightsFullText = fullText
+
+        card.addSubviews([titleLabel, quoteLabel, seeMoreButton])
+        titleLabel.layout {
+            $0.top(to: card.topAnchor, constant: 16)
+                .leading(to: card.leadingAnchor, constant: 16)
+                .trailing(to: card.trailingAnchor, constant: -16)
+        }
+        quoteLabel.layout {
+            $0.top(to: titleLabel.bottomAnchor, constant: 8)
+                .leading(to: card.leadingAnchor, constant: 16)
+                .trailing(to: card.trailingAnchor, constant: -16)
+        }
+        seeMoreButton.layout {
+            $0.top(to: quoteLabel.bottomAnchor, constant: 12)
+                .leading(to: card.leadingAnchor, constant: 16)
+                .bottom(to: card.bottomAnchor, constant: -16)
+        }
+
+        return card
+    }
+    
+    // Create Package View Container
+    func createPackageView(data: ActivityDetailDataModel.Package) -> UIView {
+        let cardView = UIView()
+        cardView.backgroundColor = .white
+        cardView.layer.cornerRadius = 16
+        cardView.layer.borderWidth = 1
+        cardView.layer.borderColor = UIColor.systemGray6.cgColor
+        cardView.isUserInteractionEnabled = true
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 12
+        imageView.loadImage(from: URL(string: data.imageUrlString))
+        
+        let titleLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .headline, weight: .semibold),
+            textColor: Token.additionalColorsBlack,
+            numberOfLines: 2
+        )
+        titleLabel.text = data.name
+        
+        let paxLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .subheadline, weight: .regular),
+            textColor: Token.grayscale70
+        )
+        paxLabel.text = data.description
+        
+        let paxIcon = UIImageView(image: UIImage(systemName: "person.fill"))
+        paxIcon.tintColor = Token.grayscale70
+        paxIcon.contentMode = .scaleAspectFit
+        
+        let priceLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .subheadline, weight: .bold),
+            textColor: Token.additionalColorsBlack
+        )
+        priceLabel.text = data.price
+        
+        let perPersonLabel = UILabel(
+            font: .jakartaSans(forTextStyle: .caption1, weight: .regular),
+            textColor: Token.grayscale70
+        )
+        perPersonLabel.text = "per person"
+        
+        let detailsButton = UIButton.textButton(title: "Details", color: Token.mainColorPrimary)
+        detailsButton.isEnabled = true
+        detailsButton.isUserInteractionEnabled = true
+        let detailsAction = UIAction { [weak self] _ in
+            self?.delegate?.notifyPackageDetailsDidTap(with: data.id)
+        }
+        detailsButton.addAction(detailsAction, for: .touchUpInside)
+        
+        let bookButton = UIButton(type: .system)
+        bookButton.setTitle("Book", for: .normal)
+        bookButton.backgroundColor = Token.mainColorPrimary
+        bookButton.setTitleColor(.white, for: .normal)
+        bookButton.titleLabel?.font = .jakartaSans(forTextStyle: .subheadline, weight: .bold)
+        bookButton.layer.cornerRadius = 12
+        bookButton.isEnabled = true
+        bookButton.isUserInteractionEnabled = true
+        
+        let bookAction = UIAction { [weak self] _ in
+            self?.delegate?.notifyUserDidTapBookPackage(with: data.id)
+        }
+        bookButton.addAction(bookAction, for: .touchUpInside)
+        
+        // --- Layout ---
+        let paxStack = UIStackView(arrangedSubviews: [paxIcon, paxLabel])
+        paxStack.spacing = 6
+        
+        let infoStack = UIStackView(arrangedSubviews: [titleLabel, paxStack])
+        infoStack.axis = .vertical
+        infoStack.spacing = 4
+        infoStack.alignment = .leading
+        
+        let priceStack = UIStackView(arrangedSubviews: [priceLabel, perPersonLabel])
+        priceStack.axis = .vertical
+        priceStack.spacing = 0
+        priceStack.alignment = .leading
+        
+        cardView.addSubviews([imageView, infoStack, priceStack, detailsButton, bookButton])
+        
+        imageView.layout {
+            $0.leading(to: cardView.leadingAnchor, constant: 12)
+            $0.centerY(to: cardView.centerYAnchor)
+            $0.width(90)
+            $0.height(120)
+        }
+        
+        infoStack.layout {
+            $0.leading(to: imageView.trailingAnchor, constant: 16)
+            $0.top(to: imageView.topAnchor)
+            $0.trailing(to: detailsButton.leadingAnchor, constant: -8)
+        }
+        
+        detailsButton.layout {
+            $0.top(to: cardView.topAnchor, constant: 12)
+            $0.trailing(to: cardView.trailingAnchor, constant: -16)
+        }
+        
+        priceStack.layout {
+            $0.leading(to: imageView.trailingAnchor, constant: 16)
+            $0.bottom(to: cardView.bottomAnchor, constant: -12)
+        }
+        
+        bookButton.layout {
+            $0.trailing(to: cardView.trailingAnchor, constant: -16)
+            $0.bottom(to: cardView.bottomAnchor, constant: -12)
+            $0.width(90)
+            $0.height(40)
+        }
+        
+        cardView.heightAnchor.constraint(equalToConstant: 150).isActive = true
+        
+        return cardView
+    }
+    
+    func createPackageSection() -> UIView {
+        let sectionStackView = createStackView(spacing: 16.0)
+        
+        sectionStackView.addArrangedSubview(packageLabel)
+        sectionStackView.addArrangedSubview(packageContainer)
+        
+        return sectionStackView
     }
     
     func createReviewSection() -> UIView {
@@ -248,9 +479,9 @@ extension ActivityDetailView {
         imageGalleryStack.spacing = 8
         imageGalleryStack.distribution = .fillEqually
         
-        for _ in 1...3 {
+        for i in 1...3 {
             let imageView = UIImageView()
-            imageView.image = UIImage(systemName: "photo.on.rectangle.angled")
+            imageView.image = UIImage(named: "Review\(i)")
             imageView.tintColor = .systemGray4
             imageView.backgroundColor = .systemGray6
             imageView.contentMode = .center
@@ -275,5 +506,36 @@ extension ActivityDetailView {
         card.addSubviewAndLayout(cardContentStack, insets: .init(edges: 16))
         
         return card
+    }
+    
+    private func badgeStyle(for label: String) -> (text: String, color: UIColor) {
+        switch label.lowercased() {
+        case "family":
+            return ("Family Friendly", Token.mainColorLemon)
+        case "couples":
+            return ("Couples Getaway", Token.pinkBadge)
+        case "group":
+            return ("Group Fun", Token.orangeBadge)
+        case "solo":
+            return ("Solo Adventure", Token.blueBadge)
+        default:
+            return (label, .systemGray4)
+        }
+    }
+    
+    private struct AssociatedKeys { static var highlightsText = "hlFull" }
+    private var highlightsFullText: String? {
+        get { objc_getAssociatedObject(self, &AssociatedKeys.highlightsText) as? String }
+        set { objc_setAssociatedObject(self, &AssociatedKeys.highlightsText, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC) }
+    }
+    
+    @objc func seeMoreButtonTapped() {
+        delegate?.notifyHighlightsSeeMoreDidTap(fullText: highlightsFullText ?? "")
+    }
+}
+
+private extension String {
+    var digits: String {
+        return components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
     }
 }
