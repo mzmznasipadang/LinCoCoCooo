@@ -222,7 +222,7 @@ extension ActivityDetailView {
             numberOfLines: 0
         )
         quoteLabel.font = {
-            let base = UIFont.jakartaSans(forTextStyle: .subheadline, weight: .regular)
+            let base = UIFont.jakartaSans(forTextStyle: .subheadline, weight: .regular, isItalic: true)
             let desc = base.fontDescriptor.withSymbolicTraits(.traitItalic) ?? base.fontDescriptor
             return UIFont(descriptor: desc, size: base.pointSize)
         }()
@@ -469,7 +469,7 @@ extension ActivityDetailView {
         
         let reviewTextLabel = UILabel()
         reviewTextLabel.text = "Perfect family trip! Safe, fun, and the kids loved seeing the colorful fish in Piaynemo."
-        reviewTextLabel.font = .jakartaSans(forTextStyle: .body, weight: .regular)
+        reviewTextLabel.font = .jakartaSans(forTextStyle: .body, weight: .regular, isItalic: true)
         reviewTextLabel.numberOfLines = 0
         
         let seeMoreButton = UIButton.textButton(title: "See more", color: Token.mainColorPrimary)
@@ -537,5 +537,17 @@ extension ActivityDetailView {
 private extension String {
     var digits: String {
         return components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+    }
+}
+
+extension UIFont {
+    static func jakartaSans(forTextStyle style: UIFont.TextStyle,
+                            weight: UIFont.Weight,
+                            isItalic: Bool = false) -> UIFont {
+        let base = UIFont.systemFont(ofSize: UIFont.preferredFont(forTextStyle: style).pointSize, weight: weight)
+        if isItalic, let desc = base.fontDescriptor.withSymbolicTraits(.traitItalic) {
+            return UIFont(descriptor: desc, size: base.pointSize)
+        }
+        return base
     }
 }
