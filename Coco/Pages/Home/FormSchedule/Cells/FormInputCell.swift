@@ -43,7 +43,7 @@ final class FormInputCell: UITableViewCell {
     ///   - availableSlots: The number of available slots (optional)
     func configure(selectedTime: String, participantCount: String, availableSlots: Int? = nil) {
         timeButton.setTitle(selectedTime.isEmpty ? Localization.Common.selectDate : selectedTime, for: .normal)
-        paxTextField.text = participantCount.isEmpty ? "1" : participantCount
+        paxTextField.text = participantCount.isEmpty ? "Select Number of Participants" : participantCount
         
         print("🔍 FormInputCell configure - SelectedTime: \(selectedTime), ParticipantCount: \(participantCount), AvailableSlots: \(availableSlots ?? -999)")
         print("🔍 FormInputCell - paxTextField.text after setting: '\(paxTextField.text ?? "nil")'")

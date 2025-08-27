@@ -14,7 +14,7 @@ struct FormInputData {
     /// Selected date/time string (formatted date or "Select Date" placeholder)
     var selectedTime: String = "7.30"
     /// Number of participants as string
-    var participantCount: String = "1"
+    var participantCount: String = "Select Number of Participants"
     /// Number of available slots for the selected date (optional)
     var availableSlots: Int?
 }
@@ -75,7 +75,7 @@ final class HomeFormScheduleViewModel {
     private lazy var paxInputViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: nil,
         placeholderText: Localization.Placeholder.inputTotalPax,
-        currentTypedText: "1",
+        currentTypedText: "Select Number of Participants",
         trailingIcon: nil,
         isTypeAble: true,
         delegate: self,
@@ -392,7 +392,7 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
                     delegate?.notifyBookingDidSucceed(bookingId: "TEST-\(Int.random(in: 1000...9999))")
                 }
             } catch {
-                // Handle other errors - but for testing, simulate success  
+                // Handle other errors - but for testing, simulate success
                 print("❌ Other error occurred: \(error)")
                 await MainActor.run {
                     // TODO: For testing redirect flow, simulate successful booking

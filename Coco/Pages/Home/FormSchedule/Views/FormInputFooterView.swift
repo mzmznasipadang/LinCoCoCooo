@@ -143,7 +143,7 @@ final class FormInputFooterView: UIView {
             textColor: Token.grayscale90,
             numberOfLines: 1
         )
-        paxLabel.text = "1"
+        paxLabel.text = "Select Number of Participants"
         
         let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
         chevron.tintColor = Token.grayscale50

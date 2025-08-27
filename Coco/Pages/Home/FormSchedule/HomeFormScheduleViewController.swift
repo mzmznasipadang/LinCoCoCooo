@@ -48,6 +48,13 @@ final class HomeFormScheduleViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         thisView.tableView.resizeAutoSizingFooterIfNeeded()
+        
+        // Adjust table view insets for sticky price details view (similar to ActivityDetailView pattern)
+        if let priceDetailsView = priceDetailsView {
+            let barHeight = priceDetailsView.isHidden ? 0 : priceDetailsView.frame.height
+            thisView.tableView.contentInset.bottom = barHeight
+            thisView.tableView.verticalScrollIndicatorInsets.bottom = barHeight
+        }
     }
     
     // MARK: - Properties
@@ -150,16 +157,6 @@ final class HomeFormScheduleViewController: UIViewController {
         viewModel.onCheckout()
     }
     
-    /// Updates table view content insets for the price details view
-    private func updateTableViewInsets() {
-        // Calculate the height of the price details view
-        let baseHeight: CGFloat = 12 + 44 + 16 + 52 + 12 // padding + header + spacing + button + padding
-        let safeAreaBottom = view.safeAreaInsets.bottom
-        let totalHeight = baseHeight + safeAreaBottom
-        
-        thisView.tableView.contentInset.bottom = totalHeight
-        thisView.tableView.scrollIndicatorInsets.bottom = totalHeight
-    }
     
     // MARK: - Keyboard Handling
     
@@ -207,7 +204,7 @@ final class HomeFormScheduleViewController: UIViewController {
         }
     }
     
-    /// Handles keyboard will hide notification  
+    /// Handles keyboard will hide notification
     /// Restores original table view content insets and scroll position
     @objc private func keyboardWillHide(_ notification: Notification) {
         guard let animationDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else {
@@ -216,7 +213,9 @@ final class HomeFormScheduleViewController: UIViewController {
         
         // Restore original bottom inset and scroll to natural position
         UIView.animate(withDuration: animationDuration) {
-            self.updateTableViewInsets()
+            // Insets are automatically handled in viewDidLayoutSubviews, just trigger a layout update
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
             
             // Scroll to a natural position (slightly above the price details)
             let contentHeight = self.thisView.tableView.contentSize.height
@@ -337,7 +336,7 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             if let formData = formSection?.items.first as? FormInputData {
                 cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount, availableSlots: formData.availableSlots)
             } else {
-                cell.configure(selectedTime: "7.30", participantCount: "1", availableSlots: nil)
+                cell.configure(selectedTime: "7.30", participantCount: "Select Number of Participants", availableSlots: nil)
             }
             cell.onSelectTime = { [weak self] in
                 self?.showTimeSelector()
@@ -377,7 +376,7 @@ extension HomeFormScheduleViewController: UITableViewDelegate {
             // No header for unified booking detail section
             return nil
         case 1:
-            // No header for form inputs section  
+            // No header for form inputs section
             return nil
         case 2:
             // Custom header for traveler details section
@@ -439,17 +438,15 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
         }
         
         view.addSubview(priceDetailsView)
-        priceDetailsView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            priceDetailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            priceDetailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            priceDetailsView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        priceDetailsView.layout {
+            $0.leading(to: view.leadingAnchor)
+            $0.trailing(to: view.trailingAnchor)
+            $0.bottom(to: view.bottomAnchor)
+        }
         
         self.priceDetailsView = priceDetailsView
         
-        // Adjust content insets for the pinned price details view
-        updateTableViewInsets()
+        // Content insets are now handled automatically in viewDidLayoutSubviews()
     }
     
     func configureView(data: HomeFormScheduleViewData) {
@@ -523,4 +520,3 @@ extension UITableView {
         }
     }
 }
-

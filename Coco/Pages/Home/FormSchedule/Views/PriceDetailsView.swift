@@ -166,7 +166,6 @@ final class PriceDetailsView: UIView {
             $0.top(to: topAnchor)
             $0.leading(to: leadingAnchor)
             $0.trailing(to: trailingAnchor)
-            $0.bottom(to: safeAreaLayoutGuide.bottomAnchor)
         }
         
         headerView.layout {
@@ -211,8 +210,16 @@ final class PriceDetailsView: UIView {
             $0.top(to: detailsContainer.bottomAnchor, constant: 16)
             $0.leading(to: containerView.leadingAnchor, constant: 16)
             $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.bottom(to: containerView.bottomAnchor, constant: -12)
             $0.height(52)
+        }
+        
+        // Connect containerView bottom to safe area with proper padding (following ActivityDetailView pattern)
+        bookNowButton.layout {
+            $0.bottom(to: containerView.safeAreaLayoutGuide.bottomAnchor, constant: -16)
+        }
+        
+        containerView.layout {
+            $0.bottom(to: bottomAnchor)
         }
     }
     
