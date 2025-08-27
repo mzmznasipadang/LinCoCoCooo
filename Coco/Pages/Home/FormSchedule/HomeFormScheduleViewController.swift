@@ -42,6 +42,7 @@ final class HomeFormScheduleViewController: UIViewController {
         setupTableView()
         setupKeyboardHandling()
         viewModel.onViewDidLoad()
+        initializeParticipantCount() // Set minimum participants as default
         title = Localization.Screen.bookingDetail
     }
     
@@ -150,6 +151,13 @@ final class HomeFormScheduleViewController: UIViewController {
     /// - Parameter count: The new participant count
     private func updateParticipantCount(_ count: Int) {
         viewModel.updateParticipantCount(count)
+    }
+    
+    /// Initializes the participant count with minimum value if not set
+    private func initializeParticipantCount() {
+        if let minParticipants = getSelectedPackage()?.minParticipants {
+            viewModel.updateParticipantCount(minParticipants)
+        }
     }
     
     /// Handles checkout button tap by calling the ViewModel
@@ -333,10 +341,12 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             let formSection = sections.first { $0.type == .formInputs }
             
             // Configure with current form data from ViewModel
+            let minParticipants = getSelectedPackage()?.minParticipants ?? 1
             if let formData = formSection?.items.first as? FormInputData {
-                cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount, availableSlots: formData.availableSlots)
+                cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount, availableSlots: formData.availableSlots, minParticipants: minParticipants)
             } else {
-                cell.configure(selectedTime: "7.30", participantCount: "Select Number of Participants", availableSlots: nil)
+                // Show minimum participants as default value instead of empty
+                cell.configure(selectedTime: "", participantCount: "\(minParticipants)", availableSlots: nil, minParticipants: minParticipants)
             }
             cell.onSelectTime = { [weak self] in
                 self?.showTimeSelector()
@@ -391,9 +401,9 @@ extension HomeFormScheduleViewController: UITableViewDelegate {
             headerView.addSubview(titleLabel)
             titleLabel.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 24),
+                titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 14),
                 titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -24),
-                titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 24),
+                titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),  // Minimal top padding for tight spacing
                 titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
             ])
             
@@ -409,8 +419,8 @@ extension HomeFormScheduleViewController: UITableViewDelegate {
             // No header for unified booking detail and form inputs
             return 0
         case 2:
-            // Header for traveler details
-            return 60
+            // Header for traveler details - height adjusted to prevent title cutoff
+            return 32
         default:
             return 0
         }

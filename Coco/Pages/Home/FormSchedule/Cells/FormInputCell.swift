@@ -41,16 +41,29 @@ final class FormInputCell: UITableViewCell {
     ///   - selectedTime: The selected date string or "Select Date" placeholder
     ///   - participantCount: The current participant count as string
     ///   - availableSlots: The number of available slots (optional)
-    func configure(selectedTime: String, participantCount: String, availableSlots: Int? = nil) {
-        timeButton.setTitle(selectedTime.isEmpty ? Localization.Common.selectDate : selectedTime, for: .normal)
-        paxTextField.text = participantCount.isEmpty ? "Select Number of Participants" : participantCount
+    ///   - minParticipants: The minimum participants for dynamic placeholder (optional)
+    func configure(selectedTime: String, participantCount: String, availableSlots: Int? = nil, minParticipants: Int = 1) {
+        // Configure date button with color logic
+        let hasSelectedDate = !selectedTime.isEmpty && !selectedTime.contains("Select")
+        if hasSelectedDate {
+            timeButton.setTitle(selectedTime, for: .normal)
+            timeButton.setTitleColor(UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1), for: .normal) // Black
+        } else {
+            timeButton.setTitle("Select Date", for: .normal)
+            timeButton.setTitleColor(UIColor(red: 156/255, green: 164/255, blue: 171/255, alpha: 1), for: .normal) // Gray
+        }
         
-        print("🔍 FormInputCell configure - SelectedTime: \(selectedTime), ParticipantCount: \(participantCount), AvailableSlots: \(availableSlots ?? -999)")
-        print("🔍 FormInputCell - paxTextField.text after setting: '\(paxTextField.text ?? "nil")'")
+        // Configure participant field - use minimum value as default instead of placeholder
+        let hasSelectedParticipants = !participantCount.isEmpty && !participantCount.contains("Select")
+        if hasSelectedParticipants {
+            paxTextField.text = participantCount
+        } else {
+            paxTextField.text = "\(minParticipants)" // Show minimum value as default
+        }
+        // Always use black text color since we're showing actual values, not placeholders
+        paxTextField.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
         
-        // Force the text field to refresh its display
-        paxTextField.setNeedsDisplay()
-        paxTextField.layoutIfNeeded()
+        print("🔍 FormInputCell configure - SelectedTime: \(selectedTime), ParticipantCount: \(participantCount), MinParticipants: \(minParticipants)")
         
         // Update available slots text
         if let slots = availableSlots {
@@ -90,7 +103,7 @@ final class FormInputCell: UITableViewCell {
         button.layer.cornerRadius = 24
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1).cgColor
-        button.setTitleColor(UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1), for: .normal)
+        button.setTitleColor(UIColor(red: 156/255, green: 164/255, blue: 171/255, alpha: 1), for: .normal) // Initially gray
         button.titleLabel?.font = .jakartaSans(forTextStyle: .body, weight: .medium)
         button.contentHorizontalAlignment = .left
         button.contentEdgeInsets = UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16)
@@ -123,7 +136,7 @@ final class FormInputCell: UITableViewCell {
     private lazy var paxTextField: UITextField = {
         let textField = UITextField()
         textField.font = .jakartaSans(forTextStyle: .body, weight: .medium)
-        textField.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
+        textField.textColor = UIColor(red: 156/255, green: 164/255, blue: 171/255, alpha: 1) // Initially gray
         textField.backgroundColor = UIColor(red: 254/255, green: 254/255, blue: 254/255, alpha: 1)
         textField.layer.cornerRadius = 24
         textField.layer.borderWidth = 1
