@@ -248,8 +248,10 @@ final class PriceDetailsView: UIView {
         }
         
         // Update button state - enable if date is selected (basic requirement)
+        print("🔍 PRICEDETAILSVIEW: Configuring button - hasBasicInfo: \(data.hasBasicInfo), selectedDate: '\(data.selectedDate)'")
         bookNowButton.isEnabled = data.hasBasicInfo
         bookNowButton.alpha = data.hasBasicInfo ? 1.0 : 0.6
+        print("🔍 PRICEDETAILSVIEW: Button enabled: \(bookNowButton.isEnabled), alpha: \(bookNowButton.alpha)")
     }
     
     private func addDetailRow(title: String, value: String, isTotal: Bool = false) {
@@ -321,6 +323,10 @@ final class PriceDetailsView: UIView {
     }
     
     @objc private func bookNowTapped() {
+        print("🚨 PRICEDETAILSVIEW: Book Now button TAPPED!")
+        NSLog("🚨 PRICEDETAILSVIEW: Book Now button TAPPED!")
         onBookNow?()
+        print("🚨 PRICEDETAILSVIEW: onBookNow callback called!")
+        NSLog("🚨 PRICEDETAILSVIEW: onBookNow callback called!")
     }
 }
