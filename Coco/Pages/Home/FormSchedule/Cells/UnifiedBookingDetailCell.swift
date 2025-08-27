@@ -293,7 +293,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         }
         
         packageNameLabel.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 12)
+            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
             $0.top(to: packageInfoContainer.topAnchor, constant: 16)
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
         }
@@ -312,31 +312,31 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         
         priceLabel.layout {
             $0.leading(to: packageImageView.trailingAnchor, constant: 12)
-            $0.top(to: paxIconImageView.bottomAnchor, constant: 8)  // Reduced spacing
+            $0.top(to: paxIconImageView.bottomAnchor, constant: 8)
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
         }
         
         descriptionLabel.layout {
             $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
-            $0.top(to: packageImageView.bottomAnchor, constant: 8)  // Reduced spacing
+            $0.top(to: packageImageView.bottomAnchor, constant: 8)
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
         }
         
         durationIconImageView.layout {
             $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
-            $0.top(to: descriptionLabel.bottomAnchor, constant: 8)  // Reduced spacing
+            $0.top(to: descriptionLabel.bottomAnchor, constant: 8)
             $0.size(16)
         }
         
         durationTitleLabel.layout {
-            $0.leading(to: durationIconImageView.trailingAnchor, constant: 6)
+            $0.leading(to: durationIconImageView.trailingAnchor, constant: 4)
             $0.centerY(to: durationIconImageView.centerYAnchor)
         }
         
         timeRangeLabel.layout {
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
             $0.centerY(to: durationIconImageView.centerYAnchor)
-            $0.bottom(to: packageInfoContainer.bottomAnchor, constant: -16)
+            $0.bottom(to: packageInfoContainer.bottomAnchor, constant: -14)
         }
     }
     
@@ -482,10 +482,10 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         let contentView = createItineraryContentView(items: data)
         itineraryContentContainer.addSubview(contentView)
         contentView.layout {
-            $0.top(to: itineraryContentContainer.topAnchor, constant: 8)
-            $0.leading(to: itineraryContentContainer.leadingAnchor)
-            $0.trailing(to: itineraryContentContainer.trailingAnchor)
-            $0.bottom(to: itineraryContentContainer.bottomAnchor, constant: -8)
+            $0.top(to: itineraryContentContainer.topAnchor, constant: 16)
+            $0.leading(to: itineraryContentContainer.leadingAnchor, constant: 24)
+            $0.trailing(to: itineraryContentContainer.trailingAnchor, constant: -24)
+            $0.bottom(to: itineraryContentContainer.bottomAnchor, constant: -16)
         }
     }
     
