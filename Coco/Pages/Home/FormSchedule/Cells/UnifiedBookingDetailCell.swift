@@ -110,15 +110,15 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 12
+        imageView.layer.cornerRadius = 8  // Slightly smaller corner radius to match design
         imageView.backgroundColor = Token.grayscale20
         return imageView
     }()
     
     private lazy var packageNameLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .headline, weight: .semibold),
+        font: .jakartaSans(forTextStyle: .title3, weight: .bold),
         textColor: UIColor(red: 23/255, green: 23/255, blue: 37/255, alpha: 1),
-        numberOfLines: 1
+        numberOfLines: 2  // Allow for longer package names
     )
     
     private lazy var paxIconImageView: UIImageView = {
@@ -130,7 +130,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
     }()
     
     private lazy var paxLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
+        font: .jakartaSans(forTextStyle: .caption1, weight: .medium),
         textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
@@ -155,7 +155,13 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         return imageView
     }()
     
-    private lazy var durationLabel: UILabel = UILabel(
+    private lazy var durationTitleLabel: UILabel = UILabel(
+        font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
+        numberOfLines: 1
+    )
+    
+    private lazy var timeRangeLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
         textColor: UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1),
         numberOfLines: 1
@@ -274,27 +280,28 @@ final class UnifiedBookingDetailCell: UITableViewCell {
             priceLabel,
             descriptionLabel,
             durationIconImageView,
-            durationLabel
+            durationTitleLabel,
+            timeRangeLabel
         ])
         
-        // Layout package info components
+        // Layout package info components to match Figma design
         packageImageView.layout {
             $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
             $0.top(to: packageInfoContainer.topAnchor, constant: 16)
-            $0.width(90)
-            $0.height(96)
+            $0.width(80)   // 1:1 ratio
+            $0.height(80)  // 1:1 ratio
         }
         
         packageNameLabel.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
+            $0.leading(to: packageImageView.trailingAnchor, constant: 12)
             $0.top(to: packageInfoContainer.topAnchor, constant: 16)
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
         }
         
         paxIconImageView.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 8)
-            $0.top(to: packageNameLabel.bottomAnchor, constant: 4)
-            $0.size(12)
+            $0.leading(to: packageImageView.trailingAnchor, constant: 12)
+            $0.top(to: packageNameLabel.bottomAnchor, constant: 6)
+            $0.size(14)  // Increased by 2pt
         }
         
         paxLabel.layout {
@@ -304,27 +311,32 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         }
         
         priceLabel.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 8)
-            $0.top(to: paxIconImageView.bottomAnchor, constant: 20)
+            $0.leading(to: packageImageView.trailingAnchor, constant: 12)
+            $0.top(to: paxIconImageView.bottomAnchor, constant: 8)  // Reduced spacing
+            $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
         }
         
         descriptionLabel.layout {
             $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
-            $0.top(to: packageImageView.bottomAnchor, constant: 16)
+            $0.top(to: packageImageView.bottomAnchor, constant: 8)  // Reduced spacing
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
         }
         
         durationIconImageView.layout {
             $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
-            $0.top(to: descriptionLabel.bottomAnchor, constant: 8)
-            $0.size(20)
+            $0.top(to: descriptionLabel.bottomAnchor, constant: 8)  // Reduced spacing
+            $0.size(16)
         }
         
-        durationLabel.layout {
-            $0.leading(to: durationIconImageView.trailingAnchor, constant: 4)
+        durationTitleLabel.layout {
+            $0.leading(to: durationIconImageView.trailingAnchor, constant: 6)
             $0.centerY(to: durationIconImageView.centerYAnchor)
+        }
+        
+        timeRangeLabel.layout {
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
-            $0.bottom(to: packageInfoContainer.bottomAnchor, constant: -14)
+            $0.centerY(to: durationIconImageView.centerYAnchor)
+            $0.bottom(to: packageInfoContainer.bottomAnchor, constant: -16)
         }
     }
     
@@ -410,7 +422,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         let priceText = "\(data.pricePerPax)/person"
         let attributedString = NSMutableAttributedString(string: priceText)
         
-        // Style the main price part (bold, black)
+        // Style the main price part (bold, black) - smaller font to match Image #2
         let priceRange = NSRange(location: 0, length: data.pricePerPax.count)
         attributedString.addAttribute(.font, value: UIFont.jakartaSans(forTextStyle: .headline, weight: .bold), range: priceRange)
         attributedString.addAttribute(.foregroundColor, value: UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1), range: priceRange)
@@ -422,8 +434,19 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         
         priceLabel.attributedText = attributedString
         
+        // Show the actual package description instead of hiding it
         descriptionLabel.text = data.description
-        durationLabel.text = data.duration
+        descriptionLabel.isHidden = false
+        
+        // Set duration title and parse time range from duration
+        durationTitleLabel.text = "Duration"
+        
+        // Parse duration string to extract time range - expecting format like "09:00-16:00 (7 Hours)"
+        if let timeRange = extractTimeRange(from: data.duration) {
+            timeRangeLabel.text = timeRange
+        } else {
+            timeRangeLabel.text = data.duration // Fallback to original format
+        }
     }
     
     private func configureTripProvider(data: TripProviderDisplayItem?, isExpanded: Bool) {
@@ -640,5 +663,18 @@ final class UnifiedBookingDetailCell: UITableViewCell {
     
     @objc private func itineraryHeaderTapped() {
         onItineraryTapped?()
+    }
+    
+    /// Extracts time range from duration string
+    /// Expected format: "09:00-16:00 (7 Hours)" -> returns "09:00-16:00 (7 Hours)"
+    /// Or handles other formats gracefully
+    private func extractTimeRange(from duration: String) -> String? {
+        // If it already contains time format (HH:MM), return as is
+        if duration.contains(":") {
+            return duration
+        }
+        
+        // For other formats, return nil to use fallback
+        return nil
     }
 }

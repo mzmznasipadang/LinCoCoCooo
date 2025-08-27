@@ -137,12 +137,6 @@ extension ActivityDetailView {
         )
         priceLabel.text = data.price
         
-        let perPersonLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .caption1, weight: .regular),
-            textColor: Token.grayscale70
-        )
-        perPersonLabel.text = "per person"
-        
         let detailsButton = UIButton.textButton(title: "Details", color: Token.mainColorPrimary)
         detailsButton.isEnabled = true
         detailsButton.isUserInteractionEnabled = true
@@ -174,12 +168,7 @@ extension ActivityDetailView {
         infoStack.spacing = 4
         infoStack.alignment = .leading
         
-        let priceStack = UIStackView(arrangedSubviews: [priceLabel, perPersonLabel])
-        priceStack.axis = .vertical
-        priceStack.spacing = 0
-        priceStack.alignment = .leading
-        
-        cardView.addSubviews([imageView, infoStack, priceStack, detailsButton, bookButton])
+        cardView.addSubviews([imageView, infoStack, priceLabel, detailsButton, bookButton])
         
         imageView.layout {
             $0.leading(to: cardView.leadingAnchor, constant: 12)
@@ -199,7 +188,7 @@ extension ActivityDetailView {
             $0.trailing(to: cardView.trailingAnchor, constant: -16)
         }
         
-        priceStack.layout {
+        priceLabel.layout {
             $0.leading(to: imageView.trailingAnchor, constant: 16)
             $0.bottom(to: cardView.bottomAnchor, constant: -12)
         }

@@ -432,12 +432,12 @@ private extension HomeFormScheduleViewModel {
             let packageInfo = PackageInfoDisplayData(
                 imageUrl: selectedPackage.imageUrlString,
                 packageName: selectedPackage.name,
-                paxRange: "Min.\(selectedPackage.minParticipants) - Max.\(selectedPackage.maxParticipants)",
+                paxRange: "\(selectedPackage.minParticipants) - \(selectedPackage.maxParticipants) person",
                 pricePerPax: selectedPackage.price,
                 originalPrice: nil,
                 hasDiscount: false,
                 description: selectedPackage.description,
-                duration: "Full Day"
+                duration: formatDurationWithTimes(startTime: selectedPackage.startTime, endTime: selectedPackage.endTime)
             )
             
             sections.append(BookingDetailSection(
@@ -560,5 +560,37 @@ private extension HomeFormScheduleViewModel {
             travelerName: currentTravelerData.name,
             totalPrice: "Rp\(Int(totalPrice).formatted())"
         )
+    }
+    
+    private func formatDurationWithTimes(startTime: String, endTime: String) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm:ss" // API format
+        
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateFormat = "HH:mm" // Display format
+        
+        guard let startDate = dateFormatter.date(from: startTime),
+              let endDate = dateFormatter.date(from: endTime) else {
+            return "\(startTime)-\(endTime)" // Fallback if parsing fails
+        }
+        
+        let startDisplay = displayFormatter.string(from: startDate)
+        let endDisplay = displayFormatter.string(from: endDate)
+        
+        // Calculate duration
+        let duration = endDate.timeIntervalSince(startDate)
+        let hours = Int(duration) / 3600
+        let minutes = (Int(duration) % 3600) / 60
+        
+        let durationText: String
+        if minutes == 0 {
+            durationText = "\(hours) Hour\(hours != 1 ? "s" : "")"
+        } else if hours == 0 {
+            durationText = "\(minutes) Minute\(minutes != 1 ? "s" : "")"
+        } else {
+            durationText = "\(hours) Hour\(hours != 1 ? "s" : "") \(minutes) Minute\(minutes != 1 ? "s" : "")"
+        }
+        
+        return "\(startDisplay)-\(endDisplay) (\(durationText))"
     }
 }

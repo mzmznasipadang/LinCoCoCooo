@@ -43,6 +43,8 @@ struct ActivityDetailDataModel: Equatable {
         let hostName: String
         let hostBio: String
         let hostProfileImageUrl: String
+        let startTime: String
+        let endTime: String
     }
     
     init(_ response: Activity) {
@@ -79,7 +81,7 @@ struct ActivityDetailDataModel: Equatable {
             Package(
                 imageUrlString: $0.imageUrl,
                 name: $0.name,
-                description: "\($0.minParticipants) - \($0.maxParticipants) person",
+                description: $0.description,
                 price: "Rp \($0.pricePerPerson.formatted(.number.locale(Locale(identifier: "id_ID"))))",
                 pricePerPerson: $0.pricePerPerson,
                 minParticipants: $0.minParticipants,
@@ -87,7 +89,9 @@ struct ActivityDetailDataModel: Equatable {
                 id: $0.id,
                 hostName: $0.host?.name ?? "Unknown Host",
                 hostBio: $0.host?.bio ?? "",
-                hostProfileImageUrl: $0.host?.profileImageUrl ?? ""
+                hostProfileImageUrl: $0.host?.profileImageUrl ?? "",
+                startTime: $0.startTime,
+                endTime: $0.endTime
             )
         }
         
