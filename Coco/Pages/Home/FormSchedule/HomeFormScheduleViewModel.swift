@@ -445,12 +445,22 @@ private extension HomeFormScheduleViewModel {
             ))
         }
         
-        // Trip Provider Section
-        let tripProviderItem = TripProviderDisplayItem(
-            name: input.package.providerDetail.content.name,
-            description: input.package.providerDetail.content.description,
-            imageUrl: input.package.providerDetail.content.imageUrlString
-        )
+        // Trip Provider Section - use selected package's host data
+        let tripProviderItem: TripProviderDisplayItem
+        if let selectedPackage = selectedPackage {
+            tripProviderItem = TripProviderDisplayItem(
+                name: selectedPackage.hostName,
+                description: selectedPackage.hostBio.isEmpty ? "Expert guide providing \(selectedPackage.name) experience" : selectedPackage.hostBio,
+                imageUrl: selectedPackage.hostProfileImageUrl.isEmpty ? input.package.providerDetail.content.imageUrlString : selectedPackage.hostProfileImageUrl
+            )
+        } else {
+            // Fallback to default provider if no package selected
+            tripProviderItem = TripProviderDisplayItem(
+                name: input.package.providerDetail.content.name,
+                description: input.package.providerDetail.content.description,
+                imageUrl: input.package.providerDetail.content.imageUrlString
+            )
+        }
         
         sections.append(BookingDetailSection(
             type: .tripProvider,

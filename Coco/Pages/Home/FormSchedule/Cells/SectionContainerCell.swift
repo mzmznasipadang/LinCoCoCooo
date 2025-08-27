@@ -215,7 +215,7 @@ final class SectionContainerCell: UITableViewCell {
         titleLabel.layout {
             $0.leading(to: timeLabel.trailingAnchor, constant: 16)
             $0.trailing(to: view.trailingAnchor, constant: -16)
-            $0.centerY(to: dotView.centerYAnchor)
+            $0.top(to: dotView.topAnchor, constant: -4)
         }
         
         if item.description != nil {
@@ -227,7 +227,7 @@ final class SectionContainerCell: UITableViewCell {
             }
         } else {
             titleLabel.layout {
-                $0.bottom(to: view.bottomAnchor, constant: -16)
+                $0.bottom(to: view.bottomAnchor, constant: -20)
             }
         }
         
