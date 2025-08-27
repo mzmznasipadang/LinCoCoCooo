@@ -106,11 +106,17 @@ final class SectionContainerCell: UITableViewCell {
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = Token.additionalColorsWhite
-        view.layer.cornerRadius = 16
+        view.layer.cornerRadius = 14
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor(red: 227/255, green: 231/255, blue: 236/255, alpha: 1).cgColor
+        
+        // Add shadow to match Figma design
         view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.08
+        view.layer.shadowOpacity = 0.04
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
+        view.layer.masksToBounds = false
+        
         return view
     }()
     
@@ -133,8 +139,8 @@ final class SectionContainerCell: UITableViewCell {
         
         containerView.layout {
             $0.top(to: contentView.topAnchor, constant: 8)
-            $0.leading(to: contentView.leadingAnchor, constant: 16)
-            $0.trailing(to: contentView.trailingAnchor, constant: -16)
+            $0.leading(to: contentView.leadingAnchor, constant: 24)
+            $0.trailing(to: contentView.trailingAnchor, constant: -24)
             $0.bottom(to: contentView.bottomAnchor, constant: -8)
         }
         

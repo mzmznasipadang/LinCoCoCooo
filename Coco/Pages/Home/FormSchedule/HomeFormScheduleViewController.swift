@@ -79,8 +79,7 @@ final class HomeFormScheduleViewController: UIViewController {
         thisView.tableView.estimatedRowHeight = 100
         
         // Register cells
-        thisView.tableView.register(PackageInfoCell.self, forCellReuseIdentifier: "PackageInfoCell")
-        thisView.tableView.register(SectionContainerCell.self, forCellReuseIdentifier: "SectionContainerCell")
+        thisView.tableView.register(UnifiedBookingDetailCell.self, forCellReuseIdentifier: "UnifiedBookingDetailCell")
         thisView.tableView.register(FormInputCell.self, forCellReuseIdentifier: "FormInputCell")
         thisView.tableView.register(TravelerDetailsCell.self, forCellReuseIdentifier: "TravelerDetailsCell")
         thisView.tableView.register(BookingSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "BookingSectionHeaderView")
@@ -95,8 +94,8 @@ final class HomeFormScheduleViewController: UIViewController {
         
         sections[index].isExpanded.toggle()
         
-        // Animate the collapse/expand
-        thisView.tableView.reloadSections(IndexSet(integer: index), with: .automatic)
+        // Since we're now using a unified cell, reload the first section (index 0) which contains the unified booking detail cell
+        thisView.tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
     }
     
     /// Shows the time/date selector (delegates to calendar selection)
@@ -269,61 +268,62 @@ final class HomeFormScheduleViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension HomeFormScheduleViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return sections.count
+        // We now have: unified booking details, form inputs, traveler details = 3 sections
+        return 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionData = sections[section]
-        
-        // For package info, form inputs, and traveler details sections, always show 1 row
-        if sectionData.type == .packageInfo || sectionData.type == .formInputs || sectionData.type == .travelerDetails {
-            return 1
-        }
-        
-        // For collapsible sections (tripProvider and itinerary), return 0 if collapsed, otherwise return 1
-        return sectionData.isExpanded ? 1 : 0
+        // Each section has exactly 1 row
+        return 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let sectionData = sections[indexPath.section]
-        
-        switch sectionData.type {
-        case .packageInfo:
+        switch indexPath.section {
+        case 0:
+            // Unified booking detail cell (Package Info + Trip Provider + Itinerary)
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "PackageInfoCell",
+                withIdentifier: "UnifiedBookingDetailCell",
                 for: indexPath
-            ) as? PackageInfoCell else {
+            ) as? UnifiedBookingDetailCell else {
                 return UITableViewCell()
             }
             
-            if let packageData = sectionData.items.first as? PackageInfoDisplayData {
-                cell.configure(with: packageData)
-            }
-            return cell
+            // Find the sections data
+            let packageSection = sections.first { $0.type == .packageInfo }
+            let providerSection = sections.first { $0.type == .tripProvider }
+            let itinerarySection = sections.first { $0.type == .itinerary }
             
-        case .tripProvider:
-            guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "SectionContainerCell",
-                for: indexPath
-            ) as? SectionContainerCell else {
-                return UITableViewCell()
-            }
+            let packageData = packageSection?.items.first as? PackageInfoDisplayData
+            let providerData = providerSection?.items.first as? TripProviderDisplayItem
+            let itineraryData = itinerarySection?.items as? [ItineraryDisplayItem] ?? []
             
-            cell.configure(with: sectionData.items, sectionType: .tripProvider)
-            return cell
-            
-        case .itinerary:
-            guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "SectionContainerCell",
-                for: indexPath
-            ) as? SectionContainerCell else {
-                return UITableViewCell()
+            if let packageData = packageData {
+                cell.configure(
+                    packageData: packageData,
+                    providerData: providerData,
+                    itineraryData: itineraryData,
+                    isProviderExpanded: providerSection?.isExpanded ?? false,
+                    isItineraryExpanded: itinerarySection?.isExpanded ?? false
+                )
             }
             
-            cell.configure(with: sectionData.items, sectionType: .itinerary)
+            // Set up callbacks for section toggles
+            cell.onTripProviderTapped = { [weak self] in
+                if let index = self?.sections.firstIndex(where: { $0.type == .tripProvider }) {
+                    self?.toggleSection(at: index)
+                }
+            }
+            
+            cell.onItineraryTapped = { [weak self] in
+                if let index = self?.sections.firstIndex(where: { $0.type == .itinerary }) {
+                    self?.toggleSection(at: index)
+                }
+            }
+            
             return cell
             
-        case .formInputs:
+        case 1:
+            // Form inputs cell
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: "FormInputCell",
                 for: indexPath
@@ -331,8 +331,10 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
             
+            let formSection = sections.first { $0.type == .formInputs }
+            
             // Configure with current form data from ViewModel
-            if let formData = sectionData.items.first as? FormInputData {
+            if let formData = formSection?.items.first as? FormInputData {
                 cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount, availableSlots: formData.availableSlots)
             } else {
                 cell.configure(selectedTime: "7.30", participantCount: "1", availableSlots: nil)
@@ -345,7 +347,8 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             }
             return cell
             
-        case .travelerDetails:
+        case 2:
+            // Traveler details cell
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: "TravelerDetailsCell",
                 for: indexPath
@@ -359,6 +362,9 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             // Configure with current traveler data
             cell.configure(name: "", phone: "", email: "")
             return cell
+            
+        default:
+            return UITableViewCell()
         }
     }
 }
@@ -366,60 +372,48 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension HomeFormScheduleViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let sectionData = sections[section]
-        
-        // No header for package info and form inputs sections
-        if sectionData.type == .packageInfo || sectionData.type == .formInputs {
+        switch section {
+        case 0:
+            // No header for unified booking detail section
             return nil
-        }
-        
-        // Custom header for traveler details (non-collapsible)
-        if sectionData.type == .travelerDetails {
+        case 1:
+            // No header for form inputs section  
+            return nil
+        case 2:
+            // Custom header for traveler details section
             let headerView = UIView()
-            headerView.backgroundColor = Token.grayscale10
+            headerView.backgroundColor = Token.additionalColorsWhite
             
             let titleLabel = UILabel()
-            titleLabel.text = Localization.Form.TravelerDetails.title
-            titleLabel.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
-            titleLabel.textColor = Token.grayscale90
+            titleLabel.text = "Traveler details"
+            titleLabel.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
+            titleLabel.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
             
             headerView.addSubview(titleLabel)
             titleLabel.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 27),
-                titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -27),
+                titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 24),
+                titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -24),
                 titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 24),
                 titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
             ])
             
             return headerView
-        }
-        
-        // Collapsible headers for trip provider and itinerary sections
-        guard let headerView = tableView.dequeueReusableHeaderFooterView(
-            withIdentifier: "BookingSectionHeaderView"
-        ) as? BookingSectionHeaderView else {
+        default:
             return nil
         }
-        
-        headerView.configure(title: sectionData.title ?? "", isExpanded: sectionData.isExpanded)
-        headerView.tapHandler = { [weak self] in
-            self?.toggleSection(at: section)
-        }
-        
-        return headerView
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        let sectionData = sections[section]
-        
-        switch sectionData.type {
-        case .packageInfo, .formInputs:
+        switch section {
+        case 0, 1:
+            // No header for unified booking detail and form inputs
             return 0
-        case .travelerDetails:
+        case 2:
+            // Header for traveler details
             return 60
         default:
-            return 56
+            return 0
         }
     }
     

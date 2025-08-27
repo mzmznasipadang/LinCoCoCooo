@@ -31,8 +31,8 @@ final class BookingSectionHeaderView: UITableViewHeaderFooterView {
     // MARK: - UI Components
     
     private lazy var titleLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .headline, weight: .semibold),
-        textColor: Token.grayscale70,
+        font: .jakartaSans(forTextStyle: .headline, weight: .bold),
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -55,13 +55,13 @@ final class BookingSectionHeaderView: UITableViewHeaderFooterView {
         contentView.addSubviews([titleLabel, chevronImageView])
         
         titleLabel.layout {
-            $0.leading(to: contentView.leadingAnchor, constant: 16)
+            $0.leading(to: contentView.leadingAnchor, constant: 24)
             $0.centerY(to: contentView.centerYAnchor)
             $0.trailing(to: chevronImageView.leadingAnchor, constant: -8)
         }
         
         chevronImageView.layout {
-            $0.trailing(to: contentView.trailingAnchor, constant: -16)
+            $0.trailing(to: contentView.trailingAnchor, constant: -24)
             $0.centerY(to: contentView.centerYAnchor)
             $0.size(20)
         }

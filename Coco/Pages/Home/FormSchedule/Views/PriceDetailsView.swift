@@ -79,9 +79,9 @@ final class PriceDetailsView: UIView {
     /// "Price Details" title label
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = Localization.Price.details
-        label.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
-        label.textColor = Token.grayscale90
+        label.text = "Price Details"
+        label.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
+        label.textColor = UIColor(red: 156/255, green: 164/255, blue: 171/255, alpha: 1)
         return label
     }()
     
@@ -98,7 +98,7 @@ final class PriceDetailsView: UIView {
     private lazy var headerPriceLabel: UILabel = {
         let label = UILabel()
         label.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
-        label.textColor = Token.grayscale90
+        label.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
         label.textAlignment = .right
         return label
     }()
@@ -123,11 +123,11 @@ final class PriceDetailsView: UIView {
     /// Book Now button
     private lazy var bookNowButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle(Localization.Price.bookNow, for: .normal)
+        button.setTitle("Book Now", for: .normal)
         button.titleLabel?.font = .jakartaSans(forTextStyle: .body, weight: .semibold)
-        button.backgroundColor = Token.mainColorPrimary
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 12
+        button.backgroundColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1)
+        button.setTitleColor(UIColor(red: 254/255, green: 254/255, blue: 254/255, alpha: 1), for: .normal)
+        button.layer.cornerRadius = 24
         button.addTarget(self, action: #selector(bookNowTapped), for: .touchUpInside)
         return button
     }()
@@ -259,13 +259,13 @@ final class PriceDetailsView: UIView {
         
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = isTotal ? .jakartaSans(forTextStyle: .body, weight: .semibold) : .jakartaSans(forTextStyle: .body, weight: .regular)
-        titleLabel.textColor = Token.grayscale90
+        titleLabel.font = isTotal ? .jakartaSans(forTextStyle: .body, weight: .bold) : .jakartaSans(forTextStyle: .body, weight: .bold)
+        titleLabel.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
         
         let valueLabel = UILabel()
         valueLabel.text = value
-        valueLabel.font = isTotal ? .jakartaSans(forTextStyle: .body, weight: .bold) : .jakartaSans(forTextStyle: .body, weight: .regular)
-        valueLabel.textColor = Token.grayscale90
+        valueLabel.font = isTotal ? .jakartaSans(forTextStyle: .body, weight: .bold) : .jakartaSans(forTextStyle: .body, weight: .bold)
+        valueLabel.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
         valueLabel.textAlignment = .right
         
         containerView.addSubviews([titleLabel, valueLabel])
@@ -281,7 +281,7 @@ final class PriceDetailsView: UIView {
         }
         
         containerView.layout {
-            $0.height(24)
+            $0.height(36)
         }
         
         detailsStackView.addArrangedSubview(containerView)

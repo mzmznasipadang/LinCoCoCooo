@@ -57,17 +57,12 @@ final class TravelerDetailsCell: UITableViewCell {
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = Token.additionalColorsWhite
-        view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.08
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
         return view
     }()
     
     private lazy var nameLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -75,7 +70,7 @@ final class TravelerDetailsCell: UITableViewCell {
     
     private lazy var phoneLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -87,7 +82,7 @@ final class TravelerDetailsCell: UITableViewCell {
     
     private lazy var emailLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -127,13 +122,12 @@ final class TravelerDetailsCell: UITableViewCell {
     
     private func createTextField(placeholder: String) -> UITextField {
         let textField = UITextField()
-        textField.font = .jakartaSans(forTextStyle: .body, weight: .regular)
-        textField.textColor = Token.grayscale90
-        textField.backgroundColor = Token.grayscale10
-        textField.layer.cornerRadius = 12
-        textField.layer.borderWidth = 1
-        textField.layer.borderColor = UIColor.clear.cgColor
-        textField.placeholder = placeholder
+        textField.font = .jakartaSans(forTextStyle: .body, weight: .medium)
+        textField.textColor = UIColor(red: 156/255, green: 164/255, blue: 171/255, alpha: 1)
+        textField.backgroundColor = UIColor(red: 246/255, green: 248/255, blue: 254/255, alpha: 1)
+        textField.layer.cornerRadius = 24
+        textField.layer.borderWidth = 0
+        textField.placeholder = "Type here..."
         textField.returnKeyType = .done
         textField.delegate = self
         
@@ -156,9 +150,9 @@ final class TravelerDetailsCell: UITableViewCell {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
         
-        nameLabel.text = Localization.Form.TravelerDetails.name
-        phoneLabel.text = Localization.Form.TravelerDetails.phone
-        emailLabel.text = Localization.Form.TravelerDetails.email
+        nameLabel.text = "Name"
+        phoneLabel.text = "Phone"
+        emailLabel.text = "Email"
         
         contentView.addSubview(containerView)
         containerView.addSubviews([
@@ -174,23 +168,23 @@ final class TravelerDetailsCell: UITableViewCell {
         ])
         
         containerView.layout {
-            $0.top(to: contentView.topAnchor, constant: 8)
-            $0.leading(to: contentView.leadingAnchor, constant: 16)
-            $0.trailing(to: contentView.trailingAnchor, constant: -16)
-            $0.bottom(to: contentView.bottomAnchor, constant: -8)
+            $0.top(to: contentView.topAnchor, constant: 0)
+            $0.leading(to: contentView.leadingAnchor, constant: 0)
+            $0.trailing(to: contentView.trailingAnchor, constant: 0)
+            $0.bottom(to: contentView.bottomAnchor, constant: 0)
         }
         
         nameLabel.layout {
-            $0.top(to: containerView.topAnchor, constant: 16)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.top(to: containerView.topAnchor, constant: 24)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
         }
         
         nameTextField.layout {
             $0.top(to: nameLabel.bottomAnchor, constant: 8)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.height(48)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.height(52)
         }
         
         nameErrorLabel.layout {
@@ -200,16 +194,16 @@ final class TravelerDetailsCell: UITableViewCell {
         }
         
         phoneLabel.layout {
-            $0.top(to: nameErrorLabel.bottomAnchor, constant: 16)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.top(to: nameErrorLabel.bottomAnchor, constant: 20)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
         }
         
         phoneTextField.layout {
             $0.top(to: phoneLabel.bottomAnchor, constant: 8)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.height(48)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.height(52)
         }
         
         phoneErrorLabel.layout {
@@ -219,23 +213,23 @@ final class TravelerDetailsCell: UITableViewCell {
         }
         
         emailLabel.layout {
-            $0.top(to: phoneErrorLabel.bottomAnchor, constant: 16)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.top(to: phoneErrorLabel.bottomAnchor, constant: 20)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
         }
         
         emailTextField.layout {
             $0.top(to: emailLabel.bottomAnchor, constant: 8)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.height(48)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.height(52)
         }
         
         emailErrorLabel.layout {
             $0.top(to: emailTextField.bottomAnchor, constant: 4)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.bottom(to: containerView.bottomAnchor, constant: -16)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.bottom(to: containerView.bottomAnchor, constant: -40)
         }
     }
     
