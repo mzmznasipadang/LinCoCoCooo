@@ -272,7 +272,7 @@ final class PriceDetailsView: UIView {
         
         let valueLabel = UILabel()
         valueLabel.text = value
-        // Use different font weights based on Figma design  
+        // Use different font weights based on Figma design
         valueLabel.font = isTotal ? .jakartaSans(forTextStyle: .body, weight: .bold) : .jakartaSans(forTextStyle: .body, weight: .semibold)
         valueLabel.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
         valueLabel.textAlignment = .right
@@ -322,8 +322,11 @@ final class PriceDetailsView: UIView {
         
         UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations: {
             // Rotate chevron
-            self.chevronImageView.transform = self.isExpanded ? 
+            self.chevronImageView.transform = self.isExpanded ?
                 CGAffineTransform(rotationAngle: .pi) : .identity
+            
+            // Hide/show header price based on expanded state
+            self.headerPriceLabel.alpha = self.isExpanded ? 0.0 : 1.0
             
             // Update height constraint
             self.detailsHeightConstraint.constant = targetHeight

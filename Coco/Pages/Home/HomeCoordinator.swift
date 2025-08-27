@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import SwiftUI
 
 final class HomeCoordinator: BaseCoordinator {
     struct Input {
@@ -94,58 +95,79 @@ extension HomeCoordinator: HomeFormScheduleViewModelDelegate {
     func notifyBookingDidSucceed(bookingId: String) {
         print("🎉 COORDINATOR: Booking succeeded with ID: \(bookingId)")
         
-        // Redirect to MyTrip tab after successful booking
-        // Try multiple paths to find the tab bar controller
-        var tabBarController: BaseTabBarViewController?
-        
-        // Option 1: Through current navigation controller
-        if let currentTabBar = navigationController?.tabBarController as? BaseTabBarViewController {
-            tabBarController = currentTabBar
-            print("✅ COORDINATOR: Found tab bar through navigationController")
+        // Navigate to MyTrip first, then show popup
+        navigateToMyTripTab { [weak self] in
+            self?.showCheckoutCompletedPopup()
         }
-        // Option 2: Through parent coordinator
-        else if let parentTabBar = parentCoordinator?.navigationController?.tabBarController as? BaseTabBarViewController {
-            tabBarController = parentTabBar
-            print("✅ COORDINATOR: Found tab bar through parentCoordinator")
-        }
-        // Option 3: Search through the view hierarchy
-        else if let rootViewController = UIApplication.shared.windows.first?.rootViewController,
-                let foundTabBar = findTabBarController(in: rootViewController) {
-            tabBarController = foundTabBar
-            print("✅ COORDINATOR: Found tab bar through view hierarchy search")
+    }
+    
+    /// Shows the checkout completed popup
+    private func showCheckoutCompletedPopup() {
+        // Find the MyTrip tab's top view controller to present the popup
+        guard let tabBarController = findTabBarController(),
+              let myTripNavController = tabBarController.viewControllers?[1] as? UINavigationController,
+              let topViewController = myTripNavController.topViewController else {
+            print("❌ COORDINATOR: Could not find MyTrip view controller to show popup")
+            return
         }
         
-        guard let tabBarController = tabBarController else {
-            print("❌ COORDINATOR: Could not find tab bar controller through any method")
-            print("❌ COORDINATOR: navigationController?.tabBarController = \(String(describing: navigationController?.tabBarController))")
-            print("❌ COORDINATOR: parentCoordinator?.navigationController?.tabBarController = \(String(describing: parentCoordinator?.navigationController?.tabBarController))")
+        let checkoutCompletedView = CheckoutCompletedPopUpView {
+            // Just dismiss the popup when Continue is tapped
+            topViewController.dismiss(animated: true)
+        }
+        
+        let hostingController = UIHostingController(rootView: checkoutCompletedView)
+        hostingController.modalPresentationStyle = .overFullScreen
+        hostingController.modalTransitionStyle = .crossDissolve
+        
+        // Make the background transparent since SwiftUI view handles its own background
+        hostingController.view.backgroundColor = UIColor.clear
+        
+        topViewController.present(hostingController, animated: true)
+        print("✅ COORDINATOR: Checkout completed popup presented on MyTrip tab!")
+    }
+    
+    /// Navigates to MyTrip tab with completion callback
+    private func navigateToMyTripTab(completion: @escaping () -> Void) {
+        guard let tabBarController = findTabBarController() else {
+            print("❌ COORDINATOR: Could not find tab bar controller")
             return
         }
         
         print("✅ COORDINATOR: Found tab bar controller, switching to MyTrip tab...")
         
-        // Switch to MyTrip tab (index 1) and show booking confirmation
+        // Switch to MyTrip tab (index 1) and pop to root
         tabBarController.selectedIndex = 1
         navigationController?.popToRootViewController(animated: true)
         
         print("✅ COORDINATOR: Switched to tab index 1 and popped to root")
         
-        // Show success message
+        // Show popup after a brief delay to ensure navigation is complete
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            print("✅ COORDINATOR: Showing success alert...")
-            if let topController = tabBarController.selectedViewController?.topMostViewController() {
-                let alert = UIAlertController(
-                    title: Localization.Booking.Success.title, 
-                    message: Localization.Booking.Success.message(bookingId), 
-                    preferredStyle: .alert
-                )
-                alert.addAction(UIAlertAction(title: Localization.Common.ok, style: .default))
-                topController.present(alert, animated: true)
-                print("✅ COORDINATOR: Success alert presented!")
-            } else {
-                print("❌ COORDINATOR: Could not find top controller to show alert")
-            }
+            completion()
         }
+    }
+    
+    /// Helper to find tab bar controller
+    private func findTabBarController() -> BaseTabBarViewController? {
+        // Try multiple paths to find the tab bar controller
+        if let currentTabBar = navigationController?.tabBarController as? BaseTabBarViewController {
+            print("✅ COORDINATOR: Found tab bar through navigationController")
+            return currentTabBar
+        }
+        else if let parentTabBar = parentCoordinator?.navigationController?.tabBarController as? BaseTabBarViewController {
+            print("✅ COORDINATOR: Found tab bar through parentCoordinator")
+            return parentTabBar
+        }
+        else if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                let rootViewController = windowScene.windows.first?.rootViewController,
+                let foundTabBar = findTabBarController(in: rootViewController) {
+            print("✅ COORDINATOR: Found tab bar through view hierarchy search")
+            return foundTabBar
+        }
+        
+        print("❌ COORDINATOR: Could not find tab bar controller through any method")
+        return nil
     }
 }
 

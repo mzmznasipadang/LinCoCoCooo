@@ -284,7 +284,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
             timeRangeLabel
         ])
         
-        // Layout package info components to match Figma design
+        // Layout package info components with proper auto layout for dynamic content
         packageImageView.layout {
             $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
             $0.top(to: packageInfoContainer.topAnchor, constant: 16)
@@ -301,7 +301,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         paxIconImageView.layout {
             $0.leading(to: packageImageView.trailingAnchor, constant: 12)
             $0.top(to: packageNameLabel.bottomAnchor, constant: 6)
-            $0.size(14)  // Increased by 2pt
+            $0.size(14)
         }
         
         paxLabel.layout {
@@ -316,9 +316,10 @@ final class UnifiedBookingDetailCell: UITableViewCell {
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
         }
         
+        // Position description below the tallest element (image or price area)
         descriptionLabel.layout {
             $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
-            $0.top(to: packageImageView.bottomAnchor, constant: 8)
+            $0.top(to: priceLabel.bottomAnchor, constant: 12) // Position below price to avoid overlap
             $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
         }
         
