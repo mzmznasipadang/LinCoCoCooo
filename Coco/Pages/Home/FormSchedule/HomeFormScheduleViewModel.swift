@@ -202,7 +202,7 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         chosenDateInput = date
         
         // Check availability for selected date (this will update UI when response comes back)
-        checkAvailability(for: date)
+        checkAvailability(for: date, showErrorIfUnavailable: true)
         
         // Update price details immediately
         let priceData = buildPriceDetailsData()
@@ -210,7 +210,7 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
     }
     
     /// Checks availability for the selected date and package
-    private func checkAvailability(for date: Date) {
+    private func checkAvailability(for date: Date, showErrorIfUnavailable: Bool = false) {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         
@@ -234,8 +234,8 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
                     let sections = self.buildSections()
                     actionDelegate?.updateTableSections(sections)
                     
-                    // If no slots available, show warning
-                    if !availability.isAvailable {
+                    // If no slots available and user explicitly selected date, show warning
+                    if !availability.isAvailable && showErrorIfUnavailable {
                         actionDelegate?.showValidationError(message: "No available slots for selected date (\(availability.availableSlots) remaining). Please choose another date.")
                     } else {
                         print("✅ Date is available with \(availability.availableSlots) slots")
@@ -264,8 +264,10 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
                     let sections = self.buildSections()
                     actionDelegate?.updateTableSections(sections)
                     
-                    // Show error message to user
-                    actionDelegate?.showValidationError(message: "Unable to check availability for selected date. Please try again or contact support.")
+                    // Show error message to user only if they explicitly selected a date
+                    if showErrorIfUnavailable {
+                        actionDelegate?.showValidationError(message: "Unable to check availability for selected date. Please try again or contact support.")
+                    }
                 }
             }
         }
