@@ -67,7 +67,6 @@ extension HomeViewModel: HomeSearchBarViewModelDelegate {
     func notifyHomeSearchBarDidTap(isTypeAble: Bool, viewModel: HomeSearchBarViewModel) {
         guard !isTypeAble else { return }
         
-        // TODO: Change with real data
         actionDelegate?.openSearchTray(
             selectedQuery: searchBarViewModel.currentTypedText,
             latestSearches: [

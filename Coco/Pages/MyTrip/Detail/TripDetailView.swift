@@ -27,7 +27,6 @@ struct BookingDetailDataModel {
         let style: CocoStatusLabelStyle
     }
     
-    
     init(bookingDetail: BookingDetails) {
         var bookingStatus: String = bookingDetail.status
         var statusStyle: CocoStatusLabelStyle = .pending
@@ -183,7 +182,6 @@ private extension TripDetailView {
                 .bottom(to: dateStatusSection.bottomAnchor)
         }
         
-        
         contentStackView.addArrangedSubview(activityDetailView)
         contentStackView.addArrangedSubview(dateStatusSection)
         contentStackView.addArrangedSubview(paxNumberSection)
@@ -304,7 +302,6 @@ private extension TripDetailView {
                 .bottom(to: contentView.bottomAnchor)
         }
         
-        
         return contentView
     }
     
@@ -337,11 +334,10 @@ private extension TripDetailView {
         }
         
         rhs.layout {
-            $0.leading(to: lhs.trailingAnchor, relation: .greaterThanOrEqual,  constant: 4.0)
+            $0.leading(to: lhs.trailingAnchor, relation: .greaterThanOrEqual, constant: 4.0)
                 .trailing(to: containerView.trailingAnchor)
                 .centerY(to: containerView.centerYAnchor)
         }
-        
         return containerView
     }
 }

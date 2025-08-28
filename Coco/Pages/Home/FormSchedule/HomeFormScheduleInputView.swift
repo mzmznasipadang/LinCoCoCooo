@@ -31,7 +31,7 @@ struct HomeFormScheduleInputView: View {
                     
                     Button(action: {
                         showingTimePicker.toggle()
-                    }) {
+                    }, label: {
                         HStack {
                             Text(selectedTime)
                                 .font(.jakartaSans(forTextStyle: .body, weight: .regular))
@@ -52,7 +52,7 @@ struct HomeFormScheduleInputView: View {
                                         .fill(Color(Token.additionalColorsWhite))  // Convert UIColor to Color
                                 )
                         )
-                    }
+                    })
                 }
                 
                 // MARK: - Number of Participants Section
@@ -161,7 +161,7 @@ struct TimePickerSheet: View {
                 Button(action: {
                     selectedTime = time
                     dismiss()
-                }) {
+                }, label: {
                     HStack {
                         Text(time)
                             .font(.jakartaSans(forTextStyle: .body, weight: .regular))
@@ -174,7 +174,7 @@ struct TimePickerSheet: View {
                                 .foregroundStyle(Token.mainColorPrimary.toColor())
                         }
                     }
-                }
+                })
             }
             .navigationTitle("Select Time")
             .navigationBarTitleDisplayMode(.inline)
@@ -188,9 +188,3 @@ struct TimePickerSheet: View {
         }
     }
 }
-
-
-
-
-
-

@@ -92,7 +92,7 @@ final class FormInputFooterView: UIView {
         let label = timeValueLabel
         label.text = "7.30"
         
-        let chevron = UIImageView(image: UIImage(systemName: "chevron.down"))
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
         chevron.tintColor = Token.grayscale50
         
         row.addSubviews([label, chevron])
@@ -143,9 +143,9 @@ final class FormInputFooterView: UIView {
             textColor: Token.grayscale90,
             numberOfLines: 1
         )
-        paxLabel.text = "1"
+        paxLabel.text = "Select Number of Participants"
         
-        let chevron = UIImageView(image: UIImage(systemName: "chevron.down"))
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
         chevron.tintColor = Token.grayscale50
         
         row.addSubviews([paxLabel, chevron])

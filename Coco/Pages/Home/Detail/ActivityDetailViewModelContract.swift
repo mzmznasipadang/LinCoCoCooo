@@ -9,6 +9,7 @@ import Foundation
 
 protocol ActivityDetailNavigationDelegate: AnyObject {
     func notifyActivityDetailPackageDidSelect(package: ActivityDetailDataModel, selectedPackageId: Int)
+    func navigateToLogin()
 }
 
 protocol ActivityDetailViewModelAction: AnyObject {

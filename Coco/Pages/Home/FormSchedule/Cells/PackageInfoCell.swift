@@ -25,9 +25,34 @@ final class PackageInfoCell: UITableViewCell {
         packageImageView.loadImage(from: URL(string: data.imageUrl))
         packageNameLabel.text = data.packageName
         paxLabel.text = data.paxRange
-        priceLabel.text = "\(data.pricePerPax)"
+        
+        // Format price with /person suffix to match Figma design
+        let priceText = "\(data.pricePerPax)/person"
+        let attributedString = NSMutableAttributedString(string: priceText)
+        
+        // Style the main price part (bold, black) - smaller font to match Image #2
+        let priceRange = NSRange(location: 0, length: data.pricePerPax.count)
+        attributedString.addAttribute(.font, value: UIFont.jakartaSans(forTextStyle: .body, weight: .bold), range: priceRange)
+        attributedString.addAttribute(.foregroundColor, value: UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1), range: priceRange)
+        
+        // Style the /person suffix (smaller, gray)
+        let suffixRange = NSRange(location: data.pricePerPax.count, length: 7) // "/person"
+        attributedString.addAttribute(.font, value: UIFont.jakartaSans(forTextStyle: .caption1, weight: .medium), range: suffixRange)
+        attributedString.addAttribute(.foregroundColor, value: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1), range: suffixRange)
+        
+        priceLabel.attributedText = attributedString
+        
         descriptionLabel.text = data.description
-        durationLabel.text = data.duration
+        
+        // Set duration title and parse time range from duration
+        durationTitleLabel.text = "Duration"
+        
+        // Parse duration string to extract time range - expecting format like "09:00-16:00 (7 Hours)"
+        if let timeRange = extractTimeRange(from: data.duration) {
+            timeRangeLabel.text = timeRange
+        } else {
+            timeRangeLabel.text = data.duration // Fallback to original format
+        }
         
         // Handle discount price visibility and text
         if let originalPrice = data.originalPrice, data.hasDiscount {
@@ -47,11 +72,17 @@ final class PackageInfoCell: UITableViewCell {
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = Token.additionalColorsWhite
-        view.layer.cornerRadius = 16
+        view.layer.cornerRadius = 14
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor(red: 227/255, green: 231/255, blue: 236/255, alpha: 1).cgColor
+        
+        // Add shadow to match Figma design
         view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.08
+        view.layer.shadowOpacity = 0.04
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
+        view.layer.masksToBounds = false
+        
         return view
     }()
     
@@ -65,30 +96,30 @@ final class PackageInfoCell: UITableViewCell {
     }()
     
     private lazy var packageNameLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .headline, weight: .bold),
-        textColor: Token.grayscale90,
-        numberOfLines: 2
+        font: .jakartaSans(forTextStyle: .headline, weight: .semibold),
+        textColor: UIColor(red: 23/255, green: 23/255, blue: 37/255, alpha: 1),
+        numberOfLines: 1
     )
     
     private lazy var paxIconImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "person.2.fill")
-        imageView.tintColor = Token.grayscale50
+        imageView.image = UIImage(systemName: "person.fill")
+        imageView.tintColor = UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
     
     private lazy var paxLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale50,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
-    private lazy var priceLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .title3, weight: .bold),
-        textColor: Token.grayscale90,
-        numberOfLines: 1
-    )
+    private lazy var priceLabel: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 1
+        return label
+    }()
     
     private lazy var originalPriceLabel: UILabel = {
         let label = UILabel(
@@ -101,22 +132,28 @@ final class PackageInfoCell: UITableViewCell {
     }()
     
     private lazy var descriptionLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
-        textColor: Token.grayscale70,
+        font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
+        textColor: .black,
         numberOfLines: 0
     )
     
     private lazy var durationIconImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "clock")
-        imageView.tintColor = Token.grayscale50
+        imageView.tintColor = UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
     
-    private lazy var durationLabel: UILabel = UILabel(
+    private lazy var durationTitleLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
+        numberOfLines: 1
+    )
+    
+    private lazy var timeRangeLabel: UILabel = UILabel(
+        font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
+        textColor: UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -137,23 +174,23 @@ final class PackageInfoCell: UITableViewCell {
             originalPriceLabel,
             descriptionLabel,
             durationIconImageView,
-            durationLabel
+            durationTitleLabel,
+            timeRangeLabel
         ])
         
-        // Layout
+        // Layout with proper margins for card appearance
         containerView.layout {
-            $0.top(to: contentView.topAnchor, constant: 8)
-            $0.leading(to: contentView.leadingAnchor, constant: 16)
-            $0.trailing(to: contentView.trailingAnchor, constant: -16)
+            $0.top(to: contentView.topAnchor, constant: 16)
+            $0.leading(to: contentView.leadingAnchor, constant: 24)
+            $0.trailing(to: contentView.trailingAnchor, constant: -24)
             $0.bottom(to: contentView.bottomAnchor, constant: -8)
         }
         
         packageImageView.layout {
             $0.leading(to: containerView.leadingAnchor, constant: 16)
             $0.top(to: containerView.topAnchor, constant: 16)
-            $0.bottom(to: containerView.bottomAnchor, relation: .lessThanOrEqual, constant: -16)
-            $0.width(100)
-            $0.height(100)
+            $0.width(80)   // 1:1 ratio
+            $0.height(80)  // 1:1 ratio
         }
         
         packageNameLabel.layout {
@@ -163,9 +200,9 @@ final class PackageInfoCell: UITableViewCell {
         }
         
         paxIconImageView.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
-            $0.top(to: packageNameLabel.bottomAnchor, constant: 8)
-            $0.size(16) // Corrected size
+            $0.leading(to: packageImageView.trailingAnchor, constant: 12)
+            $0.top(to: packageNameLabel.bottomAnchor, constant: 6)
+            $0.size(14)  // Increased by 2pt
         }
         
         paxLabel.layout {
@@ -175,8 +212,8 @@ final class PackageInfoCell: UITableViewCell {
         }
         
         priceLabel.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
-            $0.top(to: paxIconImageView.bottomAnchor, constant: 16)
+            $0.leading(to: packageImageView.trailingAnchor, constant: 12)
+            $0.top(to: paxIconImageView.bottomAnchor, constant: 8)
         }
         
         originalPriceLabel.layout {
@@ -186,22 +223,39 @@ final class PackageInfoCell: UITableViewCell {
         }
         
         descriptionLabel.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
-            $0.top(to: priceLabel.bottomAnchor, constant: 8)
+            $0.leading(to: containerView.leadingAnchor, constant: 16)
+            $0.top(to: packageImageView.bottomAnchor, constant: 8)
             $0.trailing(to: containerView.trailingAnchor, constant: -16)
         }
         
         durationIconImageView.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
+            $0.leading(to: containerView.leadingAnchor, constant: 16)
             $0.top(to: descriptionLabel.bottomAnchor, constant: 8)
             $0.size(16)
         }
         
-        durationLabel.layout {
-            $0.leading(to: durationIconImageView.trailingAnchor, constant: 8)
+        durationTitleLabel.layout {
+            $0.leading(to: durationIconImageView.trailingAnchor, constant: 4)
             $0.centerY(to: durationIconImageView.centerYAnchor)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.bottom(to: containerView.bottomAnchor, constant: -16)
         }
+        
+        timeRangeLabel.layout {
+            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.centerY(to: durationIconImageView.centerYAnchor)
+            $0.bottom(to: containerView.bottomAnchor, constant: -14)
+        }
+    }
+    
+    /// Extracts time range from duration string
+    /// Expected format: \"09:00-16:00 (7 Hours)\" -> returns \"09:00-16:00 (7 Hours)\"
+    /// Or handles other formats gracefully
+    private func extractTimeRange(from duration: String) -> String? {
+        // If it already contains time format (HH:MM), return as is
+        if duration.contains(":") {
+            return duration
+        }
+        
+        // For other formats, return nil to use fallback
+        return nil
     }
 }

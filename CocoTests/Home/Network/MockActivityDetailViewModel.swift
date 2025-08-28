@@ -42,8 +42,14 @@ final class MockActivityDetailViewModelNavigationDelegate: ActivityDetailNavigat
     private(set) var invokedCount = 0
     private(set) var lastPackage: ActivityDetailDataModel?
     private(set) var lastId: Int?
+    private(set) var navigateToLoginInvokedCount = 0
+    
     func notifyActivityDetailPackageDidSelect(package: ActivityDetailDataModel, selectedPackageId: Int) {
         invokedCount += 1; lastPackage = package; lastId = selectedPackageId
+    }
+    
+    func navigateToLogin() {
+        navigateToLoginInvokedCount += 1
     }
 }
 

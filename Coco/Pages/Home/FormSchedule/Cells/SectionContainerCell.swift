@@ -101,16 +101,21 @@ final class SectionContainerCell: UITableViewCell {
         return view
     }
     
-    
     // UI Components
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = Token.additionalColorsWhite
-        view.layer.cornerRadius = 16
+        view.layer.cornerRadius = 14
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor(red: 227/255, green: 231/255, blue: 236/255, alpha: 1).cgColor
+        
+        // Add shadow to match Figma design
         view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.08
+        view.layer.shadowOpacity = 0.04
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
         view.layer.shadowRadius = 8
+        view.layer.masksToBounds = false
+        
         return view
     }()
     
@@ -133,8 +138,8 @@ final class SectionContainerCell: UITableViewCell {
         
         containerView.layout {
             $0.top(to: contentView.topAnchor, constant: 8)
-            $0.leading(to: contentView.leadingAnchor, constant: 16)
-            $0.trailing(to: contentView.trailingAnchor, constant: -16)
+            $0.leading(to: contentView.leadingAnchor, constant: 24)
+            $0.trailing(to: contentView.trailingAnchor, constant: -24)
             $0.bottom(to: contentView.bottomAnchor, constant: -8)
         }
         
@@ -169,6 +174,7 @@ final class SectionContainerCell: UITableViewCell {
             numberOfLines: 1
         )
         timeLabel.text = item.time
+        timeLabel.textAlignment = .left
         
         let titleLabel = UILabel(
             font: .jakartaSans(forTextStyle: .callout, weight: .semibold),
@@ -176,6 +182,7 @@ final class SectionContainerCell: UITableViewCell {
             numberOfLines: 0
         )
         titleLabel.text = item.title
+        titleLabel.textAlignment = .left
         
         let descLabel = UILabel(
             font: .jakartaSans(forTextStyle: .footnote, weight: .regular),
@@ -183,6 +190,7 @@ final class SectionContainerCell: UITableViewCell {
             numberOfLines: 0
         )
         descLabel.text = item.description
+        descLabel.textAlignment = .left
         
         view.addSubviews([dotView, topLine, bottomLine, timeLabel, titleLabel, descLabel])
         
@@ -209,13 +217,14 @@ final class SectionContainerCell: UITableViewCell {
         
         timeLabel.layout {
             $0.leading(to: dotView.trailingAnchor, constant: 16)
-            $0.centerY(to: dotView.centerYAnchor)
+            $0.top(to: dotView.topAnchor, constant: -2)
+            $0.width(60) // Fixed width for time column
         }
         
         titleLabel.layout {
             $0.leading(to: timeLabel.trailingAnchor, constant: 16)
             $0.trailing(to: view.trailingAnchor, constant: -16)
-            $0.centerY(to: dotView.centerYAnchor)
+            $0.top(to: dotView.topAnchor, constant: -4)
         }
         
         if item.description != nil {
@@ -227,13 +236,12 @@ final class SectionContainerCell: UITableViewCell {
             }
         } else {
             titleLabel.layout {
-                $0.bottom(to: view.bottomAnchor, constant: -16)
+                $0.bottom(to: view.bottomAnchor, constant: -20)
             }
         }
         
         return view
     }
-    
     
     private func createSeparator() -> UIView {
         let separator = UIView()

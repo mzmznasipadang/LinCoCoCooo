@@ -41,11 +41,29 @@ final class FormInputCell: UITableViewCell {
     ///   - selectedTime: The selected date string or "Select Date" placeholder
     ///   - participantCount: The current participant count as string
     ///   - availableSlots: The number of available slots (optional)
-    func configure(selectedTime: String, participantCount: String, availableSlots: Int? = nil) {
-        timeButton.setTitle(selectedTime.isEmpty ? Localization.Common.selectDate : selectedTime, for: .normal)
-        paxTextField.text = participantCount.isEmpty ? "1" : participantCount
+    ///   - minParticipants: The minimum participants for dynamic placeholder (optional)
+    func configure(selectedTime: String, participantCount: String, availableSlots: Int? = nil, minParticipants: Int = 1) {
+        // Configure date button with color logic
+        let hasSelectedDate = !selectedTime.isEmpty && !selectedTime.contains("Select")
+        if hasSelectedDate {
+            timeButton.setTitle(selectedTime, for: .normal)
+            timeButton.setTitleColor(UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1), for: .normal) // Black
+        } else {
+            timeButton.setTitle("Select Date", for: .normal)
+            timeButton.setTitleColor(UIColor(red: 156/255, green: 164/255, blue: 171/255, alpha: 1), for: .normal) // Gray
+        }
         
-        print("🔍 FormInputCell configure - SelectedTime: \(selectedTime), ParticipantCount: \(participantCount), AvailableSlots: \(availableSlots ?? -999)")
+        // Configure participant field - use minimum value as default instead of placeholder
+        let hasSelectedParticipants = !participantCount.isEmpty && !participantCount.contains("Select")
+        if hasSelectedParticipants {
+            paxTextField.text = participantCount
+        } else {
+            paxTextField.text = "\(minParticipants)" // Show minimum value as default
+        }
+        // Always use black text color since we're showing actual values, not placeholders
+        paxTextField.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
+        
+        print("🔍 FormInputCell configure - SelectedTime: \(selectedTime), ParticipantCount: \(participantCount), MinParticipants: \(minParticipants)")
         
         // Update available slots text
         if let slots = availableSlots {
@@ -63,48 +81,43 @@ final class FormInputCell: UITableViewCell {
     
     // MARK: - UI Components
     
-    /// Container view with shadow and rounded corners
+    /// Container view with white background
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = Token.additionalColorsWhite
-        view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.08
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
         return view
     }()
     
     /// Label for the date selection section
     private lazy var selectTimeLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
     /// Button for date/time selection with calendar popup
-    /// Styled as input field with chevron icon
+    /// Styled as input field with calendar icon
     private lazy var timeButton: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = Token.additionalColorsWhite
-        button.layer.cornerRadius = 25
+        button.backgroundColor = UIColor(red: 254/255, green: 254/255, blue: 254/255, alpha: 1)
+        button.layer.cornerRadius = 24
         button.layer.borderWidth = 1
-        button.layer.borderColor = Token.mainColorPrimary.cgColor
-        button.setTitleColor(Token.grayscale90, for: .normal)
-        button.titleLabel?.font = .jakartaSans(forTextStyle: .body, weight: .regular)
+        button.layer.borderColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1).cgColor
+        button.setTitleColor(UIColor(red: 156/255, green: 164/255, blue: 171/255, alpha: 1), for: .normal) // Initially gray
+        button.titleLabel?.font = .jakartaSans(forTextStyle: .body, weight: .medium)
         button.contentHorizontalAlignment = .left
         button.contentEdgeInsets = UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16)
         
-        // Add chevron icon to indicate dropdown behavior
-        let chevron = UIImageView(image: UIImage(systemName: "chevron.down"))
-        chevron.tintColor = Token.grayscale50
-        button.addSubview(chevron)
-        chevron.translatesAutoresizingMaskIntoConstraints = false
+        // Add calendar icon to match Figma design
+        let calendar = UIImageView(image: UIImage(systemName: "calendar"))
+        calendar.tintColor = UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1)
+        button.addSubview(calendar)
+        calendar.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            chevron.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16),
-            chevron.centerYAnchor.constraint(equalTo: button.centerYAnchor),
-            chevron.widthAnchor.constraint(equalToConstant: 12),
-            chevron.heightAnchor.constraint(equalToConstant: 12)
+            calendar.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -16),
+            calendar.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+            calendar.widthAnchor.constraint(equalToConstant: 20),
+            calendar.heightAnchor.constraint(equalToConstant: 20)
         ])
         
         button.addTarget(self, action: #selector(timeButtonTapped), for: .touchUpInside)
@@ -114,18 +127,20 @@ final class FormInputCell: UITableViewCell {
     /// Label for the participant count section
     private lazy var participantsLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
-    /// Text field for participant count with custom tap handling
-    /// Configured to show selection popup instead of keyboard
+    /// Text field for participant count with custom tap handling and chevron
+    /// Styled to match Figma design with white background and blue border
     private lazy var paxTextField: UITextField = {
         let textField = UITextField()
-        textField.font = .jakartaSans(forTextStyle: .body, weight: .regular)
-        textField.textColor = Token.grayscale90
-        textField.backgroundColor = Token.grayscale10
-        textField.layer.cornerRadius = 12
+        textField.font = .jakartaSans(forTextStyle: .body, weight: .medium)
+        textField.textColor = UIColor(red: 156/255, green: 164/255, blue: 171/255, alpha: 1) // Initially gray
+        textField.backgroundColor = UIColor(red: 254/255, green: 254/255, blue: 254/255, alpha: 1)
+        textField.layer.cornerRadius = 24
+        textField.layer.borderWidth = 1
+        textField.layer.borderColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1).cgColor
         textField.keyboardType = .numberPad
         
         // Make it behave like a button for selection while preventing keyboard
@@ -139,20 +154,30 @@ final class FormInputCell: UITableViewCell {
         // Prevent keyboard from showing by providing empty input view
         textField.inputView = UIView()
         
-        // Add padding for better visual appearance
+        // Add padding for better visual appearance - leave space for chevron on the right
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftView = paddingView
         textField.leftViewMode = .always
-        textField.rightView = paddingView
+        
+        // Set text insets to account for chevron space
+        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 0))
         textField.rightViewMode = .always
         
         return textField
     }()
     
+    /// Chevron icon for participant field dropdown indication
+    private lazy var paxChevronView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(systemName: "chevron.down"))
+        imageView.tintColor = UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     /// Label showing available slots information
     private lazy var availableSlotsLabel: UILabel = UILabel(
-        font: .jakartaSans(forTextStyle: .caption1, weight: .regular),
-        textColor: Token.grayscale50,
+        font: .jakartaSans(forTextStyle: .caption1, weight: .medium),
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -165,9 +190,9 @@ final class FormInputCell: UITableViewCell {
         contentView.backgroundColor = .clear
         
         // Configure labels with default text
-        selectTimeLabel.text = Localization.Form.selectDates
-        participantsLabel.text = Localization.Form.numberParticipants
-        availableSlotsLabel.text = Localization.Form.availableSlots(10)
+        selectTimeLabel.text = "Select Date"
+        participantsLabel.text = "Number of participants"
+        availableSlotsLabel.text = "Available Slots: 4"
         availableSlotsLabel.textAlignment = .right
         
         // Add subviews
@@ -177,47 +202,55 @@ final class FormInputCell: UITableViewCell {
             timeButton,
             participantsLabel,
             paxTextField,
+            paxChevronView,
             availableSlotsLabel
         ])
         
         // Layout constraints using custom layout helper
         containerView.layout {
-            $0.top(to: contentView.topAnchor, constant: 8)
-            $0.leading(to: contentView.leadingAnchor, constant: 16)
-            $0.trailing(to: contentView.trailingAnchor, constant: -16)
-            $0.bottom(to: contentView.bottomAnchor, constant: -8)
+            $0.top(to: contentView.topAnchor, constant: 0)
+            $0.leading(to: contentView.leadingAnchor, constant: 0)
+            $0.trailing(to: contentView.trailingAnchor, constant: 0)
+            $0.bottom(to: contentView.bottomAnchor, constant: 0)
         }
         
         selectTimeLabel.layout {
-            $0.top(to: containerView.topAnchor, constant: 16)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.top(to: containerView.topAnchor, constant: 24)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
         }
         
         timeButton.layout {
             $0.top(to: selectTimeLabel.bottomAnchor, constant: 8)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.height(48)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.height(52)
         }
         
         participantsLabel.layout {
             $0.top(to: timeButton.bottomAnchor, constant: 24)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
         }
         
         paxTextField.layout {
             $0.top(to: participantsLabel.bottomAnchor, constant: 8)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.height(48)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.height(52)
+        }
+        
+        paxChevronView.layout {
+            $0.centerY(to: paxTextField.centerYAnchor)
+            $0.trailing(to: paxTextField.trailingAnchor, constant: -16)
+            $0.width(20)
+            $0.height(20)
         }
         
         availableSlotsLabel.layout {
             $0.top(to: paxTextField.bottomAnchor, constant: 8)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.bottom(to: containerView.bottomAnchor, constant: -16)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.bottom(to: containerView.bottomAnchor, constant: -24)
         }
     }
     

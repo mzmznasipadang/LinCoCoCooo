@@ -41,7 +41,18 @@ final class NetworkService: NetworkServiceProtocol {
         body: JSONEncodable? = nil,
         completion: @escaping (Result<T, NetworkServiceError>) -> Void
     ) -> URLSessionDataTask? {
-        guard let url: URL = URL(string: urlString) else {
+        var finalURLString = urlString
+        
+        // For GET requests, append parameters as query string
+        if method == .get && !parameters.isEmpty {
+            var urlComponents = URLComponents(string: urlString)
+            urlComponents?.queryItems = parameters.map { key, value in
+                URLQueryItem(name: key, value: String(describing: value))
+            }
+            finalURLString = urlComponents?.url?.absoluteString ?? urlString
+        }
+        
+        guard let url: URL = URL(string: finalURLString) else {
             completion(.failure(.invalidURL))
             return nil
         }

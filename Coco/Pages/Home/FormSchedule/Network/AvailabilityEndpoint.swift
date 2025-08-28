@@ -13,7 +13,7 @@ enum AvailabilityEndpoint: EndpointProtocol {
     var path: String {
         switch self {
         case .getAvailability:
-            return "rpc/get_availability"
+            return "activity_availability"
         }
     }
 }

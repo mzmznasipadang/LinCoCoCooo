@@ -61,7 +61,7 @@ final class CustomTabBar: UIView, UICollectionViewDataSource, UICollectionViewDe
             bottomHairline.bottomAnchor.constraint(equalTo: bottomAnchor),
             bottomHairline.leadingAnchor.constraint(equalTo: leadingAnchor),
             bottomHairline.trailingAnchor.constraint(equalTo: trailingAnchor),
-            bottomHairline.heightAnchor.constraint(equalToConstant: 0.5),
+            bottomHairline.heightAnchor.constraint(equalToConstant: 0.5)
         ])
 
         collection.translatesAutoresizingMaskIntoConstraints = false
@@ -78,7 +78,7 @@ final class CustomTabBar: UIView, UICollectionViewDataSource, UICollectionViewDe
             collection.topAnchor.constraint(equalTo: topHairline.bottomAnchor),
             collection.bottomAnchor.constraint(equalTo: bottomHairline.topAnchor),
             collection.leadingAnchor.constraint(equalTo: leadingAnchor),
-            collection.trailingAnchor.constraint(equalTo: trailingAnchor),
+            collection.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
 
         underline.backgroundColor = Token.mainColorPrimary

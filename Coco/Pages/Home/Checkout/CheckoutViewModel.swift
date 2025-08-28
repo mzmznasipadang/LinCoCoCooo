@@ -97,7 +97,7 @@ extension CheckoutViewModel: CheckoutViewModelProtocol {
                     errorMessage = message
                 }
                 
-                await MainActor.run { [weak self] in
+                await MainActor.run { [weak self, errorMessage] in
                     self?.actionDelegate?.setLoading(false)
                     self?.actionDelegate?.showError(message: errorMessage)
                 }

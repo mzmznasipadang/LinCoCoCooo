@@ -57,17 +57,12 @@ final class TravelerDetailsCell: UITableViewCell {
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = Token.additionalColorsWhite
-        view.layer.cornerRadius = 16
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.08
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
         return view
     }()
     
     private lazy var nameLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -75,7 +70,7 @@ final class TravelerDetailsCell: UITableViewCell {
     
     private lazy var phoneLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -87,7 +82,7 @@ final class TravelerDetailsCell: UITableViewCell {
     
     private lazy var emailLabel: UILabel = UILabel(
         font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-        textColor: Token.grayscale70,
+        textColor: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1),
         numberOfLines: 1
     )
     
@@ -127,13 +122,13 @@ final class TravelerDetailsCell: UITableViewCell {
     
     private func createTextField(placeholder: String) -> UITextField {
         let textField = UITextField()
-        textField.font = .jakartaSans(forTextStyle: .body, weight: .regular)
-        textField.textColor = Token.grayscale90
-        textField.backgroundColor = Token.grayscale10
-        textField.layer.cornerRadius = 12
-        textField.layer.borderWidth = 1
-        textField.layer.borderColor = UIColor.clear.cgColor
-        textField.placeholder = placeholder
+        textField.font = .jakartaSans(forTextStyle: .body, weight: .medium)
+        textField.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)  // Black text color
+        textField.backgroundColor = UIColor(red: 246/255, green: 248/255, blue: 254/255, alpha: 1)
+        textField.layer.cornerRadius = 24
+        textField.layer.borderWidth = 2  // Set border width for validation
+        textField.layer.borderColor = UIColor.clear.cgColor  // Initially clear
+        textField.placeholder = "Type here..."
         textField.returnKeyType = .done
         textField.delegate = self
         
@@ -156,9 +151,9 @@ final class TravelerDetailsCell: UITableViewCell {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
         
-        nameLabel.text = Localization.Form.TravelerDetails.name
-        phoneLabel.text = Localization.Form.TravelerDetails.phone
-        emailLabel.text = Localization.Form.TravelerDetails.email
+        nameLabel.text = "Name"
+        phoneLabel.text = "Phone"
+        emailLabel.text = "Email"
         
         contentView.addSubview(containerView)
         containerView.addSubviews([
@@ -174,23 +169,23 @@ final class TravelerDetailsCell: UITableViewCell {
         ])
         
         containerView.layout {
-            $0.top(to: contentView.topAnchor, constant: 8)
-            $0.leading(to: contentView.leadingAnchor, constant: 16)
-            $0.trailing(to: contentView.trailingAnchor, constant: -16)
-            $0.bottom(to: contentView.bottomAnchor, constant: -8)
+            $0.top(to: contentView.topAnchor, constant: 0)
+            $0.leading(to: contentView.leadingAnchor, constant: 0)
+            $0.trailing(to: contentView.trailingAnchor, constant: 0)
+            $0.bottom(to: contentView.bottomAnchor, constant: 0)
         }
         
         nameLabel.layout {
-            $0.top(to: containerView.topAnchor, constant: 16)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.top(to: containerView.topAnchor, constant: 24)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
         }
         
         nameTextField.layout {
             $0.top(to: nameLabel.bottomAnchor, constant: 8)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.height(48)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.height(52)
         }
         
         nameErrorLabel.layout {
@@ -200,16 +195,16 @@ final class TravelerDetailsCell: UITableViewCell {
         }
         
         phoneLabel.layout {
-            $0.top(to: nameErrorLabel.bottomAnchor, constant: 16)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.top(to: nameErrorLabel.bottomAnchor, constant: 20)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
         }
         
         phoneTextField.layout {
             $0.top(to: phoneLabel.bottomAnchor, constant: 8)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.height(48)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.height(52)
         }
         
         phoneErrorLabel.layout {
@@ -219,29 +214,31 @@ final class TravelerDetailsCell: UITableViewCell {
         }
         
         emailLabel.layout {
-            $0.top(to: phoneErrorLabel.bottomAnchor, constant: 16)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
+            $0.top(to: phoneErrorLabel.bottomAnchor, constant: 20)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
         }
         
         emailTextField.layout {
             $0.top(to: emailLabel.bottomAnchor, constant: 8)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.height(48)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.height(52)
         }
         
         emailErrorLabel.layout {
             $0.top(to: emailTextField.bottomAnchor, constant: 4)
-            $0.leading(to: containerView.leadingAnchor, constant: 16)
-            $0.trailing(to: containerView.trailingAnchor, constant: -16)
-            $0.bottom(to: containerView.bottomAnchor, constant: -16)
+            $0.leading(to: containerView.leadingAnchor, constant: 24)
+            $0.trailing(to: containerView.trailingAnchor, constant: -24)
+            $0.bottom(to: containerView.bottomAnchor, constant: -40)
         }
     }
     
     // MARK: - Text Field Validation
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
+        // Validate on every text change for immediate feedback
+        validateField(textField)
         notifyDataChange()
     }
     
@@ -262,12 +259,12 @@ final class TravelerDetailsCell: UITableViewCell {
         case phoneTextField:
             let isValid = isValidPhone(text)
             updateFieldValidation(textField: phoneTextField, errorLabel: phoneErrorLabel, 
-                                 isValid: isValid, errorMessage: Localization.Validation.Phone.invalid)
+                                 isValid: isValid, errorMessage: "Please enter a valid phone number")
             
         case emailTextField:
             let isValid = isValidEmail(text)
             updateFieldValidation(textField: emailTextField, errorLabel: emailErrorLabel, 
-                                 isValid: isValid, errorMessage: Localization.Validation.Email.invalid)
+                                 isValid: isValid, errorMessage: "Please enter a valid email address")
         default:
             break
         }
@@ -292,13 +289,28 @@ final class TravelerDetailsCell: UITableViewCell {
     }
     
     private func isValidPhone(_ phone: String) -> Bool {
+        let trimmedPhone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Empty phone is valid (optional field)
+        if trimmedPhone.isEmpty {
+            return true
+        }
+        
+        // Phone validation: should be 10-15 digits, optionally starting with +
         let phoneRegex = "^[+]?[0-9]{10,15}$"
-        return NSPredicate(format: "SELF MATCHES %@", phoneRegex).evaluate(with: phone)
+        return NSPredicate(format: "SELF MATCHES %@", phoneRegex).evaluate(with: trimmedPhone)
     }
     
     private func isValidEmail(_ email: String) -> Bool {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Empty email is valid (optional field)
+        if trimmedEmail.isEmpty {
+            return true
+        }
+        
         let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        return NSPredicate(format: "SELF MATCHES %@", emailRegex).evaluate(with: email)
+        return NSPredicate(format: "SELF MATCHES %@", emailRegex).evaluate(with: trimmedEmail)
     }
     
     private func notifyDataChange() {
@@ -325,6 +337,20 @@ extension TravelerDetailsCell: UITextFieldDelegate {
         default:
             textField.resignFirstResponder()
         }
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        // Add character limit for name field
+        if textField == nameTextField {
+            let currentText = textField.text ?? ""
+            guard let stringRange = Range(range, in: currentText) else { return false }
+            let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
+            
+            // Limit name field to 20 characters
+            return updatedText.count <= 20
+        }
+        
         return true
     }
 }

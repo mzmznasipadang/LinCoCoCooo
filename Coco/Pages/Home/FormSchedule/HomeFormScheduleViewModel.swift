@@ -6,29 +6,7 @@
 //
 
 import Foundation
-
-// MARK: - Data Models for Form Sections
-
-/// Data model for form input section containing date and participant information
-struct FormInputData {
-    /// Selected date/time string (formatted date or "Select Date" placeholder)
-    var selectedTime: String = "7.30"
-    /// Number of participants as string
-    var participantCount: String = "1"
-    /// Number of available slots for the selected date (optional)
-    var availableSlots: Int?
-}
-
-
-// MARK: - ViewModel Input
-
-/// Input data required to initialize the HomeFormScheduleViewModel
-struct HomeFormScheduleViewModelInput {
-    /// Activity detail data model containing package information
-    let package: ActivityDetailDataModel
-    /// ID of the selected package for booking
-    let selectedPackageId: Int
-}
+import UIKit
 
 // MARK: - HomeFormScheduleViewModel
 
@@ -75,7 +53,7 @@ final class HomeFormScheduleViewModel {
     private lazy var paxInputViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: nil,
         placeholderText: Localization.Placeholder.inputTotalPax,
-        currentTypedText: "1",
+        currentTypedText: "Select Number of Participants",
         trailingIcon: nil,
         isTypeAble: true,
         delegate: self,
@@ -120,14 +98,24 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         actionDelegate?.updateTableSections(sections)
         
         // Update price details
-        let priceData = buildPriceDetailsData()
+        let priceData = FormScheduleDataFormatter.buildPriceDetailsData(
+            chosenDate: chosenDateInput,
+            participantText: paxInputViewModel.currentTypedText,
+            selectedPackage: selectedPackage,
+            travelerName: currentTravelerData.name
+        )
         actionDelegate?.updatePriceDetails(priceData)
     }
     
     func onTravelerDataChanged(_ data: TravelerData) {
         currentTravelerData = data
         // Update price details with new traveler name
-        let priceData = buildPriceDetailsData()
+        let priceData = FormScheduleDataFormatter.buildPriceDetailsData(
+            chosenDate: chosenDateInput,
+            participantText: paxInputViewModel.currentTypedText,
+            selectedPackage: selectedPackage,
+            travelerName: currentTravelerData.name
+        )
         actionDelegate?.updatePriceDetails(priceData)
     }
     
@@ -154,9 +142,12 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
             paxInputViewModel: paxInputViewModel
         )
         
-        // Build and set table sections
+        // Build initial sections (availability will be updated async)
         let sections = buildSections()
         actionDelegate?.updateTableSections(sections)
+        
+        // Check availability for today's date initially
+        checkAvailability(for: Date())
         
         let data: HomeFormScheduleViewData = HomeFormScheduleViewData(
             imageString: selectedPackage?.imageUrlString ?? input.package.imageUrlsString.first ?? "",
@@ -188,7 +179,12 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         currentAvailability = nil
         
         // Update price details with initial state
-        let priceData = buildPriceDetailsData()
+        let priceData = FormScheduleDataFormatter.buildPriceDetailsData(
+            chosenDate: chosenDateInput,
+            participantText: paxInputViewModel.currentTypedText,
+            selectedPackage: selectedPackage,
+            travelerName: currentTravelerData.name
+        )
         actionDelegate?.updatePriceDetails(priceData)
     }
     
@@ -198,20 +194,21 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
     func onCalendarDidChoose(date: Date) {
         chosenDateInput = date
         
-        // Check availability for selected date
-        checkAvailability(for: date)
+        // Check availability for selected date (this will update UI when response comes back)
+        checkAvailability(for: date, showErrorIfUnavailable: true)
         
-        // Rebuild sections to reflect the updated date
-        let sections = buildSections()
-        actionDelegate?.updateTableSections(sections)
-        
-        // Update price details
-        let priceData = buildPriceDetailsData()
+        // Update price details immediately
+        let priceData = FormScheduleDataFormatter.buildPriceDetailsData(
+            chosenDate: chosenDateInput,
+            participantText: paxInputViewModel.currentTypedText,
+            selectedPackage: selectedPackage,
+            travelerName: currentTravelerData.name
+        )
         actionDelegate?.updatePriceDetails(priceData)
     }
     
     /// Checks availability for the selected date and package
-    private func checkAvailability(for date: Date) {
+    private func checkAvailability(for date: Date, showErrorIfUnavailable: Bool = false) {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         
@@ -235,8 +232,8 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
                     let sections = self.buildSections()
                     actionDelegate?.updateTableSections(sections)
                     
-                    // If no slots available, show warning
-                    if !availability.isAvailable {
+                    // If no slots available and user explicitly selected date, show warning
+                    if !availability.isAvailable && showErrorIfUnavailable {
                         actionDelegate?.showValidationError(message: "No available slots for selected date (\(availability.availableSlots) remaining). Please choose another date.")
                     } else {
                         print("✅ Date is available with \(availability.availableSlots) slots")
@@ -246,35 +243,58 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
             } catch {
                 print("❌ Failed to check availability: \(error)")
                 await MainActor.run {
-                    // Create mock availability based on date to demonstrate the feature
-                    let calendar = Calendar.current
-                    let day = calendar.component(.day, from: date)
-                    
-                    // Simulate availability: even days have slots, odd days don't
-                    let isAvailable = day % 2 == 0
-                    let slots = isAvailable ? (day % 10 == 0 ? 2 : 5) : 0
+                    // Set availability to unavailable if API call fails
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "yyyy-MM-dd"
                     
                     self.currentAvailability = AvailabilityResponse(
-                        availableSlots: slots, 
-                        isAvailable: isAvailable
+                        id: 0,
+                        packageId: input.selectedPackageId,
+                        date: formatter.string(from: date),
+                        startTime: "09:00:00",
+                        endTime: "17:00:00",
+                        availableSlots: 0
                     )
                     
-                    print("🔧 Using mock availability - Available: \(isAvailable), Slots: \(slots)")
+                    print("⚠️ Using fallback availability - Available: false, Slots: 0")
                     
-                    // Rebuild sections to show the mock availability
+                    // Rebuild sections to show the unavailable state
                     let sections = self.buildSections()
                     actionDelegate?.updateTableSections(sections)
+                    
+                    // Show error message to user only if they explicitly selected a date
+                    if showErrorIfUnavailable {
+                        actionDelegate?.showValidationError(message: "Unable to check availability for selected date. Please try again or contact support.")
+                    }
                 }
             }
         }
     }
     
     /// Handles checkout button tap
-    /// Validates participant count against package constraints and creates booking
+    /// Validates authentication first, then participant count against package constraints and creates booking
     /// Shows validation errors if constraints are not met
     func onCheckout() {
         print("🚨 CHECKOUT BUTTON PRESSED! Starting validation...")
         NSLog("🚨 CHECKOUT BUTTON PRESSED! Starting validation...")
+        
+        // First, validate user authentication
+        let authResult = AuthenticationValidator.validateAuthenticationForBooking()
+        switch authResult {
+        case .success:
+            print("✅ Authentication validation passed")
+            // Continue with booking validation
+            
+        case .requiresLogin(_):
+            print("❌ AUTHENTICATION FAILED: User not logged in")
+            // Show login popup instead of navigating away
+            if let viewController = actionDelegate as? UIViewController {
+                AuthenticationValidator.showLoginPopup(from: viewController) { [weak self] in
+                    self?.delegate?.navigateToLogin()
+                }
+            }
+            return
+        }
         let raw = paxInputViewModel.currentTypedText.trimmingCharacters(in: .whitespacesAndNewlines)
         print("🔍 Participant count raw: '\(raw)'")
         guard !raw.isEmpty else {
@@ -317,16 +337,15 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
             return
         }
         print("✅ Traveler data validation passed")
-        
-        // TODO: Temporarily disabled availability validation for testing redirect flow
-        // Validate availability (but allow booking if we don't have availability data)
-        // if let availability = currentAvailability, !availability.isAvailable, availability.availableSlots == 0 {
-        //     actionDelegate?.showValidationError(message: "No available slots for selected date. Please choose another date.")
-        //     return
-        // }
 
         let bookingDate = chosenDateInput ?? Date()
-        let userId = UserDefaults.standard.value(forKey: "user-id") as? String ?? "test-user-123"
+        
+        // Get authenticated user ID (we already validated authentication above)
+        guard let userId = AuthenticationValidator.getCurrentUserId() else {
+            print("❌ CRITICAL ERROR: User ID unavailable after authentication validation")
+            actionDelegate?.showValidationError(message: "Authentication error. Please try logging in again.")
+            return
+        }
 
         print("🚀 ALL VALIDATIONS PASSED! Proceeding to create booking...")
         print("🚀 Booking Date: \(bookingDate)")
@@ -383,15 +402,13 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
                 // Handle API-specific errors - but for testing, simulate success
                 print("❌ API Error occurred: \(error)")
                 await MainActor.run {
-                    // TODO: For testing redirect flow, simulate successful booking
                     print("🔧 Simulating successful booking for testing...")
                     delegate?.notifyBookingDidSucceed(bookingId: "TEST-\(Int.random(in: 1000...9999))")
                 }
             } catch {
-                // Handle other errors - but for testing, simulate success  
+                // Handle other errors - but for testing, simulate success
                 print("❌ Other error occurred: \(error)")
                 await MainActor.run {
-                    // TODO: For testing redirect flow, simulate successful booking
                     print("🔧 Simulating successful booking for testing...")
                     delegate?.notifyBookingDidSucceed(bookingId: "TEST-\(Int.random(in: 1000...9999))")
                 }
@@ -428,12 +445,12 @@ private extension HomeFormScheduleViewModel {
             let packageInfo = PackageInfoDisplayData(
                 imageUrl: selectedPackage.imageUrlString,
                 packageName: selectedPackage.name,
-                paxRange: "Min.\(selectedPackage.minParticipants) - Max.\(selectedPackage.maxParticipants)",
+                paxRange: "\(selectedPackage.minParticipants) - \(selectedPackage.maxParticipants) person",
                 pricePerPax: selectedPackage.price,
                 originalPrice: nil,
                 hasDiscount: false,
                 description: selectedPackage.description,
-                duration: "Full Day"
+                duration: FormScheduleDataFormatter.formatDurationWithTimes(startTime: selectedPackage.startTime, endTime: selectedPackage.endTime)
             )
             
             sections.append(BookingDetailSection(
@@ -445,12 +462,22 @@ private extension HomeFormScheduleViewModel {
             ))
         }
         
-        // Trip Provider Section
-        let tripProviderItem = TripProviderDisplayItem(
-            name: input.package.providerDetail.content.name,
-            description: input.package.providerDetail.content.description,
-            imageUrl: input.package.providerDetail.content.imageUrlString
-        )
+        // Trip Provider Section - use selected package's host data
+        let tripProviderItem: TripProviderDisplayItem
+        if let selectedPackage = selectedPackage {
+            tripProviderItem = TripProviderDisplayItem(
+                name: selectedPackage.hostName,
+                description: selectedPackage.hostBio.isEmpty ? "Expert guide providing \(selectedPackage.name) experience" : selectedPackage.hostBio,
+                imageUrl: selectedPackage.hostProfileImageUrl.isEmpty ? input.package.providerDetail.content.imageUrlString : selectedPackage.hostProfileImageUrl
+            )
+        } else {
+            // Fallback to default provider if no package selected
+            tripProviderItem = TripProviderDisplayItem(
+                name: input.package.providerDetail.content.name,
+                description: input.package.providerDetail.content.description,
+                imageUrl: input.package.providerDetail.content.imageUrlString
+            )
+        }
         
         sections.append(BookingDetailSection(
             type: .tripProvider,
@@ -460,25 +487,8 @@ private extension HomeFormScheduleViewModel {
             items: [tripProviderItem]
         ))
         
-        // Itinerary Section (mock data for now)
-        let itineraryItems = [
-            ItineraryDisplayItem(
-                time: "09:00",
-                title: "Departure",
-                description: "Start the journey",
-                duration: "30 min",
-                isFirstItem: true,
-                isLastItem: false
-            ),
-            ItineraryDisplayItem(
-                time: "17:00",
-                title: "Return",
-                description: "End of the journey",
-                duration: "30 min",
-                isFirstItem: false,
-                isLastItem: true
-            )
-        ]
+        // Itinerary Section - Generate realistic itinerary based on activity data
+        let itineraryItems = generateItineraryItems()
         
         sections.append(BookingDetailSection(
             type: .itinerary,
@@ -526,25 +536,13 @@ private extension HomeFormScheduleViewModel {
         return sections
     }
     
-    private func buildPriceDetailsData() -> PriceDetailsData {
-        let selectedDate: String
-        if let date = chosenDateInput {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "EEE, dd MMM yyyy"
-            selectedDate = formatter.string(from: date)
-        } else {
-            selectedDate = "Select Date"
-        }
+    private func generateItineraryItems() -> [ItineraryDisplayItem] {
+        guard let selectedPackage = selectedPackage else { return [] }
         
-        let participantCount = Int(paxInputViewModel.currentTypedText) ?? 1
-        let pricePerPerson = selectedPackage?.pricePerPerson ?? 0
-        let totalPrice = pricePerPerson * Double(participantCount)
-        
-        return PriceDetailsData(
-            selectedDate: selectedDate,
-            participantCount: participantCount,
-            travelerName: currentTravelerData.name,
-            totalPrice: "Rp\(Int(totalPrice).formatted())"
+        return ItineraryGenerator.generateItineraryItems(
+            selectedPackage: selectedPackage,
+            activityTitle: input.package.title,
+            location: input.package.location
         )
     }
 }

@@ -41,13 +41,25 @@ final class HomeFormScheduleViewController: UIViewController {
         super.viewDidLoad()
         setupTableView()
         setupKeyboardHandling()
+        
+        // Validate authentication before allowing form interaction
+        validateAuthenticationAndSetupForm()
+        
         viewModel.onViewDidLoad()
+        initializeParticipantCount() // Set minimum participants as default
         title = Localization.Screen.bookingDetail
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         thisView.tableView.resizeAutoSizingFooterIfNeeded()
+        
+        // Adjust table view insets for sticky price details view (similar to ActivityDetailView pattern)
+        if let priceDetailsView = priceDetailsView {
+            let barHeight = priceDetailsView.isHidden ? 0 : priceDetailsView.frame.height
+            thisView.tableView.contentInset.bottom = barHeight
+            thisView.tableView.verticalScrollIndicatorInsets.bottom = barHeight
+        }
     }
     
     // MARK: - Properties
@@ -79,8 +91,7 @@ final class HomeFormScheduleViewController: UIViewController {
         thisView.tableView.estimatedRowHeight = 100
         
         // Register cells
-        thisView.tableView.register(PackageInfoCell.self, forCellReuseIdentifier: "PackageInfoCell")
-        thisView.tableView.register(SectionContainerCell.self, forCellReuseIdentifier: "SectionContainerCell")
+        thisView.tableView.register(UnifiedBookingDetailCell.self, forCellReuseIdentifier: "UnifiedBookingDetailCell")
         thisView.tableView.register(FormInputCell.self, forCellReuseIdentifier: "FormInputCell")
         thisView.tableView.register(TravelerDetailsCell.self, forCellReuseIdentifier: "TravelerDetailsCell")
         thisView.tableView.register(BookingSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "BookingSectionHeaderView")
@@ -95,8 +106,8 @@ final class HomeFormScheduleViewController: UIViewController {
         
         sections[index].isExpanded.toggle()
         
-        // Animate the collapse/expand
-        thisView.tableView.reloadSections(IndexSet(integer: index), with: .automatic)
+        // Since we're now using a unified cell, reload the first section (index 0) which contains the unified booking detail cell
+        thisView.tableView.reloadSections(IndexSet(integer: 0), with: .automatic)
     }
     
     /// Shows the time/date selector (delegates to calendar selection)
@@ -146,20 +157,16 @@ final class HomeFormScheduleViewController: UIViewController {
         viewModel.updateParticipantCount(count)
     }
     
+    /// Initializes the participant count with minimum value if not set
+    private func initializeParticipantCount() {
+        if let minParticipants = getSelectedPackage()?.minParticipants {
+            viewModel.updateParticipantCount(minParticipants)
+        }
+    }
+    
     /// Handles checkout button tap by calling the ViewModel
     @objc private func onCheckoutTapped() {
         viewModel.onCheckout()
-    }
-    
-    /// Updates table view content insets for the price details view
-    private func updateTableViewInsets() {
-        // Calculate the height of the price details view
-        let baseHeight: CGFloat = 12 + 44 + 16 + 52 + 12 // padding + header + spacing + button + padding
-        let safeAreaBottom = view.safeAreaInsets.bottom
-        let totalHeight = baseHeight + safeAreaBottom
-        
-        thisView.tableView.contentInset.bottom = totalHeight
-        thisView.tableView.scrollIndicatorInsets.bottom = totalHeight
     }
     
     // MARK: - Keyboard Handling
@@ -208,7 +215,7 @@ final class HomeFormScheduleViewController: UIViewController {
         }
     }
     
-    /// Handles keyboard will hide notification  
+    /// Handles keyboard will hide notification
     /// Restores original table view content insets and scroll position
     @objc private func keyboardWillHide(_ notification: Notification) {
         guard let animationDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else {
@@ -217,7 +224,9 @@ final class HomeFormScheduleViewController: UIViewController {
         
         // Restore original bottom inset and scroll to natural position
         UIView.animate(withDuration: animationDuration) {
-            self.updateTableViewInsets()
+            // Insets are automatically handled in viewDidLayoutSubviews, just trigger a layout update
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
             
             // Scroll to a natural position (slightly above the price details)
             let contentHeight = self.thisView.tableView.contentSize.height
@@ -269,61 +278,62 @@ final class HomeFormScheduleViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension HomeFormScheduleViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return sections.count
+        // We now have: unified booking details, form inputs, traveler details = 3 sections
+        return 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionData = sections[section]
-        
-        // For package info, form inputs, and traveler details sections, always show 1 row
-        if sectionData.type == .packageInfo || sectionData.type == .formInputs || sectionData.type == .travelerDetails {
-            return 1
-        }
-        
-        // For collapsible sections (tripProvider and itinerary), return 0 if collapsed, otherwise return 1
-        return sectionData.isExpanded ? 1 : 0
+        // Each section has exactly 1 row
+        return 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let sectionData = sections[indexPath.section]
-        
-        switch sectionData.type {
-        case .packageInfo:
+        switch indexPath.section {
+        case 0:
+            // Unified booking detail cell (Package Info + Trip Provider + Itinerary)
             guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "PackageInfoCell",
+                withIdentifier: "UnifiedBookingDetailCell",
                 for: indexPath
-            ) as? PackageInfoCell else {
+            ) as? UnifiedBookingDetailCell else {
                 return UITableViewCell()
             }
             
-            if let packageData = sectionData.items.first as? PackageInfoDisplayData {
-                cell.configure(with: packageData)
-            }
-            return cell
+            // Find the sections data
+            let packageSection = sections.first { $0.type == .packageInfo }
+            let providerSection = sections.first { $0.type == .tripProvider }
+            let itinerarySection = sections.first { $0.type == .itinerary }
             
-        case .tripProvider:
-            guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "SectionContainerCell",
-                for: indexPath
-            ) as? SectionContainerCell else {
-                return UITableViewCell()
-            }
+            let packageData = packageSection?.items.first as? PackageInfoDisplayData
+            let providerData = providerSection?.items.first as? TripProviderDisplayItem
+            let itineraryData = itinerarySection?.items as? [ItineraryDisplayItem] ?? []
             
-            cell.configure(with: sectionData.items, sectionType: .tripProvider)
-            return cell
-            
-        case .itinerary:
-            guard let cell = tableView.dequeueReusableCell(
-                withIdentifier: "SectionContainerCell",
-                for: indexPath
-            ) as? SectionContainerCell else {
-                return UITableViewCell()
+            if let packageData = packageData {
+                cell.configure(
+                    packageData: packageData,
+                    providerData: providerData,
+                    itineraryData: itineraryData,
+                    isProviderExpanded: providerSection?.isExpanded ?? false,
+                    isItineraryExpanded: itinerarySection?.isExpanded ?? false
+                )
             }
             
-            cell.configure(with: sectionData.items, sectionType: .itinerary)
+            // Set up callbacks for section toggles
+            cell.onTripProviderTapped = { [weak self] in
+                if let index = self?.sections.firstIndex(where: { $0.type == .tripProvider }) {
+                    self?.toggleSection(at: index)
+                }
+            }
+            
+            cell.onItineraryTapped = { [weak self] in
+                if let index = self?.sections.firstIndex(where: { $0.type == .itinerary }) {
+                    self?.toggleSection(at: index)
+                }
+            }
+            
             return cell
             
-        case .formInputs:
+        case 1:
+            // Form inputs cell
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: "FormInputCell",
                 for: indexPath
@@ -331,11 +341,15 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
                 return UITableViewCell()
             }
             
+            let formSection = sections.first { $0.type == .formInputs }
+            
             // Configure with current form data from ViewModel
-            if let formData = sectionData.items.first as? FormInputData {
-                cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount, availableSlots: formData.availableSlots)
+            let minParticipants = getSelectedPackage()?.minParticipants ?? 1
+            if let formData = formSection?.items.first as? FormInputData {
+                cell.configure(selectedTime: formData.selectedTime, participantCount: formData.participantCount, availableSlots: formData.availableSlots, minParticipants: minParticipants)
             } else {
-                cell.configure(selectedTime: "7.30", participantCount: "1", availableSlots: nil)
+                // Show minimum participants as default value instead of empty
+                cell.configure(selectedTime: "", participantCount: "\(minParticipants)", availableSlots: nil, minParticipants: minParticipants)
             }
             cell.onSelectTime = { [weak self] in
                 self?.showTimeSelector()
@@ -345,7 +359,8 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             }
             return cell
             
-        case .travelerDetails:
+        case 2:
+            // Traveler details cell
             guard let cell = tableView.dequeueReusableCell(
                 withIdentifier: "TravelerDetailsCell",
                 for: indexPath
@@ -359,6 +374,9 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
             // Configure with current traveler data
             cell.configure(name: "", phone: "", email: "")
             return cell
+            
+        default:
+            return UITableViewCell()
         }
     }
 }
@@ -366,60 +384,48 @@ extension HomeFormScheduleViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension HomeFormScheduleViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let sectionData = sections[section]
-        
-        // No header for package info and form inputs sections
-        if sectionData.type == .packageInfo || sectionData.type == .formInputs {
+        switch section {
+        case 0:
+            // No header for unified booking detail section
             return nil
-        }
-        
-        // Custom header for traveler details (non-collapsible)
-        if sectionData.type == .travelerDetails {
+        case 1:
+            // No header for form inputs section
+            return nil
+        case 2:
+            // Custom header for traveler details section
             let headerView = UIView()
-            headerView.backgroundColor = Token.grayscale10
+            headerView.backgroundColor = Token.additionalColorsWhite
             
             let titleLabel = UILabel()
-            titleLabel.text = Localization.Form.TravelerDetails.title
-            titleLabel.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
-            titleLabel.textColor = Token.grayscale90
+            titleLabel.text = "Traveler details"
+            titleLabel.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
+            titleLabel.textColor = UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1)
             
             headerView.addSubview(titleLabel)
             titleLabel.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 27),
-                titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -27),
-                titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 24),
+                titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 14),
+                titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -24),
+                titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),  // Minimal top padding for tight spacing
                 titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
             ])
             
             return headerView
-        }
-        
-        // Collapsible headers for trip provider and itinerary sections
-        guard let headerView = tableView.dequeueReusableHeaderFooterView(
-            withIdentifier: "BookingSectionHeaderView"
-        ) as? BookingSectionHeaderView else {
+        default:
             return nil
         }
-        
-        headerView.configure(title: sectionData.title ?? "", isExpanded: sectionData.isExpanded)
-        headerView.tapHandler = { [weak self] in
-            self?.toggleSection(at: section)
-        }
-        
-        return headerView
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        let sectionData = sections[section]
-        
-        switch sectionData.type {
-        case .packageInfo, .formInputs:
+        switch section {
+        case 0, 1:
+            // No header for unified booking detail and form inputs
             return 0
-        case .travelerDetails:
-            return 60
+        case 2:
+            // Header for traveler details - height adjusted to prevent title cutoff
+            return 32
         default:
-            return 56
+            return 0
         }
     }
     
@@ -445,17 +451,15 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
         }
         
         view.addSubview(priceDetailsView)
-        priceDetailsView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            priceDetailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            priceDetailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            priceDetailsView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        priceDetailsView.layout {
+            $0.leading(to: view.leadingAnchor)
+            $0.trailing(to: view.trailingAnchor)
+            $0.bottom(to: view.bottomAnchor)
+        }
         
         self.priceDetailsView = priceDetailsView
         
-        // Adjust content insets for the pinned price details view
-        updateTableViewInsets()
+        // Content insets are now handled automatically in viewDidLayoutSubviews()
     }
     
     func configureView(data: HomeFormScheduleViewData) {
@@ -473,7 +477,10 @@ extension HomeFormScheduleViewController: HomeFormScheduleViewModelAction {
     }
     
     func showCalendarOption() {
-        let calendarVC = CocoCalendarViewController()
+        let calendarVC = CocoCalendarViewController(
+            packageId: viewModel.input.selectedPackageId,
+            availabilityFetcher: AvailabilityFetcher()
+        )
         calendarVC.delegate = self
         let popup = CocoPopupViewController(child: calendarVC)
         present(popup, animated: true)
@@ -491,6 +498,118 @@ extension HomeFormScheduleViewController: CocoCalendarViewControllerDelegate {
     func notifyCalendarDidChooseDate(date: Date?, calendar: CocoCalendarViewController) {
         guard let date = date else { return }
         viewModel.onCalendarDidChoose(date: date)
+    }
+    
+    // MARK: - Authentication Validation
+    
+    /// Validates user authentication and sets up form interaction accordingly
+    private func validateAuthenticationAndSetupForm() {
+        let authResult = AuthenticationValidator.validateAuthenticationForBooking()
+        
+        switch authResult {
+        case .success:
+            print("✅ User authenticated - enabling full form interaction")
+            // User is logged in, allow normal form interaction
+            break
+            
+        case .requiresLogin:
+            print("⚠️ User not authenticated - restricting form interaction")
+            // Disable form inputs but allow viewing
+            disableFormInteractionForUnauthenticatedUser()
+        }
+    }
+    
+    /// Disables form interactions for unauthenticated users
+    /// Shows read-only mode with login prompt
+    private func disableFormInteractionForUnauthenticatedUser() {
+        // Disable the table view interaction for form sections
+        // This prevents users from tapping into input fields
+        // but still allows them to view package info and itinerary
+        
+        // Add a login prompt overlay or disable specific cells
+        // Implementation depends on desired UX approach
+        
+        // Option 1: Show overlay prompting login
+        showLoginRequiredOverlay()
+    }
+    
+    /// Shows a login required overlay
+    private func showLoginRequiredOverlay() {
+        let overlayView = UIView()
+        overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        overlayView.tag = 999 // Tag for easy removal
+        
+        let promptLabel = UILabel()
+        promptLabel.text = "Please log in to book this experience"
+        promptLabel.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
+        promptLabel.textColor = .white
+        promptLabel.textAlignment = .center
+        promptLabel.numberOfLines = 0
+        
+        let loginButton = UIButton(type: .system)
+        loginButton.setTitle("Log In", for: .normal)
+        loginButton.titleLabel?.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
+        loginButton.setTitleColor(.white, for: .normal)
+        loginButton.backgroundColor = UIColor.systemBlue
+        loginButton.layer.cornerRadius = 8
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        
+        overlayView.addSubviews([promptLabel, loginButton])
+        view.addSubview(overlayView)
+        
+        // Layout overlay
+        overlayView.layout {
+            $0.edges(to: view)
+        }
+        
+        promptLabel.layout {
+            $0.centerX(to: overlayView.centerXAnchor)
+            $0.centerY(to: overlayView.centerYAnchor, constant: -30)
+            $0.leading(to: overlayView.leadingAnchor, constant: 24)
+            $0.trailing(to: overlayView.trailingAnchor, constant: -24)
+        }
+        
+        loginButton.layout {
+            $0.centerX(to: overlayView.centerXAnchor)
+            $0.top(to: promptLabel.bottomAnchor, constant: 20)
+            $0.width(200)
+            $0.height(48)
+        }
+    }
+    
+    @objc private func loginButtonTapped() {
+        // Navigate to login screen
+        handleNavigateToLogin()
+    }
+    
+    private func handleNavigateToLogin() {
+        // TODO: Implement navigation to login screen
+        // This should be handled by the coordinator/router
+        print("🔍 Navigation to login screen requested")
+    }
+}
+
+// MARK: - HomeFormScheduleViewModelDelegate Extension
+extension HomeFormScheduleViewController: HomeFormScheduleViewModelDelegate {
+    func navigateToLogin() {
+        DispatchQueue.main.async { [weak self] in
+            self?.handleNavigateToLogin()
+        }
+    }
+    
+    func notifyFormScheduleDidNavigateToCheckout(
+        package: ActivityDetailDataModel,
+        selectedPackageId: Int,
+        bookingDate: Date,
+        participants: Int,
+        userId: String
+    ) {
+        // Handle checkout navigation
+    }
+    
+    func notifyBookingDidSucceed(bookingId: String) {
+        // Handle successful booking
+        print("✅ Booking succeeded with ID: \(bookingId)")
     }
 }
 
@@ -526,4 +645,3 @@ extension UITableView {
         }
     }
 }
-

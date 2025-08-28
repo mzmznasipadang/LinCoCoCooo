@@ -37,7 +37,6 @@ final class HorizontalDottedLineView: UIView {
     }
 }
 
-
 protocol MyTripListCardViewDelegate: AnyObject {
     func notifyTripListCardDidTap(at index: Int)
 }

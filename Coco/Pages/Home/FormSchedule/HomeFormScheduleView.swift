@@ -59,7 +59,7 @@ final class HomeFormScheduleView: UIView {
     
     lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .grouped)
-        tableView.backgroundColor = Token.grayscale10
+        tableView.backgroundColor = Token.additionalColorsWhite
         tableView.separatorStyle = .none
         tableView.showsVerticalScrollIndicator = false
         return tableView

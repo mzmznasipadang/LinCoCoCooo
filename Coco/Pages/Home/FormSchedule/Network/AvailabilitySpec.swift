@@ -12,8 +12,8 @@ struct AvailabilitySpec: JSONEncodable {
     let date: String
     
     private enum CodingKeys: String, CodingKey {
-        case packageId = "p_package_id"
-        case date = "p_date"
+        case packageId = "package_id"
+        case date = "date"
     }
     
     init(packageId: Int, date: Date) {
