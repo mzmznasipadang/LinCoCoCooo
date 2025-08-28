@@ -8,9 +8,6 @@
 import Foundation
 import UIKit
 
-import Foundation
-import UIKit
-
 final class MyTripViewController: UIViewController {
     init(viewModel: MyTripViewModelProtocol) {
         self.viewModel = viewModel

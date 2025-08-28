@@ -95,7 +95,6 @@ final class ItineraryViewController: UIViewController {
     }
 }
 
-
 // MARK: - Custom View for a Single Itinerary Row
 private class ItineraryRowView: UIView {
     

@@ -169,7 +169,6 @@ final class HomeFormScheduleViewController: UIViewController {
         viewModel.onCheckout()
     }
     
-    
     // MARK: - Keyboard Handling
     
     /// Sets up keyboard notifications for handling keyboard show/hide events

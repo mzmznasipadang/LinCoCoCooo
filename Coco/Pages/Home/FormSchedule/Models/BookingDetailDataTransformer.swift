@@ -155,7 +155,6 @@ final class BookingDetailDataTransformer {
         ]
     }
     
-    
     // MARK: - Helper Methods
     
     private static func formatDuration(from activity: ActivityDetailDataModel) -> String {

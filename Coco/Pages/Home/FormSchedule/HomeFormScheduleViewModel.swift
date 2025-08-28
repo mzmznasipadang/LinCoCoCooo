@@ -337,13 +337,6 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
             return
         }
         print("✅ Traveler data validation passed")
-        
-        // TODO: Temporarily disabled availability validation for testing redirect flow
-        // Validate availability (but allow booking if we don't have availability data)
-        // if let availability = currentAvailability, !availability.isAvailable, availability.availableSlots == 0 {
-        //     actionDelegate?.showValidationError(message: "No available slots for selected date. Please choose another date.")
-        //     return
-        // }
 
         let bookingDate = chosenDateInput ?? Date()
         
@@ -409,7 +402,6 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
                 // Handle API-specific errors - but for testing, simulate success
                 print("❌ API Error occurred: \(error)")
                 await MainActor.run {
-                    // TODO: For testing redirect flow, simulate successful booking
                     print("🔧 Simulating successful booking for testing...")
                     delegate?.notifyBookingDidSucceed(bookingId: "TEST-\(Int.random(in: 1000...9999))")
                 }
@@ -417,7 +409,6 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
                 // Handle other errors - but for testing, simulate success
                 print("❌ Other error occurred: \(error)")
                 await MainActor.run {
-                    // TODO: For testing redirect flow, simulate successful booking
                     print("🔧 Simulating successful booking for testing...")
                     delegate?.notifyBookingDidSucceed(bookingId: "TEST-\(Int.random(in: 1000...9999))")
                 }

@@ -52,10 +52,28 @@ struct ActivityDetailViewModelTests {
 
     // MARK: - Navigasi paket detail
 
-    @Test("onPackagesDetailDidTap - meneruskan id & paket ke navigation delegate")
-    func tapPackage_shouldForwardToNavigation() throws {
+    @Test("onPackagesDetailDidTap - when user not logged in should navigate to login")
+    func tapPackage_whenNotLoggedIn_shouldNavigateToLogin() throws {
         // --- GIVEN ---
         let c = try Ctx.setup()
+        // Clear any existing user-id to simulate not logged in state
+        UserDefaults.standard.removeObject(forKey: "user-id")
+
+        // --- WHEN ---
+        c.vm.onPackagesDetailDidTap(with: 99)
+
+        // --- THEN ---
+        // Should attempt to show login popup (navigateToLogin will be called)
+        #expect(c.nav.navigateToLoginCount == 1)
+        #expect(c.nav.didSelectCount == 0) // Should not navigate to package selection
+    }
+    
+    @Test("onPackagesDetailDidTap - when user logged in should forward to navigation")
+    func tapPackage_whenLoggedIn_shouldForwardToNavigation() throws {
+        // --- GIVEN ---
+        let c = try Ctx.setup()
+        // Simulate logged in state
+        UserDefaults.standard.setValue("test-user-123", forKey: "user-id")
 
         // --- WHEN ---
         c.vm.onPackagesDetailDidTap(with: 99)
@@ -64,6 +82,10 @@ struct ActivityDetailViewModelTests {
         #expect(c.nav.didSelectCount == 1)
         #expect(c.nav.lastSelectedId == 99)
         #expect(c.nav.lastPackage == c.data)
+        #expect(c.nav.navigateToLoginCount == 0) // Should not call login
+        
+        // Clean up
+        UserDefaults.standard.removeObject(forKey: "user-id")
     }
 }
 

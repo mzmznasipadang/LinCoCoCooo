@@ -42,7 +42,6 @@ extension SignInViewController: SignInViewModelAction {
         let emailInputVC: HomeSearchBarHostingController = HomeSearchBarHostingController(viewModel: emailInputVM)
         addChild(emailInputVC)
        
-        
         let passwordInputVC: CocoSecureInputTextFieldHostingController = CocoSecureInputTextFieldHostingController(viewModel: passwordInputVM)
         addChild(passwordInputVC)
         

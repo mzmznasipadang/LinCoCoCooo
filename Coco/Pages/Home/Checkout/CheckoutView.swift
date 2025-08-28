@@ -122,7 +122,7 @@ final class CheckoutView: UIView {
 private extension CheckoutView {
     func crateCardSectionStackView() -> UIStackView {
         let sectionStackView: UIStackView = UIStackView(arrangedSubviews: [
-            activityDetailView,
+            activityDetailView
             
         ])
         sectionStackView.axis = .vertical
