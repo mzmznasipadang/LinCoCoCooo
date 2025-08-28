@@ -283,9 +283,9 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         switch authResult {
         case .success:
             print("✅ Authentication validation passed")
-            break // Continue with booking validation
+            // Continue with booking validation
             
-        case .requiresLogin(let message):
+        case .requiresLogin(_):
             print("❌ AUTHENTICATION FAILED: User not logged in")
             // Show login popup instead of navigating away
             if let viewController = actionDelegate as? UIViewController {

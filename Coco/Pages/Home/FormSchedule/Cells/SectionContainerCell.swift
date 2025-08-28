@@ -101,7 +101,6 @@ final class SectionContainerCell: UITableViewCell {
         return view
     }
     
-    
     // UI Components
     private lazy var containerView: UIView = {
         let view = UIView()
@@ -243,7 +242,6 @@ final class SectionContainerCell: UITableViewCell {
         
         return view
     }
-    
     
     private func createSeparator() -> UIView {
         let separator = UIView()

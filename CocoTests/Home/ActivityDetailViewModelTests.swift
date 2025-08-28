@@ -91,10 +91,15 @@ private final class MockNav: ActivityDetailNavigationDelegate {
     private(set) var didSelectCount = 0
     private(set) var lastPackage: ActivityDetailDataModel?
     private(set) var lastSelectedId: Int?
+    private(set) var navigateToLoginCount = 0
 
     func notifyActivityDetailPackageDidSelect(package: ActivityDetailDataModel, selectedPackageId: Int) {
         didSelectCount += 1
         lastPackage = package
         lastSelectedId = selectedPackageId
+    }
+    
+    func navigateToLogin() {
+        navigateToLoginCount += 1
     }
 }
