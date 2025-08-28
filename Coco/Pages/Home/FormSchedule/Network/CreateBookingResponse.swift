@@ -60,3 +60,16 @@ struct BookingDestination: JSONDecodable {
         case description
     }
 }
+
+struct APIErrorResponse: Decodable, Error {
+    let code: String?
+    let details: String?
+    let hint: String?
+    let message: String?
+}
+
+struct APIError: Error {
+    let data: Data?
+    let response: URLResponse?
+    let underlying: Error
+}

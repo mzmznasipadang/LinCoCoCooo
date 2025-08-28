@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 
 struct HomeTabItem: TabItemRepresentable {
-    var tabTitle: String { "Home" }
+    var tabTitle: String { Localization.Screen.home }
     var defaultTabIcon: UIImage? { CocoIcon.icTabIconHome.image }
     var selectedTabIcon: UIImage? { CocoIcon.icTabIconHomeFill.image }
 

@@ -23,7 +23,7 @@ final class SignInViewController: UIViewController {
         super.viewDidLoad()
         viewModel.onViewDidLoad()
         
-        title = "Sign in"
+        title = Localization.Screen.signIn
     }
     
     override func loadView() {

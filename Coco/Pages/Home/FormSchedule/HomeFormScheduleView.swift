@@ -56,6 +56,14 @@ final class HomeFormScheduleView: UIView {
     )
     
     private lazy var inputContainerView: UIView = UIView()
+    
+    lazy var tableView: UITableView = {
+        let tableView = UITableView(frame: .zero, style: .grouped)
+        tableView.backgroundColor = Token.grayscale10
+        tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = false
+        return tableView
+    }()
 }
 
 private extension HomeFormScheduleView {
@@ -77,8 +85,20 @@ private extension HomeFormScheduleView {
         sectionStackView.spacing = 16.0
         sectionStackView.distribution = .fillProportionally
         
+        addSubview(tableView)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+        
+        // Keep the old views for backward compatibility but hide them
         addSubview(sectionStackView)
         addSubview(inputContainerView)
+        sectionStackView.isHidden = true
+        inputContainerView.isHidden = true
         sectionStackView.layout {
             $0.top(to: self.safeAreaLayoutGuide.topAnchor, constant: 8.0)
                 .leading(to: self.leadingAnchor, constant: 27.0)
@@ -92,7 +112,6 @@ private extension HomeFormScheduleView {
                 .bottom(to: self.bottomAnchor, constant: -8.0)
         }
     }
-    
     
     func createImageView() -> UIImageView {
         let imageView: UIImageView = UIImageView()

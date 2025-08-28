@@ -39,11 +39,6 @@ struct HomeSearchSearchTray: View {
     
     var body: some View {
         VStack(alignment: .center) {
-            Text("Filter Service")
-                .multilineTextAlignment(.center)
-                .font(.jakartaSans(forTextStyle: .body, weight: .semibold))
-                .foregroundStyle(Token.additionalColorsBlack.toColor())
-            
             ScrollView {
                 VStack(alignment: .leading, spacing: 24.0) {
                     HomeSearchBarView(viewModel: viewModel.searchBarViewModel)
@@ -60,26 +55,25 @@ struct HomeSearchSearchTray: View {
                         }
                     }
                     
-                    Spacer()
-                    CocoButton(
-                        action: {
-                            searchDidApply(viewModel.searchBarViewModel.currentTypedText)
-                        },
-                        text: "Search",
-                        style: .large,
-                        type: .primary
-                    )
-                    .stretch()
+                    Spacer(minLength: 40)
                 }
             }
+            
+            CocoButton(
+                action: {
+                    searchDidApply(viewModel.searchBarViewModel.currentTypedText)
+                },
+                text: "Search",
+                style: .large,
+                type: .primary
+            )
+            .stretch()
+            .padding(.top, 16)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24.0)
         .background(Color.white)
-        .cornerRadius(16)
-        .onAppear {
-            viewModel.onAppear()
-        }
+        .onAppear { viewModel.onAppear() }
     }
 }
 

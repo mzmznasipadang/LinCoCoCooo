@@ -21,11 +21,6 @@ final class HomeViewModel {
     }
     
     private let activityFetcher: ActivityFetcherProtocol
-    private(set) lazy var collectionViewModel: HomeCollectionViewModelProtocol = {
-        let viewModel: HomeCollectionViewModel = HomeCollectionViewModel()
-        viewModel.delegate = self
-        return viewModel
-    }()
     private(set) lazy var loadingState: HomeLoadingState = HomeLoadingState()
     private(set) lazy var searchBarViewModel: HomeSearchBarViewModel = HomeSearchBarViewModel(
         leadingIcon: CocoIcon.icSearchLoop.image,
@@ -48,7 +43,6 @@ final class HomeViewModel {
 
 extension HomeViewModel: HomeViewModelProtocol {
     func onViewDidLoad() {
-        actionDelegate?.constructCollectionView(viewModel: collectionViewModel)
         actionDelegate?.constructLoadingState(state: loadingState)
         actionDelegate?.constructNavBar(viewModel: searchBarViewModel)
         
@@ -61,12 +55,10 @@ extension HomeViewModel: HomeViewModelProtocol {
         actionDelegate?.toggleLoadingView(isShown: true, after: 0)
         fetch()
     }
-}
-
-extension HomeViewModel: HomeCollectionViewModelDelegate {
-    func notifyCollectionViewActivityDidTap(_ dataModel: HomeActivityCellDataModel) {
-        guard let activity: Activity = responseMap[dataModel.id] else { return }
-        let data: ActivityDetailDataModel = ActivityDetailDataModel(activity)
+    
+    func onActivityDidSelect(with id: Int) {
+        guard let activity = responseMap[id] else { return }
+        let data = ActivityDetailDataModel(activity)
         actionDelegate?.activityDidSelect(data: data)
     }
 }
@@ -81,7 +73,7 @@ extension HomeViewModel: HomeSearchBarViewModelDelegate {
             latestSearches: [
                 .init(id: 1, name: "Kepulauan Seribu"),
                 .init(id: 2, name: "Nusa Penida"),
-                .init(id: 3, name: "Gili Island, Indonesia"),
+                .init(id: 3, name: "Gili Island, Indonesia")
             ]
         )
     }
@@ -104,10 +96,11 @@ private extension HomeViewModel {
                     self.responseMap[$0.id] = $0
                 }
                 responseData = response.values
-                collectionViewModel.updateActivity(activity: (title: "", dataModel: sectionData))
+                self.actionDelegate?.displayActivities(data: sectionData)
                 
                 contructFilterData()
-            case .failure(let failure):
+                
+            case .failure(let _error):
                 break
             }
         }
@@ -154,7 +147,7 @@ private extension HomeViewModel {
                 minPrice: minPrice,
                 maxPrice: maxPrice,
                 range: minPrice...maxPrice,
-                step: 1
+                step: 10000
             )
         )
         
@@ -188,13 +181,9 @@ private extension HomeViewModel {
             filterDataModel: filterDataModel
         )
         
-        collectionViewModel.updateActivity(
-            activity: (
-                title: "",
-                dataModel: tempResponseData.map {
-                    HomeActivityCellDataModel(activity: $0)
-                }
-            )
-        )
+        let activitiesData = tempResponseData.map {
+            HomeActivityCellDataModel(activity: $0)
+        }
+        actionDelegate?.displayActivities(data: activitiesData)
     }
 }

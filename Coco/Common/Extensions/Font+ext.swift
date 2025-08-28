@@ -11,11 +11,23 @@ import SwiftUI
 extension Font {
     static func jakartaSans(
         forTextStyle style: UIFont.TextStyle,
-        weight: UIFont.Weight = .regular
+        weight: UIFont.Weight = .regular,
+        size: CGFloat? = nil
     ) -> Self {
-        UIFont.jakartaSans(
-            forTextStyle: style,
-            weight: weight
-        ).toFont()
+        if let size = size {
+            return .custom("JakartaSans-\(weight.fontNameSuffix)", size: size)
+        } else {
+            return UIFont.jakartaSans(forTextStyle: style, weight: weight).toFont()
+        }
+    }
+}
+
+private extension UIFont.Weight {
+    var fontNameSuffix: String {
+        switch self {
+        case .semibold: return "SemiBold"
+        case .bold: return "Bold"
+        default: return "Regular"
+        }
     }
 }

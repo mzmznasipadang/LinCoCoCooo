@@ -49,8 +49,23 @@ final class HomeView: UIView {
     private lazy var errorView: UIView = UIView()
     private lazy var contentStackView: UIStackView = createContentStackView()
     private lazy var searchBarView: UIView = UIView()
-    private lazy var searchResultView: UIView = UIView()
+    private lazy var searchResultView: UIView = createSearchResultView()
     private lazy var loadingView: UIView = UIView()
+    
+    // Grouped Trip
+    lazy var collectionView: UICollectionView = {
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: createCompositionalLayout()
+        )
+        collectionView.backgroundColor = .clear
+        collectionView.showsVerticalScrollIndicator = false
+        collectionView.register(HomeActivityCell.self, forCellWithReuseIdentifier: "HomeActivityCell")
+        collectionView.register(SectionHeaderView.self,
+                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                                withReuseIdentifier: "SectionHeader")
+        return collectionView
+    }()
 }
 
 private extension HomeView {
@@ -66,10 +81,95 @@ private extension HomeView {
     func createContentStackView() -> UIStackView {
         let stackView: UIStackView = UIStackView(arrangedSubviews: [
             searchBarView,
-            searchResultView,
+            searchResultView
         ])
         stackView.axis = .vertical
         stackView.spacing = 12.0
         return stackView
+    }
+    
+    func createSearchResultView() -> UIView {
+        let containerView = UIView()
+        containerView.addSubview(collectionView)
+        collectionView.layout {
+            $0.top(to: containerView.topAnchor)
+                .leading(to: containerView.leadingAnchor)
+                .trailing(to: containerView.trailingAnchor)
+                .bottom(to: containerView.bottomAnchor)
+        }
+        return containerView
+    }
+    
+    func createCompositionalLayout() -> UICollectionViewLayout {
+        let layout = UICollectionViewCompositionalLayout { (sectionIndex, _) -> NSCollectionLayoutSection? in
+            // Item
+            let itemSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: .estimated(280)
+            )
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            
+            // Group
+            let groupSize = NSCollectionLayoutSize(
+                widthDimension: .absolute(280),
+                heightDimension: .estimated(280)
+            )
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            group.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 12)
+            
+            // Section
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = .continuous
+            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 24, bottom: 24, trailing: 24)
+            
+            // Header
+            let headerSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1.0),
+                heightDimension: .estimated(44)
+            )
+            let header = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: headerSize,
+                elementKind: UICollectionView.elementKindSectionHeader,
+                alignment: .top
+            )
+            section.boundarySupplementaryItems = [header]
+            
+            return section
+        }
+        
+        return layout
+    }
+}
+
+// HeaderView for CollectionView
+internal class SectionHeaderView: UICollectionReusableView {
+    let titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
+        label.textColor = Token.additionalColorsBlack
+        return label
+    }()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupView()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func setupView() {
+        addSubview(titleLabel)
+        titleLabel.layout {
+            $0.top(to: topAnchor, constant: 8)
+                .leading(to: leadingAnchor)
+                .trailing(to: trailingAnchor)
+                .bottom(to: bottomAnchor, constant: -8)
+        }
+    }
+    
+    func configure(with title: String) {
+        titleLabel.text = title
     }
 }

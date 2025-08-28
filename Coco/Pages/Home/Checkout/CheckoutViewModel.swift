@@ -10,22 +10,98 @@ import Foundation
 final class CheckoutViewModel {
     weak var delegate: (any CheckoutViewModelDelegate)?
     weak var actionDelegate: (any CheckoutViewModelAction)?
-    
-    init(bookingResponse: BookingDetails) {
-        self.bookingResponse = bookingResponse
+    init(
+        package: ActivityDetailDataModel,
+        selectedPackageId: Int,
+        bookingDate: Date,
+        participants: Int,
+        userId: String,
+        fetcher: CreateBookingFetcherProtocol = CreateBookingFetcher()
+    ) {
+        self.package = package
+        self.selectedPackageId = selectedPackageId
+        self.bookingDate = bookingDate
+        self.participants = participants
+        self.userId = userId
+        self.fetcher = fetcher
     }
     
-    private let bookingResponse: BookingDetails
+    private let package: ActivityDetailDataModel
+    private let selectedPackageId: Int
+    private let bookingDate: Date
+    private let participants: Int
+    private let userId: String
+    private let fetcher: CreateBookingFetcherProtocol
+    
+    private lazy var idrNoCentsFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.locale = Locale(identifier: "id_ID")
+        f.numberStyle = .currency
+        f.currencyCode = "IDR"
+        f.maximumFractionDigits = 0
+        return f
+    }()
 }
 
 extension CheckoutViewModel: CheckoutViewModelProtocol {
     func onViewDidLoad() {
-        actionDelegate?.configureView(bookingData: bookingResponse)
+        let allPackages = package.availablePackages.content.values.flatMap { $0 }
+        let selectedPackage = allPackages.first { $0.id == selectedPackageId }
+        
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "id_ID")
+        df.dateFormat = "dd MMMM, yyyy"
+        
+        let priceText: String? = selectedPackage?.price
+        
+        let display = CheckoutDisplayData(
+            imageUrl: package.imageUrlsString.first,
+            activityTitle: package.title,
+            packageName: selectedPackage?.name ?? "",
+            destinationName: package.location,
+            participantsText: "\(participants) Participants",
+            dateText: df.string(from: bookingDate),
+            totalPriceText: priceText
+        )
+        
+        actionDelegate?.configureView(bookingData: display)
     }
     
     func bookNowDidTap() {
-        actionDelegate?.showPopUpSuccess(completion: { [weak self] in
-            self?.delegate?.notifyUserDidCheckout()
-        })
+        actionDelegate?.setLoading(true)
+
+        Task {
+            do {
+                let request = CreateBookingSpec(
+                    packageId: selectedPackageId,
+                    bookingDate: bookingDate,
+                    participants: participants,
+                    userId: userId
+                )
+
+                let _ = try await fetcher.createBooking(request: request)
+
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.actionDelegate?.setLoading(false)
+                    self.actionDelegate?.showPopUpSuccess(completion: { [weak self] in
+                        self?.delegate?.notifyUserDidCheckout()
+                    })
+                }
+            } catch {
+                var errorMessage = "Error while booking activity. Please try again later."
+                if let apiError = error as? APIError,
+                   let data = apiError.data,
+                   let decoded = try? JSONDecoder().decode(APIErrorResponse.self, from: data),
+                   let message = decoded.message {
+                    errorMessage = message
+                }
+                
+                await MainActor.run { [weak self] in
+                    self?.actionDelegate?.setLoading(false)
+                    self?.actionDelegate?.showError(message: errorMessage)
+                }
+            }
+        }
     }
 }

@@ -24,3 +24,5 @@ struct JSONArray<T: JSONDecodable>: JSONDecodable {
         self.values = try jsonArray.map { try T(json: $0) }
     }
 }
+
+extension Array: JSONDecodable where Element: JSONDecodable {}

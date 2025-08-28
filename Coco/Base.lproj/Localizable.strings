@@ -1,0 +1,110 @@
+/* 
+  Localizable.strings
+  Coco
+
+  Created by Claude on 25/08/25.
+  
+*/
+
+// MARK: - Navigation & Screen Titles
+"screen.home" = "Home";
+"screen.my_trip" = "My Trip";
+"screen.profile" = "Profile";
+"screen.sign_in" = "Sign in";
+"screen.booking_detail" = "Booking Detail";
+"screen.checkout" = "Checkout";
+"screen.detail_my_trip" = "Detail My Trip";
+"screen.settings" = "Settings";
+
+// MARK: - Validation Messages
+"validation.participant.empty" = "Masukkan jumlah orang terlebih dahulu.";
+"validation.participant.invalid" = "Jumlah orang harus berupa angka yang valid.";
+"validation.participant.package_limits_unavailable" = "Tidak dapat memuat batas peserta paket. Coba lagi memilih paket atau periksa koneksi.";
+"validation.participant.below_minimum" = "Minimal peserta untuk paket ini adalah %d orang.";
+"validation.participant.above_maximum" = "Maksimal peserta untuk paket ini adalah %d orang.";
+
+"validation.traveler.name_empty" = "Harap masukkan nama traveler.";
+"validation.traveler.data_incomplete" = "Harap lengkapi data traveler dengan benar (nama, nomor telepon yang valid, dan email yang valid).";
+
+"validation.phone.invalid" = "Please enter a valid phone number (10-15 digits)";
+"validation.email.invalid" = "Please enter a valid email address";
+"validation.name.required" = "Name is required";
+
+"validation.alert.title" = "Tidak Valid";
+"validation.alert.ok" = "OK";
+
+// MARK: - Form Labels & Inputs
+"form.traveler_details.name" = "Name";
+"form.traveler_details.phone" = "Phone"; 
+"form.traveler_details.email" = "Email";
+"form.traveler_details.title" = "Traveler details";
+
+"form.select_dates" = "Select Dates";
+"form.number_participants" = "Number of participants";
+"form.select_time" = "Select Time";
+"form.select_participants" = "Select Participants";
+"form.available_slots" = "Available Slots: %d";
+
+// MARK: - Authentication
+"auth.email_address" = "Email Address";
+"auth.password" = "Password";
+"auth.sign_in" = "Sign in";
+"auth.enter_email" = "Enter your email address";
+"auth.enter_password" = "Enter your password";
+"auth.log_out" = "Log out";
+
+// MARK: - Trip & Booking
+"trip.pay_during_trip" = "Pay During Trip";
+"trip.person" = "person";
+"trip.status.completed" = "Completed";
+"trip.status.upcoming" = "Upcoming";
+
+"booking.date_booking" = "Date Booking";
+"booking.status" = "Status";
+"booking.person" = "Person";
+"booking.meeting_point" = "Meeting Point";
+"booking.completed" = "Booking Completed";
+
+// MARK: - Price & Payment
+"price.details" = "Price Details";
+"price.dates" = "Dates";
+"price.pax" = "Pax";
+"price.name" = "Name";
+"price.pay_during_trip" = "Pay during trip";
+"price.book_now" = "Book Now";
+
+// MARK: - Package & Activity
+"package.show_all" = "Show All";
+"package.show_less" = "Show Less";
+"package.free_cancellation" = "Free Cancellation";
+"package.schedule" = "Schedule";
+
+// MARK: - Search
+"search.title" = "Search";
+"search.last_search" = "Last Search";
+"search.popular_location" = "Popular Location";
+
+// MARK: - Common Actions & Labels
+"common.select_date" = "Select Date";
+"common.type_here" = "Type here...";
+"common.detail" = "Detail";
+"common.cancel" = "Cancel";
+"common.continue" = "Continue";
+"common.search" = "Search";
+"common.ok" = "OK";
+
+// MARK: - Booking
+"booking.success.title" = "Booking Confirmed";
+"booking.success.message" = "Your booking has been successfully created! Booking ID: %@";
+
+// MARK: - Numbers & Formatting
+"format.min_max_participants" = "Min.%d - Max.%d";
+"format.participant_range_person" = "Input total Pax... %d - %d Person(s)";
+"format.participant_min_person" = "Input total Pax... min %d Person(s)";
+"format.participant_max_person" = "Input total Pax... up to %d Person(s)";
+"format.participant_default" = "Input total Pax...";
+
+// MARK: - Placeholder Texts
+"placeholder.input_date_visit" = "Input Date Visit...";
+"placeholder.input_total_pax" = "Input total Pax...";
+"placeholder.type_here" = "Type here…";

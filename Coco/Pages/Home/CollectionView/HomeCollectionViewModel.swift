@@ -62,7 +62,10 @@ private extension HomeCollectionViewModel {
         var snapshot: HomeCollectionViewSnapShot = HomeCollectionViewSnapShot()
         contents.forEach { content in
             snapshot.appendSections([content.section])
-            snapshot.appendItems(content.items)
+//            snapshot.appendItems(content.items)
+            
+            let items = content.items.map { HomeCollectionItem.activity($0) }
+                        snapshot.appendItems(items)
         }
         
         return snapshot

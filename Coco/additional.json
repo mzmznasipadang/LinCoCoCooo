@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1,
+    "title": "Snorkeling in Piaynemo",
+    "label": "Family",
+    "highlights": "Calm water, safe environment, and kid-friendly activities.",
+    "activities": "Coral Garden Snorkel\nEel Garden Snorkel\nBanana Boat Ride\nJetski"
+  },
+  {
+    "id": 2,
+    "title": "Gili Trawangan Coral Reef Exploration",
+    "label": "Family",
+    "highlights": "“Safe snorkeling, swimming with turtles, and colorful reefs that delight kids and parents alike.”",
+    "activities": "Snorkel among colorful coral reefs just off the shore\nSpot turtles, clownfish, and schools of reef fish\nCruise on a glass-bottom boat between Gili islands\nUnwind on Gili Trawangan’s lively beachfront"
+  },
+  {
+    "id": 12,
+    "title": "Raja Ampat Liveaboard Diving",
+    "label": "Couples",
+    "highlights": "“Set sail on a liveaboard and dive side by side into Raja Ampat’s world-class reefs.”",
+    "activities": "Embark on a multi-day liveaboard diving adventure\nExplore remote dive sites with world-class marine biodiversity\nNight dives and drift dives for an immersive experience\nEnjoy starlit dinners on deck surrounded by nature"
+  },
+  {
+    "id": 3,
+    "title": "Karimunjawa Snorkeling Safari",
+    "label": "Family",
+    "highlights": "“Island-hopping, calm snorkeling spots, and white sandy beaches the whole family will love.”",
+    "activities": "Hop across Karimunjawa’s pristine islands\nSnorkel in shallow reefs with crystal waters\nVisit uninhabited islands and relax on untouched beaches\nSavor fresh seafood by the seaside"
+  },
+  {
+    "id": 4,
+    "title": "The Underwater Charm of Bunaken",
+    "label": "Family",
+    "highlights": "“Gentle snorkeling, colorful coral walls, and marine life that amazes kids and parents alike.”",
+    "activities": "Experience wall diving in Bunaken’s steep coral cliffs\nSpot reef sharks, turtles, and abundant macro life\nSnorkel-friendly sites with excellent visibility\nInteract with locals in nearby fishing villages"
+  },
+  {
+    "id": 6,
+    "title": "Pari Island Snorkeling Tour",
+    "label": "Family",
+    "highlights": "“Easy island escape, safe snorkeling, and white sandy beaches perfect for family fun.”",
+    "activities": "Short boat ride from Jakarta to this hidden gem\nSnorkel shallow reefs with vibrant fish life\nExplore mangroves and cycle around the island\nPerfect for a quick weekend getaway"
+  },
+  {
+    "id": 7,
+    "title": "Pink Beach Snorkeling Adventure",
+    "label": "Family",
+    "highlights": "“Safe snorkeling, soft pink sands, and colorful marine life the whole family can enjoy.”",
+    "activities": "Swim and snorkel at Indonesia’s iconic pink sand beach.\nDiscover coral reefs just steps from shore.\nSpot manta rays and colorful reef fish.\nRelax on the rare rose-hued sands."
+  },
+  {
+    "id": 10,
+    "title": "Diving the USAT Liberty Wreck, Tulamben",
+    "label": "Couples",
+    "highlights": "“Discover the legendary USAT Liberty wreck side by side — a sunken ship turned coral paradise, perfect for diving together.”",
+    "activities": "Explore Bali’s most famous wreck dive site\nSwim through coral-encrusted shipwreck structures\nEncounter barracudas, bumphead parrotfish, and nudibranchs\nAccessible from shore — ideal for all levels"
+  },
+  {
+    "id": 9,
+    "title": "Wakatobi Deep Dive Experience",
+    "label": "Group",
+    "highlights": "“Dive together into the heart of the Coral Triangle — Wakatobi’s deep waters reveal the world’s richest marine life and an unforgettable shared adventure.”",
+    "activities": "Dive into one of the world’s top marine sanctuaries\nDrift along walls with unmatched coral diversity\nSpot rare species like pygmy seahorses\nExperience remote luxury diving with eco-lodges"
+  },
+  {
+    "id": 5,
+    "title": "Swimming with Manta Rays in Nusa Penida",
+    "label": "Couples",
+    "highlights": "“Share a once-in-a-lifetime moment swimming with gentle manta rays in the crystal waters of Nusa Penida.”",
+    "activities": "Encounter majestic manta rays up close\nSnorkel in crystal-clear waters around Penida’s coast\nExplore coastal cliffs and hidden beaches\nCombine with a scenic tour of Nusa Penida"
+  },
+  {
+    "id": 8,
+    "title": "Scuba Diving in Komodo National Park",
+    "label": "Group",
+    "highlights": "“Dive together in Komodo’s legendary waters with manta rays, sharks, and epic underwater scenery.”",
+    "activities": "Drift dives in nutrient-rich waters\nSpot manta rays, sharks, and colorful corals\nSurface intervals on remote Komodo islands\nPerfect mix of adventure and nature"
+  },
+  {
+    "id": 17,
+    "title": "Prambanan & Borobudur Temple Exploration",
+    "label": "Family",
+    "highlights": "“Explore ancient temples, enjoy easy walks, and spark kids’ curiosity with history come alive.”",
+    "activities": "Visit two UNESCO World Heritage temples in one trip\nDiscover the grandeur of Borobudur’s Buddhist reliefs\nMarvel at Prambanan’s Hindu architecture\nEnjoy local Javanese cultural performances"
+  },
+  {
+    "id": 11,
+    "title": "Diving at Kilometer Zero, Sabang",
+    "label": "Group",
+    "highlights": "“Dive together at Indonesia’s westernmost point, with strong currents and epic underwater views.”",
+    "activities": "Dive at the westernmost point of Indonesia\nSpot untouched reefs and large pelagic species\n\nExperience calm, warm waters with high visibility\nVisit Sabang town for cultural immersion"
+  },
+  {
+    "id": 13,
+    "title": "Advanced Open Water in Gili Trawangan",
+    "label": "Group",
+    "highlights": "“Level up your diving skills together in Gili’s crystal-clear waters.”",
+    "activities": "Level up your diving with expert instructors\nSpecialize in deep, wreck, and night diving\nPractice skills in Gili’s clear blue waters\nEarn an internationally recognized PADI certificate"
+  },
+  {
+    "id": 14,
+    "title": "Wall Diving in Bunaken National Park",
+    "label": "Solo",
+    "highlights": "“Steep coral walls, rich marine life, and the freedom to dive at your own pace.”",
+    "activities": "Descend alongside towering vertical coral walls\nEncounter reef sharks, turtles, and large schools of fish\nEnjoy world-class visibility and marine diversity\nCombine with Bunaken village tours for local flavor"
+  },
+  {
+    "id": 16,
+    "title": "Ubud Rice Terraces & Luwak Coffee Tour",
+    "label": "Couples",
+    "highlights": "“Scenic rice terrace strolls and a romantic coffee-tasting experience together.”",
+    "activities": "Walk through the iconic Tegallalang rice terraces\nLearn about Balinese farming traditions\nTaste the world-famous Luwak coffee\nVisit Ubud’s artisan markets and galleries"
+  },
+  {
+    "id": 15,
+    "title": "Mount Bromo Sunrise Tour",
+    "label": "Family",
+    "highlights": "“Jeep adventure, breathtaking sunrise views, and a fun family-friendly journey.”",
+    "activities": "Ride a jeep across the Sea of Sand\nWitness breathtaking sunrise over Mount Bromo\nTrek up to Bromo’s crater rim\nCapture iconic landscapes of East Java"
+  },
+  {
+    "id": 18,
+    "title": "Ijen Crater & Blue Fire Hike",
+    "label": "Solo",
+    "highlights": "“Challenging night hike, rare blue fire, and a sunrise over the crater lake.”",
+    "activities": "Midnight trek to the Ijen volcanic crater\nWitness the rare blue fire phenomenon\nSee turquoise sulfuric acid lake at sunrise\nMeet sulfur miners carrying loads down the crater"
+  },
+  {
+    "id": 19,
+    "title": "Komodo Dragon Trek on Rinca Island",
+    "label": "Solo",
+    "highlights": "“Up-close encounters with Komodo dragons, guided safely by expert rangers.”",
+    "activities": "Trek through Rinca’s rugged landscapes\nSpot wild Komodo dragons in their natural habitat\nLearn about the island’s unique ecosystem\nCombine with nearby snorkeling or diving trips"
+  },
+  {
+    "id": 20,
+    "title": "Yogyakarta Culture and Culinary Tour",
+    "label": "Solo",
+    "highlights": "“Wander royal palaces, explore hidden alleys, and taste Yogyakarta like a local.”",
+    "activities": "Explore the Sultan’s Palace (Keraton) and learn about Javanese heritage \nVisit the enchanting Water Castle (Taman Sari) with its unique architecture \nTaste the famous local dish Gudeg in a traditional eatery \nEnd the day with a cup of Kopi Joss, Yogyakarta’s iconic charcoal coffee"
+  }
+]

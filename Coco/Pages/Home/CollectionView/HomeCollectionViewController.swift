@@ -40,12 +40,10 @@ extension HomeCollectionViewController: HomeCollectionViewModelAction {
         let activityCellRegistration: ActivityCellRegistration = createActivityCellRegistration()
         let headerRegistration: HeaderRegistration = createHeaderRegistration()
         
-        dataSource = HomeCollectionViewDataSource(collectionView: collectionView, cellProvider: { (collectionView, indexPath, item: AnyHashable) -> UICollectionViewCell? in
+        dataSource = HomeCollectionViewDataSource(collectionView: collectionView, cellProvider: { (collectionView, indexPath, item: HomeCollectionItem) -> UICollectionViewCell? in
             switch item {
-            case let item as HomeActivityCellDataModel:
-                return collectionView.dequeueConfiguredReusableCell(using: activityCellRegistration, for: indexPath, item: item)
-            default:
-                return nil
+            case .activity(let activityModel):
+                return collectionView.dequeueConfiguredReusableCell(using: activityCellRegistration, for: indexPath, item: activityModel)
             }
         })
         
@@ -65,15 +63,13 @@ extension HomeCollectionViewController: HomeCollectionViewModelAction {
 
 extension HomeCollectionViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let item: AnyHashable = dataSource?.itemIdentifier(for: indexPath) else {
+        guard let item: HomeCollectionItem = dataSource?.itemIdentifier(for: indexPath) else {
              return
         }
         
         switch item {
-        case let item as HomeActivityCellDataModel:
-            viewModel.onActivityDidTap(item)
-        default:
-            break
+        case .activity(let activityModel):
+            viewModel.onActivityDidTap(activityModel)
         }
     }
 }
