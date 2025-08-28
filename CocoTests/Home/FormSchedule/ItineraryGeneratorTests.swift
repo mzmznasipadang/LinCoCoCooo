@@ -24,10 +24,10 @@ struct ItineraryGeneratorTests {
             maxParticipants: 4,
             id: 1,
             hostName: "Ocean Adventures",
-            startTime: "08:00",
-            endTime: "16:00",
             hostBio: "Professional diving instructor",
-            hostProfileImageUrl: "https://example.com/host.jpg"
+            hostProfileImageUrl: "https://example.com/host.jpg",
+            startTime: "08:00",
+            endTime: "16:00"
         )
         
         static let hikingPackage = ActivityDetailDataModel.Package(
@@ -40,10 +40,10 @@ struct ItineraryGeneratorTests {
             maxParticipants: 6,
             id: 2,
             hostName: "Mountain Guides",
-            startTime: "06:00",
-            endTime: "14:00",
             hostBio: "Experienced mountain guide",
-            hostProfileImageUrl: "https://example.com/guide.jpg"
+            hostProfileImageUrl: "https://example.com/guide.jpg",
+            startTime: "06:00",
+            endTime: "14:00"
         )
         
         static let cityTourPackage = ActivityDetailDataModel.Package(
@@ -56,10 +56,10 @@ struct ItineraryGeneratorTests {
             maxParticipants: 10,
             id: 3,
             hostName: "City Explorers",
-            startTime: "09:00",
-            endTime: "17:00",
             hostBio: "Local history expert",
-            hostProfileImageUrl: "https://example.com/local-guide.jpg"
+            hostProfileImageUrl: "https://example.com/local-guide.jpg",
+            startTime: "09:00",
+            endTime: "17:00"
         )
         
         static let culinaryPackage = ActivityDetailDataModel.Package(
@@ -72,10 +72,10 @@ struct ItineraryGeneratorTests {
             maxParticipants: 8,
             id: 4,
             hostName: "Chef Santika",
-            startTime: "10:00",
-            endTime: "15:00",
             hostBio: "Traditional cuisine chef",
-            hostProfileImageUrl: "https://example.com/chef.jpg"
+            hostProfileImageUrl: "https://example.com/chef.jpg",
+            startTime: "10:00",
+            endTime: "15:00"
         )
         
         static let genericPackage = ActivityDetailDataModel.Package(
@@ -88,10 +88,10 @@ struct ItineraryGeneratorTests {
             maxParticipants: 5,
             id: 5,
             hostName: "Adventure Co",
-            startTime: "11:00",
-            endTime: "15:00",
             hostBio: "Adventure specialists",
-            hostProfileImageUrl: "https://example.com/adventure.jpg"
+            hostProfileImageUrl: "https://example.com/adventure.jpg",
+            startTime: "11:00",
+            endTime: "15:00"
         )
     }
     

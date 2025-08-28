@@ -7,29 +7,6 @@
 
 import Foundation
 
-// MARK: - Data Models for Form Sections
-
-/// Data model for form input section containing date and participant information
-struct FormInputData {
-    /// Selected date/time string (formatted date or "Select Date" placeholder)
-    var selectedTime: String = "7.30"
-    /// Number of participants as string
-    var participantCount: String = "Select Number of Participants"
-    /// Number of available slots for the selected date (optional)
-    var availableSlots: Int?
-}
-
-
-// MARK: - ViewModel Input
-
-/// Input data required to initialize the HomeFormScheduleViewModel
-struct HomeFormScheduleViewModelInput {
-    /// Activity detail data model containing package information
-    let package: ActivityDetailDataModel
-    /// ID of the selected package for booking
-    let selectedPackageId: Int
-}
-
 // MARK: - HomeFormScheduleViewModel
 
 /// ViewModel for the booking form schedule screen
@@ -120,14 +97,24 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         actionDelegate?.updateTableSections(sections)
         
         // Update price details
-        let priceData = buildPriceDetailsData()
+        let priceData = FormScheduleDataFormatter.buildPriceDetailsData(
+            chosenDate: chosenDateInput,
+            participantText: paxInputViewModel.currentTypedText,
+            selectedPackage: selectedPackage,
+            travelerName: currentTravelerData.name
+        )
         actionDelegate?.updatePriceDetails(priceData)
     }
     
     func onTravelerDataChanged(_ data: TravelerData) {
         currentTravelerData = data
         // Update price details with new traveler name
-        let priceData = buildPriceDetailsData()
+        let priceData = FormScheduleDataFormatter.buildPriceDetailsData(
+            chosenDate: chosenDateInput,
+            participantText: paxInputViewModel.currentTypedText,
+            selectedPackage: selectedPackage,
+            travelerName: currentTravelerData.name
+        )
         actionDelegate?.updatePriceDetails(priceData)
     }
     
@@ -191,7 +178,12 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         currentAvailability = nil
         
         // Update price details with initial state
-        let priceData = buildPriceDetailsData()
+        let priceData = FormScheduleDataFormatter.buildPriceDetailsData(
+            chosenDate: chosenDateInput,
+            participantText: paxInputViewModel.currentTypedText,
+            selectedPackage: selectedPackage,
+            travelerName: currentTravelerData.name
+        )
         actionDelegate?.updatePriceDetails(priceData)
     }
     
@@ -205,7 +197,12 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         checkAvailability(for: date, showErrorIfUnavailable: true)
         
         // Update price details immediately
-        let priceData = buildPriceDetailsData()
+        let priceData = FormScheduleDataFormatter.buildPriceDetailsData(
+            chosenDate: chosenDateInput,
+            participantText: paxInputViewModel.currentTypedText,
+            selectedPackage: selectedPackage,
+            travelerName: currentTravelerData.name
+        )
         actionDelegate?.updatePriceDetails(priceData)
     }
     
@@ -437,7 +434,7 @@ private extension HomeFormScheduleViewModel {
                 originalPrice: nil,
                 hasDiscount: false,
                 description: selectedPackage.description,
-                duration: formatDurationWithTimes(startTime: selectedPackage.startTime, endTime: selectedPackage.endTime)
+                duration: FormScheduleDataFormatter.formatDurationWithTimes(startTime: selectedPackage.startTime, endTime: selectedPackage.endTime)
             )
             
             sections.append(BookingDetailSection(
@@ -474,25 +471,8 @@ private extension HomeFormScheduleViewModel {
             items: [tripProviderItem]
         ))
         
-        // Itinerary Section (mock data for now)
-        let itineraryItems = [
-            ItineraryDisplayItem(
-                time: "09:00",
-                title: "Departure",
-                description: "Start the journey",
-                duration: "30 min",
-                isFirstItem: true,
-                isLastItem: false
-            ),
-            ItineraryDisplayItem(
-                time: "17:00",
-                title: "Return",
-                description: "End of the journey",
-                duration: "30 min",
-                isFirstItem: false,
-                isLastItem: true
-            )
-        ]
+        // Itinerary Section - Generate realistic itinerary based on activity data
+        let itineraryItems = generateItineraryItems()
         
         sections.append(BookingDetailSection(
             type: .itinerary,
@@ -540,57 +520,13 @@ private extension HomeFormScheduleViewModel {
         return sections
     }
     
-    private func buildPriceDetailsData() -> PriceDetailsData {
-        let selectedDate: String
-        if let date = chosenDateInput {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "EEE, dd MMM yyyy"
-            selectedDate = formatter.string(from: date)
-        } else {
-            selectedDate = "Select Date"
-        }
+    private func generateItineraryItems() -> [ItineraryDisplayItem] {
+        guard let selectedPackage = selectedPackage else { return [] }
         
-        let participantCount = Int(paxInputViewModel.currentTypedText) ?? 1
-        let pricePerPerson = selectedPackage?.pricePerPerson ?? 0
-        let totalPrice = pricePerPerson * Double(participantCount)
-        
-        return PriceDetailsData(
-            selectedDate: selectedDate,
-            participantCount: participantCount,
-            travelerName: currentTravelerData.name,
-            totalPrice: "Rp\(Int(totalPrice).formatted())"
+        return ItineraryGenerator.generateItineraryItems(
+            selectedPackage: selectedPackage,
+            activityTitle: input.package.title,
+            location: input.package.location
         )
-    }
-    
-    private func formatDurationWithTimes(startTime: String, endTime: String) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm:ss" // API format
-        
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateFormat = "HH:mm" // Display format
-        
-        guard let startDate = dateFormatter.date(from: startTime),
-              let endDate = dateFormatter.date(from: endTime) else {
-            return "\(startTime)-\(endTime)" // Fallback if parsing fails
-        }
-        
-        let startDisplay = displayFormatter.string(from: startDate)
-        let endDisplay = displayFormatter.string(from: endDate)
-        
-        // Calculate duration
-        let duration = endDate.timeIntervalSince(startDate)
-        let hours = Int(duration) / 3600
-        let minutes = (Int(duration) % 3600) / 60
-        
-        let durationText: String
-        if minutes == 0 {
-            durationText = "\(hours) Hour\(hours != 1 ? "s" : "")"
-        } else if hours == 0 {
-            durationText = "\(minutes) Minute\(minutes != 1 ? "s" : "")"
-        } else {
-            durationText = "\(hours) Hour\(hours != 1 ? "s" : "") \(minutes) Minute\(minutes != 1 ? "s" : "")"
-        }
-        
-        return "\(startDisplay)-\(endDisplay) (\(durationText))"
     }
 }

@@ -56,10 +56,10 @@ class TestHelpers {
             maxParticipants: 4,
             id: id,
             hostName: hostName,
-            startTime: startTime,
-            endTime: endTime,
             hostBio: "Professional \(hostName) guide",
-            hostProfileImageUrl: "https://example.com/host\(id).jpg"
+            hostProfileImageUrl: "https://example.com/host\(id).jpg",
+            startTime: startTime,
+            endTime: endTime
         )
     }
     
@@ -163,8 +163,8 @@ class TestHelpers {
         timeFormatter.dateFormat = "HH:mm"
         
         for i in 0..<(itinerary.count - 1) {
-            guard let currentTime = timeFormatter.date(from: itinerary[i].time),
-                  let nextTime = timeFormatter.date(from: itinerary[i + 1].time) else {
+            guard let currentTime = timeFormatter.date(from: itinerary[i].time ?? ""),
+                  let nextTime = timeFormatter.date(from: itinerary[i + 1].time ?? "") else {
                 return false
             }
             

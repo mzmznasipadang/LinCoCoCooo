@@ -59,10 +59,10 @@ struct HomeFormScheduleViewModelTests {
                 maxParticipants: 4,
                 id: 1,
                 hostName: "Ocean Explorer",
-                startTime: "08:00",
-                endTime: "16:00",
                 hostBio: "Professional diving instructor with 10 years experience",
-                hostProfileImageUrl: "https://example.com/host.jpg"
+                hostProfileImageUrl: "https://example.com/host.jpg",
+                startTime: "08:00",
+                endTime: "16:00"
             )
             
             let mockActivity = ActivityDetailDataModel(

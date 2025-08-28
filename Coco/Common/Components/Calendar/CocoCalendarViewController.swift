@@ -102,7 +102,38 @@ final class CocoCalendarViewController: UIViewController {
 
 extension CocoCalendarViewController: UICalendarSelectionSingleDateDelegate {
     func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) {
-        currentSelectedDate = dateComponents?.date
+        guard let dateComponents = dateComponents,
+              let selectedDate = dateComponents.date else {
+            currentSelectedDate = nil
+            return
+        }
+        
+        // Get today's date at start of day for accurate comparison
+        let today = Calendar.current.startOfDay(for: Date())
+        let selectedDateAtStartOfDay = Calendar.current.startOfDay(for: selectedDate)
+        
+        // Prevent selection of dates before today
+        if selectedDateAtStartOfDay < today {
+            // Show validation error and reset selection
+            showPastDateValidationError()
+            selection.setSelected(nil, animated: true)
+            currentSelectedDate = nil
+            return
+        }
+        
+        // Valid date selection
+        currentSelectedDate = selectedDate
+    }
+    
+    /// Shows an error message when user tries to select a past date
+    private func showPastDateValidationError() {
+        let alert = UIAlertController(
+            title: "Invalid Date",
+            message: "Please select a date from today onwards. Past dates are not available for booking.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 }
 

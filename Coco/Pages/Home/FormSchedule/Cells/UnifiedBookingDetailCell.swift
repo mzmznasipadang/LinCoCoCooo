@@ -8,34 +8,6 @@
 import Foundation
 import UIKit
 
-// MARK: - Dashed Line Helper View
-class DashedLineView: UIView {
-    var dashColor: UIColor = .lightGray
-    var dashLength: CGFloat = 4
-    var gapLength: CGFloat = 4
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        setupDashedLine()
-    }
-    
-    private func setupDashedLine() {
-        layer.sublayers?.removeAll()
-        
-        let shapeLayer = CAShapeLayer()
-        shapeLayer.strokeColor = dashColor.cgColor
-        shapeLayer.lineWidth = 1
-        shapeLayer.lineDashPattern = [NSNumber(value: dashLength), NSNumber(value: gapLength)]
-        
-        let path = CGMutablePath()
-        path.move(to: CGPoint(x: 0, y: bounds.height / 2))
-        path.addLine(to: CGPoint(x: bounds.width, y: bounds.height / 2))
-        shapeLayer.path = path
-        
-        layer.addSublayer(shapeLayer)
-    }
-}
-
 // MARK: - Unified Booking Detail Cell
 /// Single card containing Package Info, Trip Provider, and Itinerary sections
 final class UnifiedBookingDetailCell: UITableViewCell {
@@ -59,7 +31,19 @@ final class UnifiedBookingDetailCell: UITableViewCell {
                    isItineraryExpanded: Bool) {
         
         // Configure package info section
-        configurePackageInfo(data: packageData)
+        let packageLabels = PackageInfoLabels(
+            imageView: packageImageView,
+            nameLabel: packageNameLabel,
+            paxLabel: paxLabel,
+            priceLabel: priceLabel,
+            descriptionLabel: descriptionLabel,
+            durationTitleLabel: durationTitleLabel,
+            timeRangeLabel: timeRangeLabel
+        )
+        PackageInfoViewSetup.configurePackageInfo(
+            data: packageData,
+            labels: packageLabels
+        )
         
         // Configure trip provider section
         configureTripProvider(data: providerData, isExpanded: isProviderExpanded)
@@ -169,8 +153,8 @@ final class UnifiedBookingDetailCell: UITableViewCell {
     
     // MARK: - Separator Components
     
-    private lazy var providerSeparator: UIView = createDashedSeparator()
-    private lazy var itinerarySeparator: UIView = createDashedSeparator()
+    private lazy var providerSeparator: UIView = SectionSetupHelper.createDashedSeparator()
+    private lazy var itinerarySeparator: UIView = SectionSetupHelper.createDashedSeparator()
     
     // MARK: - Trip Provider Components
     
@@ -237,7 +221,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         contentView.addSubview(cardContainer)
         cardContainer.addSubview(mainStackView)
         
-        // Setup card layout
+        // Setup card layout with proper content hugging
         cardContainer.layout {
             $0.top(to: contentView.topAnchor, constant: 16)
             $0.leading(to: contentView.leadingAnchor, constant: 24)
@@ -245,6 +229,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
             $0.bottom(to: contentView.bottomAnchor, constant: -8)
         }
         
+        // Ensure the stack view stays within the card container boundaries
         mainStackView.layout {
             $0.top(to: cardContainer.topAnchor)
             $0.leading(to: cardContainer.leadingAnchor)
@@ -252,14 +237,47 @@ final class UnifiedBookingDetailCell: UITableViewCell {
             $0.bottom(to: cardContainer.bottomAnchor)
         }
         
+        // Set content compression resistance to prevent overflow and allow proper expansion
+        mainStackView.setContentCompressionResistancePriority(.required, for: .vertical)
+        mainStackView.setContentHuggingPriority(.required, for: .vertical)
+        
+        // Allow horizontal content to compress if needed but maintain proper layout
+        mainStackView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+        
+        // Ensure card container can expand as needed
+        cardContainer.setContentCompressionResistancePriority(.required, for: .vertical)
+        cardContainer.setContentHuggingPriority(.defaultLow, for: .vertical)
+        
         // Setup package info section
-        setupPackageInfoSection()
+        let packageComponents = PackageInfoComponents(
+            container: packageInfoContainer,
+            imageView: packageImageView,
+            nameLabel: packageNameLabel,
+            paxIconImageView: paxIconImageView,
+            paxLabel: paxLabel,
+            priceLabel: priceLabel,
+            descriptionLabel: descriptionLabel,
+            durationIconImageView: durationIconImageView,
+            durationTitleLabel: durationTitleLabel,
+            timeRangeLabel: timeRangeLabel
+        )
+        PackageInfoViewSetup.setupPackageInfoSection(components: packageComponents)
         
         // Setup provider section
-        setupProviderSection()
+        SectionSetupHelper.setupProviderSection(
+            headerButton: providerHeaderButton,
+            titleLabel: providerTitleLabel,
+            chevronView: providerChevronView,
+            contentContainer: providerContentContainer
+        )
         
         // Setup itinerary section
-        setupItinerarySection()
+        SectionSetupHelper.setupItinerarySection(
+            headerButton: itineraryHeaderButton,
+            titleLabel: itineraryTitleLabel,
+            chevronView: itineraryChevronView,
+            contentContainer: itineraryContentContainer
+        )
         
         // Add sections to main stack
         mainStackView.addArrangedSubview(packageInfoContainer)
@@ -271,188 +289,11 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         mainStackView.addArrangedSubview(itineraryContentContainer)
     }
     
-    private func setupPackageInfoSection() {
-        packageInfoContainer.addSubviews([
-            packageImageView,
-            packageNameLabel,
-            paxIconImageView,
-            paxLabel,
-            priceLabel,
-            descriptionLabel,
-            durationIconImageView,
-            durationTitleLabel,
-            timeRangeLabel
-        ])
-        
-        // Layout package info components with proper auto layout for dynamic content
-        packageImageView.layout {
-            $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
-            $0.top(to: packageInfoContainer.topAnchor, constant: 16)
-            $0.width(80)   // 1:1 ratio
-            $0.height(80)  // 1:1 ratio
-        }
-        
-        packageNameLabel.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 16)
-            $0.top(to: packageInfoContainer.topAnchor, constant: 16)
-            $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
-        }
-        
-        paxIconImageView.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 12)
-            $0.top(to: packageNameLabel.bottomAnchor, constant: 6)
-            $0.size(14)
-        }
-        
-        paxLabel.layout {
-            $0.leading(to: paxIconImageView.trailingAnchor, constant: 4)
-            $0.centerY(to: paxIconImageView.centerYAnchor)
-            $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
-        }
-        
-        priceLabel.layout {
-            $0.leading(to: packageImageView.trailingAnchor, constant: 12)
-            $0.top(to: paxIconImageView.bottomAnchor, constant: 8)
-            $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
-        }
-        
-        // Position description below the tallest element (image or price area)
-        descriptionLabel.layout {
-            $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
-            $0.top(to: priceLabel.bottomAnchor, constant: 12) // Position below price to avoid overlap
-            $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
-        }
-        
-        durationIconImageView.layout {
-            $0.leading(to: packageInfoContainer.leadingAnchor, constant: 16)
-            $0.top(to: descriptionLabel.bottomAnchor, constant: 8)
-            $0.size(16)
-        }
-        
-        durationTitleLabel.layout {
-            $0.leading(to: durationIconImageView.trailingAnchor, constant: 4)
-            $0.centerY(to: durationIconImageView.centerYAnchor)
-        }
-        
-        timeRangeLabel.layout {
-            $0.trailing(to: packageInfoContainer.trailingAnchor, constant: -16)
-            $0.centerY(to: durationIconImageView.centerYAnchor)
-            $0.bottom(to: packageInfoContainer.bottomAnchor, constant: -14)
-        }
-    }
-    
-    private func setupProviderSection() {
-        providerHeaderButton.addSubviews([providerTitleLabel, providerChevronView])
-        
-        providerTitleLabel.layout {
-            $0.leading(to: providerHeaderButton.leadingAnchor, constant: 24)
-            $0.centerY(to: providerHeaderButton.centerYAnchor)
-        }
-        
-        providerChevronView.layout {
-            $0.trailing(to: providerHeaderButton.trailingAnchor, constant: -24)
-            $0.centerY(to: providerHeaderButton.centerYAnchor)
-            $0.size(20)
-        }
-        
-        providerHeaderButton.layout {
-            $0.height(56)
-        }
-        
-        // Provider content will be added dynamically
-        providerContentContainer.isHidden = true
-    }
-    
-    private func setupItinerarySection() {
-        itineraryHeaderButton.addSubviews([itineraryTitleLabel, itineraryChevronView])
-        
-        itineraryTitleLabel.layout {
-            $0.leading(to: itineraryHeaderButton.leadingAnchor, constant: 24)
-            $0.centerY(to: itineraryHeaderButton.centerYAnchor)
-        }
-        
-        itineraryChevronView.layout {
-            $0.trailing(to: itineraryHeaderButton.trailingAnchor, constant: -24)
-            $0.centerY(to: itineraryHeaderButton.centerYAnchor)
-            $0.size(20)
-        }
-        
-        itineraryHeaderButton.layout {
-            $0.height(56)
-        }
-        
-        // Itinerary content will be added dynamically
-        itineraryContentContainer.isHidden = true
-    }
-    
-    // MARK: - Dashed Separator
-    
-    private func createDashedSeparator() -> UIView {
-        let container = UIView()
-        container.backgroundColor = .clear
-        
-        // Create dashed line view that will be styled with CAShapeLayer
-        let dashedLineView = DashedLineView()
-        dashedLineView.dashColor = UIColor(red: 227/255, green: 231/255, blue: 236/255, alpha: 1)
-        dashedLineView.dashLength = 4
-        dashedLineView.gapLength = 4
-        
-        container.addSubview(dashedLineView)
-        dashedLineView.layout {
-            $0.leading(to: container.leadingAnchor, constant: 24)
-            $0.trailing(to: container.trailingAnchor, constant: -24)
-            $0.centerY(to: container.centerYAnchor)
-            $0.height(1)
-        }
-        
-        container.layout {
-            $0.height(1)
-        }
-        
-        return container
-    }
-    
     // MARK: - Configuration Methods
-    
-    private func configurePackageInfo(data: PackageInfoDisplayData) {
-        packageImageView.loadImage(from: URL(string: data.imageUrl))
-        packageNameLabel.text = data.packageName
-        paxLabel.text = data.paxRange
-        
-        // Format price with /person suffix
-        let priceText = "\(data.pricePerPax)/person"
-        let attributedString = NSMutableAttributedString(string: priceText)
-        
-        // Style the main price part (bold, black) - smaller font to match Image #2
-        let priceRange = NSRange(location: 0, length: data.pricePerPax.count)
-        attributedString.addAttribute(.font, value: UIFont.jakartaSans(forTextStyle: .headline, weight: .bold), range: priceRange)
-        attributedString.addAttribute(.foregroundColor, value: UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1), range: priceRange)
-        
-        // Style the /person suffix (smaller, gray)
-        let suffixRange = NSRange(location: data.pricePerPax.count, length: 7) // "/person"
-        attributedString.addAttribute(.font, value: UIFont.jakartaSans(forTextStyle: .caption1, weight: .medium), range: suffixRange)
-        attributedString.addAttribute(.foregroundColor, value: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1), range: suffixRange)
-        
-        priceLabel.attributedText = attributedString
-        
-        // Show the actual package description instead of hiding it
-        descriptionLabel.text = data.description
-        descriptionLabel.isHidden = false
-        
-        // Set duration title and parse time range from duration
-        durationTitleLabel.text = "Duration"
-        
-        // Parse duration string to extract time range - expecting format like "09:00-16:00 (7 Hours)"
-        if let timeRange = extractTimeRange(from: data.duration) {
-            timeRangeLabel.text = timeRange
-        } else {
-            timeRangeLabel.text = data.duration // Fallback to original format
-        }
-    }
     
     private func configureTripProvider(data: TripProviderDisplayItem?, isExpanded: Bool) {
         providerContentContainer.isHidden = !isExpanded
-        rotateChevron(chevron: providerChevronView, isExpanded: isExpanded)
+        SectionSetupHelper.rotateChevron(chevron: providerChevronView, isExpanded: isExpanded)
         
         // Clear existing content
         providerContentContainer.subviews.forEach { $0.removeFromSuperview() }
@@ -460,7 +301,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         guard let providerData = data else { return }
         
         // Create provider content view
-        let contentView = createProviderContentView(provider: providerData)
+        let contentView = ProviderViewBuilder.createProviderContentView(provider: providerData)
         providerContentContainer.addSubview(contentView)
         contentView.layout {
             $0.top(to: providerContentContainer.topAnchor, constant: 16)
@@ -472,7 +313,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
     
     private func configureItinerary(data: [ItineraryDisplayItem], isExpanded: Bool) {
         itineraryContentContainer.isHidden = !isExpanded
-        rotateChevron(chevron: itineraryChevronView, isExpanded: isExpanded)
+        SectionSetupHelper.rotateChevron(chevron: itineraryChevronView, isExpanded: isExpanded)
         
         // Clear existing content
         itineraryContentContainer.subviews.forEach { $0.removeFromSuperview() }
@@ -480,7 +321,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         guard !data.isEmpty && isExpanded else { return }
         
         // Create itinerary content view
-        let contentView = createItineraryContentView(items: data)
+        let contentView = ItineraryViewBuilder.createItineraryContentView(items: data)
         itineraryContentContainer.addSubview(contentView)
         contentView.layout {
             $0.top(to: itineraryContentContainer.topAnchor, constant: 16)
@@ -490,171 +331,7 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         }
     }
     
-    // MARK: - Content Creation Helpers
-    
-    private func createProviderContentView(provider: TripProviderDisplayItem) -> UIView {
-        let view = UIView()
-        
-        let providerImageView = UIImageView()
-        providerImageView.contentMode = .scaleAspectFill
-        providerImageView.clipsToBounds = true
-        providerImageView.layer.cornerRadius = 12 // Matching Figma design
-        providerImageView.backgroundColor = Token.grayscale20
-        providerImageView.loadImage(from: URL(string: provider.imageUrl))
-        
-        let providerNameLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .headline, weight: .bold),
-            textColor: UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1),
-            numberOfLines: 1
-        )
-        providerNameLabel.text = provider.name
-        
-        let providerDescriptionLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-            textColor: UIColor(red: 102/255, green: 112/255, blue: 122/255, alpha: 1),
-            numberOfLines: 0
-        )
-        providerDescriptionLabel.text = provider.description
-        
-        view.addSubviews([providerImageView, providerNameLabel, providerDescriptionLabel])
-        
-        // Match Figma design dimensions and spacing
-        providerImageView.layout {
-            $0.leading(to: view.leadingAnchor)
-            $0.top(to: view.topAnchor)
-            $0.width(65) // From Figma design
-            $0.height(64) // From Figma design
-        }
-        
-        providerNameLabel.layout {
-            $0.leading(to: providerImageView.trailingAnchor, constant: 8)
-            $0.top(to: view.topAnchor, constant: 2)
-            $0.trailing(to: view.trailingAnchor)
-        }
-        
-        providerDescriptionLabel.layout {
-            $0.leading(to: providerImageView.trailingAnchor, constant: 8)
-            $0.top(to: providerNameLabel.bottomAnchor, constant: 4)
-            $0.trailing(to: view.trailingAnchor)
-            $0.bottom(to: view.bottomAnchor)
-        }
-        
-        return view
-    }
-    
-    private func createItineraryContentView(items: [ItineraryDisplayItem]) -> UIView {
-        let containerView = UIView()
-        
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 0
-        stackView.alignment = .fill
-        stackView.distribution = .fill
-        
-        for (index, item) in items.enumerated() {
-            let itemView = createItineraryItemView(
-                item: item,
-                isFirst: index == 0,
-                isLast: index == items.count - 1
-            )
-            stackView.addArrangedSubview(itemView)
-        }
-        
-        containerView.addSubview(stackView)
-        stackView.layout {
-            $0.edges(to: containerView)
-        }
-        
-        return containerView
-    }
-    
-    private func createItineraryItemView(item: ItineraryDisplayItem, isFirst: Bool, isLast: Bool) -> UIView {
-        let view = UIView()
-        
-        // Create timeline components matching Figma design
-        let dotView = UIView()
-        dotView.backgroundColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1)
-        dotView.layer.cornerRadius = 8 // 16px diameter = 8px radius
-        
-        let topLine = UIView()
-        topLine.backgroundColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1)
-        topLine.isHidden = isFirst
-        
-        let bottomLine = UIView()
-        bottomLine.backgroundColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1)
-        bottomLine.isHidden = isLast
-        
-        // Create composite label for time and title (matching Figma)
-        let compositeLabel = UILabel(
-            font: .jakartaSans(forTextStyle: .footnote, weight: .medium),
-            textColor: UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1),
-            numberOfLines: 0
-        )
-        
-        // Format the text like in Figma: "9:00 - Gather at Waisai Harbor"
-        let timeText = item.time ?? ""
-        let titleText = item.title
-        let fullText = "\(timeText) - \(titleText)"
-        
-        let attributedString = NSMutableAttributedString(string: fullText)
-        
-        // Style the time part (bold, gray)
-        let timeRange = NSRange(location: 0, length: timeText.count)
-        attributedString.addAttribute(.font, value: UIFont.jakartaSans(forTextStyle: .footnote, weight: .bold), range: timeRange)
-        attributedString.addAttribute(.foregroundColor, value: UIColor(red: 102/255, green: 112/255, blue: 122/255, alpha: 1), range: timeRange)
-        
-        // Style the " - " separator and title (regular, black)
-        let separatorAndTitleRange = NSRange(location: timeText.count, length: fullText.count - timeText.count)
-        attributedString.addAttribute(.font, value: UIFont.jakartaSans(forTextStyle: .footnote, weight: .medium), range: separatorAndTitleRange)
-        attributedString.addAttribute(.foregroundColor, value: UIColor(red: 17/255, green: 17/255, blue: 17/255, alpha: 1), range: separatorAndTitleRange)
-        
-        // Style just the " - " part to be gray
-        let dashRange = NSRange(location: timeText.count, length: 3) // " - "
-        attributedString.addAttribute(.foregroundColor, value: UIColor(red: 120/255, green: 130/255, blue: 138/255, alpha: 1), range: dashRange)
-        
-        compositeLabel.attributedText = attributedString
-        
-        view.addSubviews([dotView, topLine, bottomLine, compositeLabel])
-        
-        // Layout timeline components matching Figma
-        dotView.layout {
-            $0.leading(to: view.leadingAnchor)
-            $0.top(to: view.topAnchor, constant: 6)
-            $0.size(16)
-        }
-        
-        topLine.layout {
-            $0.centerX(to: dotView.centerXAnchor)
-            $0.bottom(to: dotView.topAnchor)
-            $0.top(to: view.topAnchor)
-            $0.width(2)
-        }
-        
-        bottomLine.layout {
-            $0.centerX(to: dotView.centerXAnchor)
-            $0.top(to: dotView.bottomAnchor)
-            $0.bottom(to: view.bottomAnchor)
-            $0.width(2)
-        }
-        
-        compositeLabel.layout {
-            $0.leading(to: dotView.trailingAnchor, constant: 16)
-            $0.top(to: view.topAnchor, constant: 4)
-            $0.trailing(to: view.trailingAnchor)
-            $0.bottom(to: view.bottomAnchor, constant: -4)
-        }
-        
-        return view
-    }
-    
     // MARK: - Helper Methods
-    
-    private func rotateChevron(chevron: UIImageView, isExpanded: Bool) {
-        let rotationAngle = isExpanded ? CGFloat.pi : 0
-        UIView.animate(withDuration: 0.3) {
-            chevron.transform = CGAffineTransform(rotationAngle: rotationAngle)
-        }
-    }
     
     // MARK: - Actions
     
@@ -666,16 +343,4 @@ final class UnifiedBookingDetailCell: UITableViewCell {
         onItineraryTapped?()
     }
     
-    /// Extracts time range from duration string
-    /// Expected format: "09:00-16:00 (7 Hours)" -> returns "09:00-16:00 (7 Hours)"
-    /// Or handles other formats gracefully
-    private func extractTimeRange(from duration: String) -> String? {
-        // If it already contains time format (HH:MM), return as is
-        if duration.contains(":") {
-            return duration
-        }
-        
-        // For other formats, return nil to use fallback
-        return nil
-    }
 }
