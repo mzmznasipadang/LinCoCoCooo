@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 // MARK: - Section Setup Helper
-class SectionSetupHelper {
+internal class SectionSetupHelper {
     
     static func setupProviderSection(
         headerButton: UIButton,

@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 // MARK: - Provider View Builder
-class ProviderViewBuilder {
+internal class ProviderViewBuilder {
     
     static func createProviderContentView(provider: TripProviderDisplayItem) -> UIView {
         let view = UIView()

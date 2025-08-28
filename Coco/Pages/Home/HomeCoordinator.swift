@@ -101,6 +101,10 @@ extension HomeCoordinator: HomeFormScheduleViewModelDelegate {
         }
     }
     
+    func navigateToLogin() {
+        handleNavigateToLogin()
+    }
+    
     /// Shows the checkout completed popup
     private func showCheckoutCompletedPopup() {
         // Find the MyTrip tab's top view controller to present the popup
@@ -168,6 +172,55 @@ extension HomeCoordinator: HomeFormScheduleViewModelDelegate {
         
         print("❌ COORDINATOR: Could not find tab bar controller through any method")
         return nil
+    }
+    
+    /// Handles navigation to login screen - shared implementation for both protocols
+    private func handleNavigateToLogin() {
+        print("🔍 COORDINATOR: Navigation to login screen requested")
+        
+        // Navigate to Profile tab which contains the SignIn functionality
+        // The Profile tab automatically shows SignIn when user is not logged in
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // First dismiss any presented view controllers
+            if let presentedVC = self.navigationController?.topViewController?.presentedViewController {
+                presentedVC.dismiss(animated: true) {
+                    // Navigate to Profile tab after dismissal
+                    self.performTabNavigation()
+                }
+            } else {
+                self.performTabNavigation()
+            }
+        }
+    }
+    
+    private func performTabNavigation() {
+        if let tabBarController = self.findTabBarController() {
+            tabBarController.selectedIndex = 2 // Profile tab (index 2)
+            print("✅ COORDINATOR: Navigated to Profile tab for login")
+            
+            // Ensure the Profile view loads properly by accessing the Profile tab's view controller
+            if let profileNavController = tabBarController.viewControllers?[2] as? UINavigationController,
+               let profileViewController = profileNavController.viewControllers.first as? ProfileViewController {
+                // Trigger viewWillAppear to ensure proper state
+                profileViewController.viewWillAppear(true)
+                print("✅ COORDINATOR: Profile view refreshed for login")
+            }
+        } else {
+            print("❌ COORDINATOR: Could not find TabBarController to navigate to Profile tab")
+            
+            // Fallback: Show alert if tab navigation fails
+            if let topViewController = self.navigationController?.topViewController {
+                let alert = UIAlertController(
+                    title: "Login Required", 
+                    message: "Please navigate to the Profile tab to sign in",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                topViewController.present(alert, animated: true)
+            }
+        }
     }
 }
 

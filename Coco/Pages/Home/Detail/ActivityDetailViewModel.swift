@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 final class ActivityDetailViewModel {
     weak var actionDelegate: ActivityDetailViewModelAction?
@@ -24,6 +25,19 @@ extension ActivityDetailViewModel: ActivityDetailViewModelProtocol {
     }
     
     func onPackagesDetailDidTap(with packageId: Int) {
-        navigationDelegate?.notifyActivityDetailPackageDidSelect(package: data, selectedPackageId: packageId)
+        // Validate authentication before allowing booking navigation
+        let authResult = AuthenticationValidator.validateAuthenticationForBooking()
+        switch authResult {
+        case .success:
+            navigationDelegate?.notifyActivityDetailPackageDidSelect(package: data, selectedPackageId: packageId)
+            
+        case .requiresLogin:
+            // Show login popup and navigate to login on confirmation
+            if let viewController = actionDelegate as? UIViewController {
+                AuthenticationValidator.showLoginPopup(from: viewController) { [weak self] in
+                    self?.navigationDelegate?.navigateToLogin()
+                }
+            }
+        }
     }
 }

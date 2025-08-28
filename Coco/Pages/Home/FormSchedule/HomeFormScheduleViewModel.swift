@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 // MARK: - HomeFormScheduleViewModel
 
@@ -271,11 +272,29 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
     }
     
     /// Handles checkout button tap
-    /// Validates participant count against package constraints and creates booking
+    /// Validates authentication first, then participant count against package constraints and creates booking
     /// Shows validation errors if constraints are not met
     func onCheckout() {
         print("🚨 CHECKOUT BUTTON PRESSED! Starting validation...")
         NSLog("🚨 CHECKOUT BUTTON PRESSED! Starting validation...")
+        
+        // First, validate user authentication
+        let authResult = AuthenticationValidator.validateAuthenticationForBooking()
+        switch authResult {
+        case .success:
+            print("✅ Authentication validation passed")
+            break // Continue with booking validation
+            
+        case .requiresLogin(let message):
+            print("❌ AUTHENTICATION FAILED: User not logged in")
+            // Show login popup instead of navigating away
+            if let viewController = actionDelegate as? UIViewController {
+                AuthenticationValidator.showLoginPopup(from: viewController) { [weak self] in
+                    self?.delegate?.navigateToLogin()
+                }
+            }
+            return
+        }
         let raw = paxInputViewModel.currentTypedText.trimmingCharacters(in: .whitespacesAndNewlines)
         print("🔍 Participant count raw: '\(raw)'")
         guard !raw.isEmpty else {
@@ -327,7 +346,13 @@ extension HomeFormScheduleViewModel: HomeFormScheduleViewModelProtocol {
         // }
 
         let bookingDate = chosenDateInput ?? Date()
-        let userId = UserDefaults.standard.value(forKey: "user-id") as? String ?? "test-user-123"
+        
+        // Get authenticated user ID (we already validated authentication above)
+        guard let userId = AuthenticationValidator.getCurrentUserId() else {
+            print("❌ CRITICAL ERROR: User ID unavailable after authentication validation")
+            actionDelegate?.showValidationError(message: "Authentication error. Please try logging in again.")
+            return
+        }
 
         print("🚀 ALL VALIDATIONS PASSED! Proceeding to create booking...")
         print("🚀 Booking Date: \(bookingDate)")

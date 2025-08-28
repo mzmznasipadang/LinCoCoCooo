@@ -11,9 +11,8 @@ import UIKit
 final class ProfileCoordinator: BaseCoordinator {
     override func start() {
         super.start()
-        // start flow
-        let vc = UIViewController()
-        vc.view.backgroundColor = .red
-        start(viewController: vc)
+        let viewModel = ProfileViewModel()
+        let viewController = ProfileViewController(viewModel: viewModel)
+        start(viewController: viewController)
     }
 }

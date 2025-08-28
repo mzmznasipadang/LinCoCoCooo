@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 // MARK: - Itinerary View Builder
-class ItineraryViewBuilder {
+internal class ItineraryViewBuilder {
     
     static func createItineraryContentView(items: [ItineraryDisplayItem]) -> UIView {
         let containerView = UIView()
@@ -53,9 +53,8 @@ class ItineraryViewBuilder {
         dotView.backgroundColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1)
         dotView.layer.cornerRadius = 8
         
-        // Timeline line (only show if not last item)
-        let lineView = UIView()
-        lineView.backgroundColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1)
+        // Timeline dashed line (only show if not last item)
+        let lineView = createDashedLineView()
         lineView.isHidden = isLast
         
         // Time label
@@ -110,5 +109,51 @@ class ItineraryViewBuilder {
         itemView.setContentHuggingPriority(.required, for: .vertical)
         
         return itemView
+    }
+    
+    private static func createDashedLineView() -> UIView {
+        let container = UIView()
+        container.backgroundColor = .clear
+        
+        let dashedLine = DashedVerticalLineView()
+        dashedLine.dashColor = UIColor(red: 26/255, green: 178/255, blue: 229/255, alpha: 1)
+        dashedLine.dashLength = 3
+        dashedLine.gapLength = 3
+        
+        container.addSubview(dashedLine)
+        dashedLine.layout {
+            $0.edges(to: container)
+        }
+        
+        return container
+    }
+}
+
+// MARK: - Dashed Vertical Line View
+private class DashedVerticalLineView: UIView {
+    var dashColor: UIColor = .lightGray
+    var dashLength: CGFloat = 3
+    var gapLength: CGFloat = 3
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        setupDashedLine()
+    }
+    
+    private func setupDashedLine() {
+        layer.sublayers?.removeAll()
+        
+        let shapeLayer = CAShapeLayer()
+        shapeLayer.strokeColor = dashColor.cgColor
+        shapeLayer.lineWidth = 2
+        shapeLayer.lineDashPattern = [NSNumber(value: dashLength), NSNumber(value: gapLength)]
+        
+        let path = CGMutablePath()
+        // Draw vertical line from top to bottom
+        path.move(to: CGPoint(x: bounds.width / 2, y: 0))
+        path.addLine(to: CGPoint(x: bounds.width / 2, y: bounds.height))
+        shapeLayer.path = path
+        
+        layer.addSublayer(shapeLayer)
     }
 }

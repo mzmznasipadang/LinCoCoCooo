@@ -41,6 +41,10 @@ final class HomeFormScheduleViewController: UIViewController {
         super.viewDidLoad()
         setupTableView()
         setupKeyboardHandling()
+        
+        // Validate authentication before allowing form interaction
+        validateAuthenticationAndSetupForm()
+        
         viewModel.onViewDidLoad()
         initializeParticipantCount() // Set minimum participants as default
         title = Localization.Screen.bookingDetail
@@ -495,6 +499,118 @@ extension HomeFormScheduleViewController: CocoCalendarViewControllerDelegate {
     func notifyCalendarDidChooseDate(date: Date?, calendar: CocoCalendarViewController) {
         guard let date = date else { return }
         viewModel.onCalendarDidChoose(date: date)
+    }
+    
+    // MARK: - Authentication Validation
+    
+    /// Validates user authentication and sets up form interaction accordingly
+    private func validateAuthenticationAndSetupForm() {
+        let authResult = AuthenticationValidator.validateAuthenticationForBooking()
+        
+        switch authResult {
+        case .success:
+            print("✅ User authenticated - enabling full form interaction")
+            // User is logged in, allow normal form interaction
+            break
+            
+        case .requiresLogin:
+            print("⚠️ User not authenticated - restricting form interaction")
+            // Disable form inputs but allow viewing
+            disableFormInteractionForUnauthenticatedUser()
+        }
+    }
+    
+    /// Disables form interactions for unauthenticated users
+    /// Shows read-only mode with login prompt
+    private func disableFormInteractionForUnauthenticatedUser() {
+        // Disable the table view interaction for form sections
+        // This prevents users from tapping into input fields
+        // but still allows them to view package info and itinerary
+        
+        // Add a login prompt overlay or disable specific cells
+        // Implementation depends on desired UX approach
+        
+        // Option 1: Show overlay prompting login
+        showLoginRequiredOverlay()
+    }
+    
+    /// Shows a login required overlay
+    private func showLoginRequiredOverlay() {
+        let overlayView = UIView()
+        overlayView.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        overlayView.tag = 999 // Tag for easy removal
+        
+        let promptLabel = UILabel()
+        promptLabel.text = "Please log in to book this experience"
+        promptLabel.font = .jakartaSans(forTextStyle: .headline, weight: .bold)
+        promptLabel.textColor = .white
+        promptLabel.textAlignment = .center
+        promptLabel.numberOfLines = 0
+        
+        let loginButton = UIButton(type: .system)
+        loginButton.setTitle("Log In", for: .normal)
+        loginButton.titleLabel?.font = .jakartaSans(forTextStyle: .headline, weight: .semibold)
+        loginButton.setTitleColor(.white, for: .normal)
+        loginButton.backgroundColor = UIColor.systemBlue
+        loginButton.layer.cornerRadius = 8
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        
+        overlayView.addSubviews([promptLabel, loginButton])
+        view.addSubview(overlayView)
+        
+        // Layout overlay
+        overlayView.layout {
+            $0.edges(to: view)
+        }
+        
+        promptLabel.layout {
+            $0.centerX(to: overlayView.centerXAnchor)
+            $0.centerY(to: overlayView.centerYAnchor, constant: -30)
+            $0.leading(to: overlayView.leadingAnchor, constant: 24)
+            $0.trailing(to: overlayView.trailingAnchor, constant: -24)
+        }
+        
+        loginButton.layout {
+            $0.centerX(to: overlayView.centerXAnchor)
+            $0.top(to: promptLabel.bottomAnchor, constant: 20)
+            $0.width(200)
+            $0.height(48)
+        }
+    }
+    
+    @objc private func loginButtonTapped() {
+        // Navigate to login screen
+        handleNavigateToLogin()
+    }
+    
+    private func handleNavigateToLogin() {
+        // TODO: Implement navigation to login screen
+        // This should be handled by the coordinator/router
+        print("🔍 Navigation to login screen requested")
+    }
+}
+
+// MARK: - HomeFormScheduleViewModelDelegate Extension
+extension HomeFormScheduleViewController: HomeFormScheduleViewModelDelegate {
+    func navigateToLogin() {
+        DispatchQueue.main.async { [weak self] in
+            self?.handleNavigateToLogin()
+        }
+    }
+    
+    func notifyFormScheduleDidNavigateToCheckout(
+        package: ActivityDetailDataModel,
+        selectedPackageId: Int,
+        bookingDate: Date,
+        participants: Int,
+        userId: String
+    ) {
+        // Handle checkout navigation
+    }
+    
+    func notifyBookingDidSucceed(bookingId: String) {
+        // Handle successful booking
+        print("✅ Booking succeeded with ID: \(bookingId)")
     }
 }
 
